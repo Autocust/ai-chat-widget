@@ -1,0 +1,35 @@
+{
+  "name": "@autocust/ai-chat-widget",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Autocust/ai-chat-widget.git"
+  },
+  "main": "embed.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-terser": "^0.4.3",
+    "rollup": "^4.24.0",
+    "rollup-plugin-svelte": "^7.2.2",
+    "svelte": "^4.2.19"
+  },
+  "dependencies": {
+    "marked": "^14.1.2"
+  },
+  "files": [
+    "dist"
+  ],
+  "npm": {
+    "publish": false
+  },
+  "unpkg": "dist/chat-widget.min.js",
+  "jsdelivr": "dist/chat-widget.min.js"
+}
