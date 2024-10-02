@@ -11,7 +11,7 @@ This project provides a versatile, embeddable chat widget for the [Autocust](htt
 
 ## Quick Start
 
-To add the AI Chat Widget to your website, simply include the following script tag in your HTML:
+To use the AI Chat Widget on your website, add the following script tag anywhere within the `<body>` of your HTML page:
 
 ```html
 <script src="https://unpkg.com/@autocust/ai-chat-widget@latest/embed.js"></script>
@@ -31,7 +31,7 @@ To add the AI Chat Widget to your website, simply include the following script t
 ></script>
 ```
 
-# Available options:
+## Available options:
 
 - `data-title`: The title of the chat widget.
 - `data-api-url`: The URL of the API that will power the chat widget.
@@ -39,6 +39,17 @@ To add the AI Chat Widget to your website, simply include the following script t
 - `data-initial-message`: The initial message of the chat widget.
 - `data-button-icon`: The icon of the chat widget.
 - `data-position`: The position of the chat widget.
+
+### Supported Positions
+
+The `data-position` attribute can be set to one of the following values:
+
+- `top-left`: Positions the widget in the top-left corner of the page
+- `top-right`: Positions the widget in the top-right corner of the page
+- `bottom-left`: Positions the widget in the bottom-left corner of the page
+- `bottom-right`: Positions the widget in the bottom-right corner of the page (default)
+
+If no position is specified or an invalid value is provided, the widget will default to the `bottom-right` position.
 
 ## Development
 
