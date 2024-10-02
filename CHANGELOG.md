@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.2](https://github.com/Autocust/ai-chat-widget/compare/v1.0.1...v1.0.2) (2024-10-02)
+
+
+### Features
+
+* **AIChatWidget:** enhance chat widget to include product carousel in messages and improve styling ([41a1186](https://github.com/Autocust/ai-chat-widget/commit/41a11869701a81a581ad4fffe50f014225459e80))
+
+
+### Documentation
+
+* clear example ([afeaf7f](https://github.com/Autocust/ai-chat-widget/commit/afeaf7f2960b22bbbd0f42f9baebc648d48995e6))
+* **README.md:** update instructions for adding the AI Chat Widget and enhance available options section for clarity and detail ([f7cbc2e](https://github.com/Autocust/ai-chat-widget/commit/f7cbc2ee19629f92096313accffd2e2e8e423a59))
+
 ## [1.0.1](https://github.com/Autocust/ai-chat-widget/compare/v1.0.0...v1.0.1) (2024-10-02)
 
 
