@@ -34,16 +34,17 @@
 
   function addMessage(rawText, sender) {
     let content = '';
+    let productCarousel = '';
     if (sender === 'bot') {
       let jsonResponse = typeof rawText === 'string' ? JSON.parse(rawText) : rawText;
       content = marked.parse(jsonResponse.response);
       if (jsonResponse.products && jsonResponse.products.length > 0) {
-        content += createProductCarousel(jsonResponse.products);
+        productCarousel = createProductCarousel(jsonResponse.products);
       }
     } else {
       content = rawText;
     }
-    messages = [...messages, { content, sender }];
+    messages = [...messages, { content, sender, productCarousel }];
     tick().then(() => {
       if (chatMessages) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -52,14 +53,18 @@
   }
 
   function createProductCarousel(products) {
-    return products.map(product => `
-      <div class="carousel-product">
-        <img src="${product.immagine}" alt="${product.nome}">
-        <h4>${product.nome}</h4>
-        <p>${product.prezzo}</p>
-        <a href="${product.url}/?utm_source=chat&utm_medium=chatbot&utm_campaign=chatbot" target="_blank">Acquista</a>
+    return `
+      <div class="product-carousel">
+        ${products.map(product => `
+          <div class="carousel-product">
+            <img src="${product.immagine}" alt="${product.nome}">
+            <h4>${product.nome}</h4>
+            <p>${product.prezzo}</p>
+            <a href="${product.url}/?utm_source=chat&utm_medium=chatbot&utm_campaign=chatbot" target="_blank">Acquista</a>
+          </div>
+        `).join('')}
       </div>
-    `).join('');
+    `;
   }
 
   async function sendMessage() {
@@ -216,6 +221,9 @@
           <div class="message {message.sender}-message">
             {@html message.content}
           </div>
+          {#if message.productCarousel}
+            {@html message.productCarousel}
+          {/if}
         {/each}
         {#if isLoading}
           <div class="loading-container">
@@ -394,14 +402,14 @@
   min-width: 60px;
 }
 
-.product-carousel {
+:global(.product-carousel) {
   display: flex;
   overflow-x: auto;
   padding: 10px 0;
   margin-top: 10px;
 }
 
-.carousel-product {
+:global(.carousel-product) {
   flex: 0 0 auto;
   width: 150px;
   margin-right: 10px;
@@ -411,26 +419,26 @@
   text-align: center;
 }
 
-.carousel-product img {
+:global(.carousel-product img) {
   width: 100%;
   height: 100px;
   object-fit: cover;
   margin-bottom: 5px;
 }
 
-.carousel-product h4 {
+:global(.carousel-product h4) {
   margin: 5px 0;
   font-size: 14px;
   color: var(--primary-color);
 }
 
-.carousel-product p {
+:global(.carousel-product p) {
   margin: 5px 0;
   font-weight: bold;
   color: var(--primary-color);
 }
 
-.carousel-product a {
+:global(.carousel-product a) {
   background-color: var(--primary-color);
   color: var(--text-color);
   border: none;
@@ -439,6 +447,7 @@
   border-radius: 3px;
   font-size: 12px;
   text-decoration: none;
+  display: inline-block;
   margin-top: 10px;
 }
 </style>
