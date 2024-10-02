@@ -9,14 +9,17 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "release": "release-it"
   },
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@release-it/conventional-changelog": "^8.0.2",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-terser": "^0.4.3",
+    "release-it": "^17.6.0",
     "rollup": "^4.24.0",
     "rollup-plugin-svelte": "^7.2.2",
     "svelte": "^4.2.19"
