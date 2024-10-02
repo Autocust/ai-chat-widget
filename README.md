@@ -14,12 +14,6 @@ This project provides a versatile, embeddable chat widget for the [Autocust](htt
 To use the AI Chat Widget on your website, add the following script tag anywhere within the `<body>` of your HTML page:
 
 ```html
-<script src="https://unpkg.com/@autocust/ai-chat-widget@latest/embed.js"></script>
-```
-
-## Example
-
-```html
 <script
     src="https://cdn.jsdelivr.net/gh/Autocust/ai-chat-widget@latest/dist/chat-widget.min.js"
     data-title="My Custom Assistant"
