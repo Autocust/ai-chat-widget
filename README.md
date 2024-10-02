@@ -47,11 +47,17 @@ If no position is specified or an invalid value is provided, the widget will def
 
 ## Development
 
+In case you want to contribute the widget codebase, you can install the dependencies and run the development server:
+
 ```bash
 npm install
 ```
 
-Make your changes in the AIChatWidget.svelte and embed.js files.
+```bash
+npm run dev
+```
+
+The widget preview will be available at `http://localhost:5173` and it will automatically live update if you modify the code.
 
 ## Build
 
