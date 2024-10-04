@@ -5,7 +5,7 @@ const app = new AIChatWidget({
   props: {
     title: "AI Sales Assistant",
     apiUrl:
-      "https://workflow.development.tractiontools.it/webhook/cc63b887-5833-40f0-a8d4-dc99648dcc1c/chat",
+      "http://localhost:7860/api/v1/run/e3199283-447e-487c-a3d2-cd1bff638bfd?stream=false",
     brandColor: "#00264c",
     initialMessage: "Ciao, come posso aiutarti?",
     buttonIcon: "💬",

@@ -1,6 +1,7 @@
 <script>
   import { onMount, tick } from 'svelte';
   import { marked } from 'marked';
+  import get from 'lodash/get';
 
   export let title = 'AI Sales Assistant';
   export let apiUrl;
@@ -74,26 +75,29 @@
       userInput = '';
       isLoading = true;
 
-      const params = new URLSearchParams({
-        sessionId: sessionId,
+      const params = {
+        session_id: sessionId,
         action: 'sendMessage',
-        chatInput: message,
-      });
+        input_value: message,
+        output_type: 'text',
+        input_type: 'chat',
+      };
 
       try {
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
           },
-          body: params.toString(),
+          body: JSON.stringify(params),
         });
 
         const data = await response.json();
-        addMessage(data, 'bot');
+        const jsonResponse = get(data, 'outputs[0].outputs[0].results.text.text', '');
+        addMessage(JSON.parse(jsonResponse), 'bot');
       } catch (error) {
         console.error('Error:', error);
-        addMessage('Sorry, there was an error processing your request.', 'bot');
+        addMessage({ response: 'Sorry, there was an error processing your request.' }, 'bot');
       } finally {
         isLoading = false;
       }
