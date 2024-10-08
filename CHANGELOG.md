@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/Autocust/ai-chat-widget/compare/v1.0.4...v1.0.5) (2024-10-08)
+
+
+### Chores
+
+* rebuild ([1246bfa](https://github.com/Autocust/ai-chat-widget/commit/1246bfa453bc31b0fbfe8a1d71fc865a4d22e038))
+
 ## [1.0.4](https://github.com/Autocust/ai-chat-widget/compare/v1.0.3...v1.0.4) (2024-10-08)
 
 
