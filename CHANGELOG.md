@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.4](https://github.com/Autocust/ai-chat-widget/compare/v1.0.3...v1.0.4) (2024-10-08)
+
+
+### Bug Fixes
+
+* do not add trailing slash to urls ([24f1d32](https://github.com/Autocust/ai-chat-widget/commit/24f1d325fe4638964c87995caaf1e7d396e84dc1))
+
+
+### Documentation
+
+* update readme ([0b7e49b](https://github.com/Autocust/ai-chat-widget/commit/0b7e49b35a2e9deca2a7a775f5c14546de87a8ac))
+
 ## [1.0.3](https://github.com/Autocust/ai-chat-widget/compare/v1.0.2...v1.0.3) (2024-10-02)
 
 
