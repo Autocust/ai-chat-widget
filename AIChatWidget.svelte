@@ -60,7 +60,7 @@
             <img src="${product.immagine}" alt="${product.nome}">
             <h4>${product.nome}</h4>
             <p>${product.prezzo}</p>
-            <a href="${product.url}/?utm_source=chat&utm_medium=chatbot&utm_campaign=chatbot" target="_blank">Acquista</a>
+            <a href="${product.url}?utm_source=chat&utm_medium=chatbot&utm_campaign=chatbot" target="_blank">Acquista</a>
           </div>
         `).join('')}
       </div>
