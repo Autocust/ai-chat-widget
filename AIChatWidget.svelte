@@ -267,12 +267,12 @@
 }
 
 #chat-button {
-  background-color: var(--primary-color);
-  color: var(--text-color);
+  background-color: var(--primary-color) !important;
+  color: var(--text-color) !important;
   border: none;
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
+  width: 60px !important;
+  height: 60px !important;
   cursor: pointer;
   font-size: 24px;
   display: flex;
