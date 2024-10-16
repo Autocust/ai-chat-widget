@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.0](https://github.com/Autocust/ai-chat-widget/compare/v1.0.5...v1.1.0) (2024-10-16)
+
+
+### Features
+
+* cta button if any ([22f2b0c](https://github.com/Autocust/ai-chat-widget/commit/22f2b0c30813073c357ef68d60f53ab7e3cfe0c3))
+
+
+### Code Refactoring
+
+* set important statements where needed ([a78344a](https://github.com/Autocust/ai-chat-widget/commit/a78344a13dc4fae23bd088e23e97e9e108bcfe45))
+
+
+### Chores
+
+* build ([50d5eae](https://github.com/Autocust/ai-chat-widget/commit/50d5eaefb389b3cabf91584e2175d1b813da3711))
+
 ## [1.0.5](https://github.com/Autocust/ai-chat-widget/compare/v1.0.4...v1.0.5) (2024-10-08)
 
 
