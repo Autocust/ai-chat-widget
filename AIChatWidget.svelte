@@ -35,18 +35,20 @@
   function addMessage(rawText, sender) {
     let content = '';
     let productCarousel = '';
+    let url = '';
     if (sender === 'bot') {
       let jsonResponse = typeof rawText === 'string' ? JSON.parse(rawText) : rawText;
       content = marked.parse(jsonResponse.response);
+      url = jsonResponse.url || '';
       if (jsonResponse.products && jsonResponse.products.length > 0) {
         productCarousel = createProductCarousel(jsonResponse.products);
       }
     } else {
       content = rawText;
     }
-    messages = [...messages, { content, sender, productCarousel }];
+    messages = [...messages, { content, sender, productCarousel, url }];
     tick().then(() => {
-      if (chatMessages) {
+      if (sender === 'user') {
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
     });
@@ -60,11 +62,19 @@
             <img src="${product.immagine}" alt="${product.nome}">
             <h4>${product.nome}</h4>
             <p>${product.prezzo}</p>
-            <a href="${product.url}?utm_source=chat&utm_medium=chatbot&utm_campaign=chatbot" target="_blank">Acquista</a>
+            <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot')}" target="_blank">Acquista</a>
           </div>
         `).join('')}
       </div>
     `;
+  }
+
+  function addUtmParams(url, source, medium, campaign) {
+    const urlObj = new URL(url, window.location.origin);
+    urlObj.searchParams.set('utm_source', source);
+    urlObj.searchParams.set('utm_medium', medium);
+    urlObj.searchParams.set('utm_campaign', campaign);
+    return urlObj.toString();
   }
 
   async function sendMessage() {
@@ -185,6 +195,7 @@
     addMessage({
       response: initialMessage,
       products: [],
+      url: '',
     }, 'bot');
   });
 </script>
@@ -221,6 +232,9 @@
           <div class="message {message.sender}-message">
             {@html message.content}
           </div>
+          {#if message.url}
+            <a href={addUtmParams(message.url, 'chat', 'chatbot', 'chatbot')} target="_blank" class="cta-button">FAI UN PREVENTIVO</a>
+          {/if}
           {#if message.productCarousel}
             {@html message.productCarousel}
           {/if}
@@ -400,6 +414,26 @@
   border-radius: 3px;
   text-wrap: nowrap;
   min-width: 60px;
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  padding: 8px 12px;
+  border-radius: 20px;
+  text-decoration: none;
+  margin-bottom: 10px;
+  font-size: 14px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.cta-button:hover {
+  background-color: var(--button-color);
+  color: var(--button-text-color);
 }
 
 :global(.product-carousel) {
