@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.1](https://github.com/Autocust/ai-chat-widget/compare/v1.1.0...v1.1.1) (2024-10-22)
+
+
+### Code Refactoring
+
+* more sane css for .message ([a2f975c](https://github.com/Autocust/ai-chat-widget/commit/a2f975c893ba0d61a65185f4d49dab94114b9b4a))
+
+
+### Chores
+
+* rebuild ([f7921d0](https://github.com/Autocust/ai-chat-widget/commit/f7921d07bf6c42d8cd460f8dda636eef246857e2))
+
 ## [1.1.0](https://github.com/Autocust/ai-chat-widget/compare/v1.0.5...v1.1.0) (2024-10-16)
 
 
