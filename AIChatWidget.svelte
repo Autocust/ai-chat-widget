@@ -341,8 +341,12 @@
   margin-bottom: 10px;
   padding: 5px 10px;
   border-radius: 5px;
-  max-width: 80%;
   line-height: 1.5rem;
+  height: auto;
+  width: auto;
+  max-width: 80%;
+  display: block;
+  text-transform: none;
 }
 
 .message a {
