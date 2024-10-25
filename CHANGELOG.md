@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/Autocust/ai-chat-widget/compare/v1.1.1...v1.2.0) (2024-10-25)
+
+
+### Features
+
+* **AIChatWidget:** add ctaText prop to customize call-to-action text in chat widget ([b4add59](https://github.com/Autocust/ai-chat-widget/commit/b4add5966c89e0ad30dca7285e72779626c940ed))
+
 ## [1.1.1](https://github.com/Autocust/ai-chat-widget/compare/v1.1.0...v1.1.1) (2024-10-22)
 
 
