@@ -7,6 +7,7 @@
   export let brandColor = '#00264c';
   export let initialMessage = 'Ciao, come posso aiutarti?';
   export let buttonIcon = '💬';
+  export let ctaText = 'Chiedi informazioni';
   export let position = 'bottom-right';
 
   let isChatVisible = false;
@@ -233,7 +234,7 @@
             {@html message.content}
           </div>
           {#if message.url}
-            <a href={addUtmParams(message.url, 'chat', 'chatbot', 'chatbot')} target="_blank" class="cta-button">FAI UN PREVENTIVO</a>
+            <a href={addUtmParams(message.url, 'chat', 'chatbot', 'chatbot')} target="_blank" class="cta-button">{ctaText}</a>
           {/if}
           {#if message.productCarousel}
             {@html message.productCarousel}

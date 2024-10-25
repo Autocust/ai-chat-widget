@@ -31,6 +31,7 @@ const chatWidget = new AIChatWidget({
         brandColor: getAttr('data-brand-color', '#00264c'),
         initialMessage: getAttr('data-initial-message', 'Ciao, come posso aiutarti?'),
         buttonIcon: getAttr('data-button-icon', '💬'),
+        ctaText: getAttr('data-cta-text', 'Chiedi informazioni'),
         position: getPosition('bottom-right'),
     }
 });
