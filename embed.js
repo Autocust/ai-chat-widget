@@ -13,7 +13,16 @@ currentScript.parentNode.insertBefore(targetDiv, currentScript);
 // Function to get attribute value with a default
 function getAttr(name, defaultValue) {
     const value = currentScript.getAttribute(name);
-    return value !== null ? value : defaultValue;
+    if (value === null) {
+        return defaultValue;
+    }
+    // Convert "true" and "false" strings to boolean
+    if (value.toLowerCase() === 'true') {
+        return true;
+    } else if (value.toLowerCase() === 'false') {
+        return false;
+    }
+    return value; // Return the value as is if it's not a boolean string
 }
 
 // Function to get position with a default
