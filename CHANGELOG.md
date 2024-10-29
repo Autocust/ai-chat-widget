@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/Autocust/ai-chat-widget/compare/v1.2.1...v1.2.2) (2024-10-29)
+
+
+### Features
+
+* **AIChatWidget:** add openInNewTab prop to control link behavior in chat widget ([a76864c](https://github.com/Autocust/ai-chat-widget/commit/a76864c0721a8c87d65e4c2e360a709d723fa4af))
+
 ## [1.2.1](https://github.com/Autocust/ai-chat-widget/compare/v1.2.0...v1.2.1) (2024-10-25)
 
 
