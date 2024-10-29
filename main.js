@@ -11,6 +11,7 @@ const app = new AIChatWidget({
     ctaText: "Chiedi informazioni",
     buttonIcon: "💬",
     openInNewTab: false,
+    enableUTM: true,
     position: "bottom-right",
   },
 });

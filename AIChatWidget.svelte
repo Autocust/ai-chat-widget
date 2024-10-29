@@ -10,6 +10,7 @@
   export let ctaText = 'Chiedi informazioni';
   export let position = 'bottom-right';
   export let openInNewTab = true;
+  export let enableUTM = true;
 
   let isChatVisible = false;
   let messages = [];
@@ -72,6 +73,8 @@
   }
 
   function addUtmParams(url, source, medium, campaign) {
+    if (!enableUTM) return url; // Return the base URL without UTM parameters
+
     const urlObj = new URL(url, window.location.origin);
     urlObj.searchParams.set('utm_source', source);
     urlObj.searchParams.set('utm_medium', medium);

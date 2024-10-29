@@ -42,6 +42,7 @@ const chatWidget = new AIChatWidget({
         buttonIcon: getAttr('data-button-icon', '💬'),
         ctaText: getAttr('data-cta-text', 'Chiedi informazioni'),
         openInNewTab: getAttr('data-open-in-new-tab', true),
+        enableUTM: getAttr('data-enable-utm', true),
         position: getPosition('bottom-right'),
     }
 });
