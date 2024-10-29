@@ -10,6 +10,7 @@ const app = new AIChatWidget({
     initialMessage: "Ciao, come posso aiutarti?",
     ctaText: "Chiedi informazioni",
     buttonIcon: "💬",
+    openInNewTab: false,
     position: "bottom-right",
   },
 });
