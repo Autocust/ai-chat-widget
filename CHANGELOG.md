@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/Autocust/ai-chat-widget/compare/v1.2.2...v1.2.3) (2024-10-29)
+
+
+### Bug Fixes
+
+* get attribute from script ([20ca097](https://github.com/Autocust/ai-chat-widget/commit/20ca0976c4aaadab69fc3d92c8df4f288c3f8db0))
+
 ## [1.2.2](https://github.com/Autocust/ai-chat-widget/compare/v1.2.1...v1.2.2) (2024-10-29)
 
 
