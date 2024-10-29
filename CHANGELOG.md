@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.4](https://github.com/Autocust/ai-chat-widget/compare/v1.2.3...v1.2.4) (2024-10-29)
+
+
+### Bug Fixes
+
+* ensure we understand true and false ([305d6c0](https://github.com/Autocust/ai-chat-widget/commit/305d6c02836c09c07a93f3333ade05fc7201ccfb))
+
+
+### Chores
+
+* update dev widget ([45f0710](https://github.com/Autocust/ai-chat-widget/commit/45f0710ce31c0cd946a8cf9e28b1bc43434e178e))
+
 ## [1.2.3](https://github.com/Autocust/ai-chat-widget/compare/v1.2.2...v1.2.3) (2024-10-29)
 
 
