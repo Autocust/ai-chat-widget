@@ -9,7 +9,7 @@
   export let buttonIcon = '💬';
   export let ctaText = 'Chiedi informazioni';
   export let position = 'bottom-right';
-  export let openInNewTab = true; // Default value
+  export let openInNewTab = true;
 
   let isChatVisible = false;
   let messages = [];

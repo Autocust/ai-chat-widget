@@ -32,6 +32,7 @@ const chatWidget = new AIChatWidget({
         initialMessage: getAttr('data-initial-message', 'Ciao, come posso aiutarti?'),
         buttonIcon: getAttr('data-button-icon', '💬'),
         ctaText: getAttr('data-cta-text', 'Chiedi informazioni'),
+        openInNewTab: getAttr('data-open-in-new-tab', true),
         position: getPosition('bottom-right'),
     }
 });
