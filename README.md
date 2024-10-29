@@ -22,6 +22,8 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
     data-initial-message="How can I help you today?"
     data-button-icon="🤖"
     data-position="bottom-right"
+    data-cta-text="Chiedi informazioni"
+    data-open-in-new-tab="true"
 ></script>
 ```
 
@@ -33,6 +35,8 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-initial-message`: The initial message of the chat widget.
 - `data-button-icon`: The icon of the chat widget.
 - `data-position`: The position of the chat widget.
+- `data-cta-text`: The text for the call-to-action button in the chat widget.
+- `data-open-in-new-tab`: A boolean value to determine if URLs should open in a new tab (default is `true`).
 
 ### Supported Positions
 
