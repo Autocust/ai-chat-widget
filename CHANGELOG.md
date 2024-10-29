@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.5](https://github.com/Autocust/ai-chat-widget/compare/v1.2.4...v1.2.5) (2024-10-29)
+
+
+### Features
+
+* enable/disable utm ([91a6b91](https://github.com/Autocust/ai-chat-widget/commit/91a6b9156de59d7794f3f33c7afb547bbeee811c))
+
 ## [1.2.4](https://github.com/Autocust/ai-chat-widget/compare/v1.2.3...v1.2.4) (2024-10-29)
 
 
