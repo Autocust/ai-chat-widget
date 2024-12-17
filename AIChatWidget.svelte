@@ -39,17 +39,19 @@
     let content = '';
     let productCarousel = '';
     let url = '';
+    let ctaTextToUse = ctaText;
     if (sender === 'bot') {
       let jsonResponse = typeof rawText === 'string' ? JSON.parse(rawText) : rawText;
       content = marked.parse(jsonResponse.response);
       url = jsonResponse.url || '';
+      ctaTextToUse = jsonResponse.ctaText || ctaText;
       if (jsonResponse.products && jsonResponse.products.length > 0) {
         productCarousel = createProductCarousel(jsonResponse.products);
       }
     } else {
       content = rawText;
     }
-    messages = [...messages, { content, sender, productCarousel, url }];
+    messages = [...messages, { content, sender, productCarousel, url, ctaText: ctaTextToUse }];
     tick().then(() => {
       if (sender === 'user') {
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -238,7 +240,7 @@
             {@html message.content}
           </div>
           {#if message.url}
-            <a href={addUtmParams(message.url, 'chat', 'chatbot', 'chatbot')} target={openInNewTab ? '_blank' : '_self'} class="cta-button">{ctaText}</a>
+            <a href={addUtmParams(message.url, 'chat', 'chatbot', 'chatbot')} target={openInNewTab ? '_blank' : '_self'} class="cta-button">{message.ctaText}</a>
           {/if}
           {#if message.productCarousel}
             {@html message.productCarousel}
