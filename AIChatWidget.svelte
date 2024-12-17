@@ -11,6 +11,8 @@
   export let position = 'bottom-right';
   export let openInNewTab = true;
   export let enableUTM = true;
+  export let persistentSession = false;
+  export let sessionExpiration = 24; // Default to 24 hours
 
   let isChatVisible = false;
   let messages = [];
@@ -18,7 +20,23 @@
   let isLoading = false;
   let chatMessages;
 
-  const sessionId = generateUUID();
+  let sessionId;
+
+  if (persistentSession) {
+    const storedSessionId = localStorage.getItem('ai_chat_session_id');
+    const expirationTime = localStorage.getItem('ai_chat_session_expiration');
+
+    if (storedSessionId && expirationTime && new Date().getTime() < expirationTime) {
+      sessionId = storedSessionId; // Use existing session ID if valid
+    } else {
+      sessionId = generateUUID(); // Generate a new session ID
+      const expirationDuration = sessionExpiration * 60 * 60 * 1000; // Convert hours to milliseconds
+      localStorage.setItem('ai_chat_session_id', sessionId);
+      localStorage.setItem('ai_chat_session_expiration', new Date().getTime() + expirationDuration); // Set expiration
+    }
+  } else {
+    sessionId = generateUUID(); // Generate a new session ID for non-persistent sessions
+  }
 
   $: colorScheme = generateColorScheme(brandColor);
   $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
@@ -125,77 +143,77 @@
   }
 
   function generateColorScheme(brandColor) {
-      const r = parseInt(brandColor.slice(1, 3), 16);
-      const g = parseInt(brandColor.slice(3, 5), 16);
-      const b = parseInt(brandColor.slice(5, 7), 16);
+    const r = parseInt(brandColor.slice(1, 3), 16);
+    const g = parseInt(brandColor.slice(3, 5), 16);
+    const b = parseInt(brandColor.slice(5, 7), 16);
 
-      const lighterBackground = `rgba(${r}, ${g}, ${b}, 0.1)`;
-      const textColor = isColorLight(brandColor) ? '#000000' : '#FFFFFF';
+    const lighterBackground = `rgba(${r}, ${g}, ${b}, 0.1)`;
+    const textColor = isColorLight(brandColor) ? '#000000' : '#FFFFFF';
 
-      // Generate a contrasting color for the button
-      const buttonColor = generateContrastingColor(brandColor);
-      const buttonTextColor = isColorLight(buttonColor) ? '#000000' : '#FFFFFF';
+    // Generate a contrasting color for the button
+    const buttonColor = generateContrastingColor(brandColor);
+    const buttonTextColor = isColorLight(buttonColor) ? '#000000' : '#FFFFFF';
 
-      return {
-          primaryColor: brandColor,
-          buttonColor: buttonColor,
-          buttonTextColor: buttonTextColor,
-          backgroundColor: lighterBackground,
-          textColor: textColor,
-          loaderColor: brandColor,
-          loaderBackground: lighterBackground
-      };
+    return {
+      primaryColor: brandColor,
+      buttonColor: buttonColor,
+      buttonTextColor: buttonTextColor,
+      backgroundColor: lighterBackground,
+      textColor: textColor,
+      loaderColor: brandColor,
+      loaderBackground: lighterBackground
+    };
   }
 
   function isColorLight(color) {
-      const r = parseInt(color.slice(1, 3), 16);
-      const g = parseInt(color.slice(3, 5), 16);
-      const b = parseInt(color.slice(5, 7), 16);
-      const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-      return brightness > 155;
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return brightness > 155;
   }
 
   function generateContrastingColor(color) {
-      const r = parseInt(color.slice(1, 3), 16);
-      const g = parseInt(color.slice(3, 5), 16);
-      const b = parseInt(color.slice(5, 7), 16);
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
 
-      // Calculate the perceived brightness
-      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    // Calculate the perceived brightness
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
 
-      let newR, newG, newB;
+    let newR, newG, newB;
 
+    if (brightness > 128) {
+      // If the color is light, create a darker contrasting color
+      newR = Math.max(0, r - 100);
+      newG = Math.max(0, g - 100);
+      newB = Math.max(0, b - 100);
+    } else {
+      // If the color is dark, create a lighter contrasting color
+      newR = Math.min(255, r + 100);
+      newG = Math.min(255, g + 100);
+      newB = Math.min(255, b + 100);
+    }
+
+    // Ensure the new color has enough contrast
+    const contrastRatio = getContrastRatio(r, g, b, newR, newG, newB);
+    if (contrastRatio < 4.5) {
+      // If contrast is not enough, adjust further
       if (brightness > 128) {
-          // If the color is light, create a darker contrasting color
-          newR = Math.max(0, r - 100);
-          newG = Math.max(0, g - 100);
-          newB = Math.max(0, b - 100);
+        [newR, newG, newB] = [0, 0, 0]; // Go to black for light colors
       } else {
-          // If the color is dark, create a lighter contrasting color
-          newR = Math.min(255, r + 100);
-          newG = Math.min(255, g + 100);
-          newB = Math.min(255, b + 100);
+        [newR, newG, newB] = [255, 255, 255]; // Go to white for dark colors
       }
+    }
 
-      // Ensure the new color has enough contrast
-      const contrastRatio = getContrastRatio(r, g, b, newR, newG, newB);
-      if (contrastRatio < 4.5) {
-          // If contrast is not enough, adjust further
-          if (brightness > 128) {
-              [newR, newG, newB] = [0, 0, 0]; // Go to black for light colors
-          } else {
-              [newR, newG, newB] = [255, 255, 255]; // Go to white for dark colors
-          }
-      }
-
-      return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+    return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
   }
 
   function getContrastRatio(r1, g1, b1, r2, g2, b2) {
-      const l1 = 0.2126 * r1 + 0.7152 * g1 + 0.0722 * b1;
-      const l2 = 0.2126 * r2 + 0.7152 * g2 + 0.0722 * b2;
-      const contrast = l1 > l2 ? (l1 + 0.05) / (l2 + 0.05) : (l2 + 0.05) / (l1 + 0.05);
-      return contrast;
+    const l1 = 0.2126 * r1 + 0.7152 * g1 + 0.0722 * b1;
+    const l2 = 0.2126 * r2 + 0.7152 * g2 + 0.0722 * b2;
+    const contrast = l1 > l2 ? (l1 + 0.05) / (l2 + 0.05) : (l2 + 0.05) / (l1 + 0.05);
+    return contrast;
   }
 
   onMount(() => {
