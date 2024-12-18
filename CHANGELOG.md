@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/Autocust/ai-chat-widget/compare/v1.2.5...v1.3.0) (2024-12-18)
+
+
+### Features
+
+* persistent sessions ([858be40](https://github.com/Autocust/ai-chat-widget/commit/858be4003398abbad36d5bcdfbee88c912f4404a))
+* persistent sessions ([42ed5eb](https://github.com/Autocust/ai-chat-widget/commit/42ed5eb12a66139a97e27849c809867bf1457ce0))
+
 ## [1.2.5](https://github.com/Autocust/ai-chat-widget/compare/v1.2.4...v1.2.5) (2024-10-29)
 
 
