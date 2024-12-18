@@ -1,4 +1,3 @@
-import { marked } from 'marked';
 import AIChatWidget from "./AIChatWidget.svelte";
 
 // Create a new div element to host our Svelte component
@@ -33,16 +32,21 @@ function getPosition(defaultValue) {
 
 // Instantiate the Svelte component
 const chatWidget = new AIChatWidget({
-    target: targetDiv,
-    props: {
-        title: getAttr('data-title', 'AI Sales Assistant'),
-        apiUrl: getAttr('data-api-url', 'https://your-default-api-url.com'),
-        brandColor: getAttr('data-brand-color', '#00264c'),
-        initialMessage: getAttr('data-initial-message', 'Ciao, come posso aiutarti?'),
-        buttonIcon: getAttr('data-button-icon', '💬'),
-        ctaText: getAttr('data-cta-text', 'Chiedi informazioni'),
-        openInNewTab: getAttr('data-open-in-new-tab', true),
-        enableUTM: getAttr('data-enable-utm', true),
-        position: getPosition('bottom-right'),
-    }
+  target: targetDiv,
+  props: {
+    title: getAttr("data-title", "AI Sales Assistant"),
+    apiUrl: getAttr("data-api-url", "https://your-default-api-url.com"),
+    brandColor: getAttr("data-brand-color", "#00264c"),
+    initialMessage: getAttr(
+      "data-initial-message",
+      "Ciao, come posso aiutarti?"
+    ),
+    buttonIcon: getAttr("data-button-icon", "💬"),
+    ctaText: getAttr("data-cta-text", "Chiedi informazioni"),
+    openInNewTab: getAttr("data-open-in-new-tab", true),
+    enableUTM: getAttr("data-enable-utm", true),
+    position: getPosition("bottom-right"),
+    persistentSession: getAttr("data-persistent-session", false),
+    sessionExpiration: getAttr("data-session-expiration", 24)
+  },
 });

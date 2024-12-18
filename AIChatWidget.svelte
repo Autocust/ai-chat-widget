@@ -19,28 +19,39 @@
   let userInput = '';
   let isLoading = false;
   let chatMessages;
+  let isLoadingHistory = false;
 
-  let sessionId;
-
-  if (persistentSession) {
-    const storedSessionId = localStorage.getItem('ai_chat_session_id');
-    const expirationTime = localStorage.getItem('ai_chat_session_expiration');
-
-    if (storedSessionId && expirationTime && new Date().getTime() < expirationTime) {
-      sessionId = storedSessionId; // Use existing session ID if valid
-    } else {
-      sessionId = generateUUID(); // Generate a new session ID
-      const expirationDuration = sessionExpiration * 60 * 60 * 1000; // Convert hours to milliseconds
-      localStorage.setItem('ai_chat_session_id', sessionId);
-      localStorage.setItem('ai_chat_session_expiration', new Date().getTime() + expirationDuration); // Set expiration
-    }
-  } else {
-    sessionId = generateUUID(); // Generate a new session ID for non-persistent sessions
-  }
+  const sessionId = persistentSession ? (localStorage.getItem('chatSessionId') || generateUUID()) : generateUUID();
+  if (persistentSession) localStorage.setItem('chatSessionId', sessionId);
 
   $: colorScheme = generateColorScheme(brandColor);
   $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
   $: isSvg = buttonIcon.trim().startsWith('<svg');
+
+  let db; // IndexedDB database instance
+
+  // Initialize IndexedDB
+  function initDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('ChatHistoryDB', 1);
+
+      request.onupgradeneeded = (event) => {
+        db = event.target.result;
+        const objectStore = db.createObjectStore('messages', { keyPath: 'id' });
+        objectStore.createIndex('sessionId', 'sessionId', { unique: false });
+      };
+
+      request.onsuccess = (event) => {
+        db = event.target.result;
+        resolve(); // Resolve the promise when the DB is ready
+      };
+
+      request.onerror = (event) => {
+        console.error('IndexedDB error:', event.target.error);
+        reject(event.target.error); // Reject the promise on error
+      };
+    });
+  }
 
   function toggleChat() {
     isChatVisible = !isChatVisible;
@@ -53,7 +64,7 @@
     }
   }
 
-  function addMessage(rawText, sender) {
+  function addMessageToUI(rawText, sender) {
     let content = '';
     let productCarousel = '';
     let url = '';
@@ -216,12 +227,112 @@
     return contrast;
   }
 
-  onMount(() => {
-    addMessage({
-      response: initialMessage,
-      products: [],
-      url: '',
-    }, 'bot');
+  async function loadChatHistory() {
+    if (!persistentSession || !sessionId) return;
+
+    const lastSessionTime = localStorage.getItem('lastSessionTime');
+    const currentTime = Date.now();
+    const sessionExpirationTime = sessionExpiration * 60 * 60 * 1000; // Convert hours to milliseconds
+
+    // Check if the session has expired
+    if (lastSessionTime && (currentTime - lastSessionTime > sessionExpirationTime)) {
+      messages = []; // Wipe chat history
+      localStorage.removeItem('chatSessionId'); // Clear session ID
+      localStorage.removeItem('lastSessionTime'); // Clear last session time
+      await clearChatHistory(); // Clear IndexedDB
+    } else {
+      // Update last session time
+      localStorage.setItem('lastSessionTime', currentTime);
+    }
+
+    isLoadingHistory = true;
+
+    // Load messages from IndexedDB
+    const storedMessages = await getChatHistory();
+    if (storedMessages.length > 0) {
+      messages = storedMessages;
+      messages.forEach(msg => {
+        addMessageToUI(msg.content, msg.type);
+      });
+    } else {
+      addMessageToUI({
+        response: initialMessage,
+        products: [],
+        url: '',
+      }, 'bot');
+    }
+
+    isLoadingHistory = false;
+  }
+
+  async function saveMessage(content, type) {
+    if (!persistentSession) return;
+
+    const message = {
+      id: generateUUID(), // Unique ID for each message
+      sessionId: sessionId,
+      content: content,
+      type: type,
+      timestamp: Date.now()
+    };
+
+    const transaction = db.transaction(['messages'], 'readwrite');
+    const objectStore = transaction.objectStore('messages');
+    objectStore.add(message);
+
+    transaction.onerror = (event) => {
+      console.error('Error saving message:', event.target.error);
+    };
+  }
+
+  async function getChatHistory() {
+    return new Promise((resolve, reject) => {
+      if (!db) {
+        console.error('Database is not initialized.');
+        reject('Database is not initialized.');
+        return;
+      }
+
+      const transaction = db.transaction(['messages'], 'readonly');
+      const objectStore = transaction.objectStore('messages');
+      const request = objectStore.index('sessionId').getAll(sessionId);
+
+      request.onsuccess = (event) => {
+        resolve(event.target.result);
+      };
+
+      request.onerror = (event) => {
+        reject(event.target.error);
+      };
+    });
+  }
+
+  async function clearChatHistory() {
+    const transaction = db.transaction(['messages'], 'readwrite');
+    const objectStore = transaction.objectStore('messages');
+    const request = objectStore.clear();
+
+    request.onsuccess = () => {
+      console.log('Chat history cleared from IndexedDB');
+    };
+
+    request.onerror = (event) => {
+      console.error('Error clearing chat history:', event.target.error);
+    };
+  }
+
+  async function addMessage(rawText, sender) {
+    addMessageToUI(rawText, sender);
+    await saveMessage(rawText, sender);
+  }
+
+  onMount(async () => {
+    try {
+      await initDB(); // Wait for the DB to initialize
+      await loadChatHistory(); // Ensure chat history is loaded after DB is ready
+    } catch (error) {
+      console.error('Failed to initialize database or load chat history:', error);
+    }
   });
 </script>
 
@@ -267,6 +378,12 @@
         {#if isLoading}
           <div class="loading-container">
             <div class="loading"></div>
+          </div>
+        {/if}
+        {#if isLoadingHistory}
+          <div class="loading-container">
+            <div class="loading"></div>
+            <span class="loading-text">Loading previous messages...</span>
           </div>
         {/if}
       </div>
@@ -512,5 +629,11 @@
   text-decoration: none;
   display: inline-block;
   margin-top: 10px;
+}
+
+.loading-text {
+  margin-left: 10px;
+  color: var(--primary-color);
+  font-size: 14px;
 }
 </style>

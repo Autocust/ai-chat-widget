@@ -38,6 +38,8 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-cta-text`: The text for the call-to-action button in the chat widget.
 - `data-open-in-new-tab`: A boolean value to determine if URLs should open in a new tab (default is `true`).
 - `data-enable-utm`: Set to `true` to include UTM parameters in product URLs. Set to `false` to disable UTM parameters. Default is `true`.
+- `data-persistent-session`: Set to `true` to enable persistent sessions, allowing users to retain their chat history across sessions. Default is `false`.
+- `data-session-expiration`: The duration (in hours) for which the session is valid. After this period, the chat history will be wiped. Default is `24`.
 
 ### Supported Positions
 
