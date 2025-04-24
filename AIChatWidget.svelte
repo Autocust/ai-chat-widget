@@ -486,6 +486,8 @@
   --link-color: #000000;
   --cta-hover-bg: #000000;
   --cta-hover-text: #ffffff;
+  --product-card-bg: #ffffff; /* Background for product cards */
+  --product-card-shadow: rgba(0, 0, 0, 0.1); /* Shadow for product cards */
   --product-border-color: #f8f8f8;
   --add-to-cart-border-color: #000000;
   --add-to-cart-hover-bg: rgba(0, 0, 0, 0.05);
@@ -509,6 +511,8 @@
   --link-color: #eeeeee;
   --cta-hover-bg: #ffffff;
   --cta-hover-text: #000000;
+  --product-card-bg: #3a3a3a; /* Background for product cards */
+  --product-card-shadow: rgba(255, 255, 255, 0.1); /* Shadow for product cards */
   --product-border-color: #444444;
   --add-to-cart-border-color: #ffffff;
   --add-to-cart-hover-bg: rgba(255, 255, 255, 0.1);
@@ -780,6 +784,7 @@
   flex: 0 0 auto;
   width: 150px;
   margin-right: 10px;
+  background-color: var(--product-card-bg); /* Use theme product card bg */
   border: 1px solid var(--product-border-color); /* Use theme product border */
   border-radius: 5px;
   padding: 10px;
@@ -787,6 +792,11 @@
   color: inherit;
   display: block;
   transition: transform 0.2s, box-shadow 0.2s;
+}
+
+:global(.carousel-product:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px var(--product-card-shadow); /* Add theme-aware shadow on hover */
 }
 
 :global(.product-link) {
@@ -804,11 +814,6 @@
   color: white;
   padding: 6px 10px;
   font-size: 12px;
-}
-
-:global(.carousel-product:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 :global(.product-link img) {
