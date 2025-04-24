@@ -33,6 +33,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 
 - `data-title`: The title of the chat widget.
 - `data-api-url`: The URL of the API that will power the chat widget.
+- `data-chatbot-id`: The ID identifying the specific chatbot configuration to use (Header: `X-Chatbot-ID` for HTTP, Query Param: `chatbotId` for WebSocket). Default is `xyz`.
 - `data-theme`: The overall theme ('light' or 'dark'). Default is 'light'.
 - `data-user-message-bg-color`: Background color for user messages (e.g., '#e0e0e0').
 - `data-user-message-text-color`: Text color for user messages (e.g., '#000000').
