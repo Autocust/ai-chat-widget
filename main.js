@@ -4,12 +4,17 @@ const app = new AIChatWidget({
   target: document.body,
   props: {
     title: "AI Sales Assistant",
-    apiUrl:
-      "https://workflow.development.tractiontools.it/webhook/cc63b887-5833-40f0-a8d4-dc99648dcc1c/chat",
-    brandColor: "#00264c",
+    apiUrl: "http://assistant.tractiontools.local",
     initialMessage: "Ciao, come posso aiutarti?",
     ctaText: "Chiedi informazioni",
     buttonIcon: "💬",
+    theme: 'light', // 'light' or 'dark'
+    userMessageBgColor: '#d1eaff', // Light blue
+    userMessageTextColor: '#000000',
+    assistantMessageBgColor: '#f1f1f1', // Light grey
+    assistantMessageTextColor: '#000000',
+    chatButtonBgColor: '#007bff', // Blue
+    chatButtonTextColor: '#ffffff',
     openInNewTab: false,
     enableUTM: true,
     position: "bottom-right",

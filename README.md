@@ -18,7 +18,9 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
     src="https://cdn.jsdelivr.net/gh/Autocust/ai-chat-widget@latest/dist/chat-widget.min.js"
     data-title="My Custom Assistant"
     data-api-url="https://your-api-endpoint.com"
-    data-brand-color="#ff0000"
+    data-theme="dark"
+    data-user-message-bg-color="#3a3a3a"
+    data-chat-button-bg-color="#5a5a5a"
     data-initial-message="How can I help you today?"
     data-button-icon="🤖"
     data-position="bottom-right"
@@ -31,9 +33,15 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 
 - `data-title`: The title of the chat widget.
 - `data-api-url`: The URL of the API that will power the chat widget.
-- `data-brand-color`: The brand color of the chat widget.
+- `data-theme`: The overall theme ('light' or 'dark'). Default is 'light'.
+- `data-user-message-bg-color`: Background color for user messages (e.g., '#e0e0e0').
+- `data-user-message-text-color`: Text color for user messages (e.g., '#000000').
+- `data-assistant-message-bg-color`: Background color for assistant messages (e.g., '#f8f8f8').
+- `data-assistant-message-text-color`: Text color for assistant messages (e.g., '#000000').
+- `data-chat-button-bg-color`: Background color for the chat toggle button (e.g., '#000000').
+- `data-chat-button-text-color`: Text/icon color for the chat toggle button (e.g., '#ffffff').
 - `data-initial-message`: The initial message of the chat widget.
-- `data-button-icon`: The icon of the chat widget.
+- `data-button-icon`: The icon for the chat toggle button (can be text, emoji, URL to image, or SVG markup).
 - `data-position`: The position of the chat widget.
 - `data-cta-text`: The text for the call-to-action button in the chat widget.
 - `data-open-in-new-tab`: A boolean value to determine if URLs should open in a new tab (default is `true`).

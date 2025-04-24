@@ -85,3 +85,4 @@ typings/
 
 # Svelte-specific
 /public/bundle.*
+.aider*

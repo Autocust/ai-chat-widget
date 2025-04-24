@@ -36,7 +36,6 @@ const chatWidget = new AIChatWidget({
   props: {
     title: getAttr("data-title", "AI Sales Assistant"),
     apiUrl: getAttr("data-api-url", "https://your-default-api-url.com"),
-    brandColor: getAttr("data-brand-color", "#00264c"),
     initialMessage: getAttr(
       "data-initial-message",
       "Ciao, come posso aiutarti?"
@@ -47,6 +46,13 @@ const chatWidget = new AIChatWidget({
     enableUTM: getAttr("data-enable-utm", true),
     position: getPosition("bottom-right"),
     persistentSession: getAttr("data-persistent-session", false),
-    sessionExpiration: getAttr("data-session-expiration", 24)
+    sessionExpiration: getAttr("data-session-expiration", 24),
+    theme: getAttr("data-theme", "light"),
+    userMessageBgColor: getAttr("data-user-message-bg-color", "#e0e0e0"),
+    userMessageTextColor: getAttr("data-user-message-text-color", "#000000"),
+    assistantMessageBgColor: getAttr("data-assistant-message-bg-color", "#f8f8f8"),
+    assistantMessageTextColor: getAttr("data-assistant-message-text-color", "#000000"),
+    chatButtonBgColor: getAttr("data-chat-button-bg-color", "#000000"),
+    chatButtonTextColor: getAttr("data-chat-button-text-color", "#ffffff"),
   },
 });
