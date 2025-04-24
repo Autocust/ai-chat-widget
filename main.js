@@ -8,7 +8,7 @@ const app = new AIChatWidget({
     initialMessage: "Ciao, come posso aiutarti?",
     ctaText: "Chiedi informazioni",
     buttonIcon: "💬",
-    theme: 'dark', // 'light' or 'dark'
+    theme: 'light', // 'light' or 'dark'
     userMessageBgColor: '#d1eaff', // Light blue
     userMessageTextColor: '#000000',
     assistantMessageBgColor: '#f1f1f1', // Light grey
@@ -20,6 +20,7 @@ const app = new AIChatWidget({
     openInNewTab: false,
     enableUTM: true,
     position: "bottom-right",
+    showPoweredBy: true,
   },
 });
 

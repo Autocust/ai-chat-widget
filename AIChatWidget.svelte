@@ -23,6 +23,7 @@
   export let ctaButtonBgColor = '#f8f8f8'; // Default matches assistant bg
   export let ctaButtonTextColor = '#000000'; // Default matches assistant text
   export let footerText = 'Generato dall\'IA. Verifica le informazioni importanti.';
+  export let showPoweredBy = true; // Show "Powered by" text by default
 
   let isChatVisible = false;
   let messages = [];
@@ -465,6 +466,11 @@
         </button>
       </div>
       <div id="chat-footer">{footerText}</div>
+      {#if showPoweredBy}
+        <div id="powered-by">
+          Powered by <a href="https://www.autocust.it" target="_blank">Autocust</a>
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
@@ -724,6 +730,23 @@
   padding: 10px;
   background-color: var(--input-area-bg); /* Use theme input area bg */
   color: var(--disclaimer-text); /* Use theme disclaimer text */
+}
+
+#powered-by {
+  text-align: center;
+  font-size: 0.7rem; /* Smaller than footer */
+  padding: 5px 10px 10px; /* Less top padding, more bottom */
+  background-color: var(--input-area-bg); /* Match footer background */
+  color: var(--disclaimer-text); /* Match footer text color */
+}
+
+#powered-by a {
+  color: var(--disclaimer-text); /* Match footer text color */
+  text-decoration: none;
+}
+
+#powered-by a:hover {
+  text-decoration: underline;
 }
 
 #user-input {

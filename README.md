@@ -51,6 +51,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-persistent-session`: Set to `true` to enable persistent sessions, allowing users to retain their chat history across sessions. Default is `false`.
 - `data-session-expiration`: The duration (in hours) for which the session is valid. After this period, the chat history will be wiped. Default is `24`.
 - `data-footer-text`: Custom text displayed in the footer area below the input field. Default is "Generato dall'IA. Verifica le informazioni importanti.".
+- `data-show-powered-by`: Set to `false` to hide the "Powered by Autocust" text at the bottom. Default is `true`.
 
 ### Supported Positions
 
