@@ -15,6 +15,8 @@ const app = new AIChatWidget({
     assistantMessageTextColor: '#000000',
     chatButtonBgColor: '#007bff', // Blue
     chatButtonTextColor: '#ffffff',
+    ctaButtonBgColor: '#f1f1f1', // Light grey (matches assistant bg)
+    ctaButtonTextColor: '#000000',
     openInNewTab: false,
     enableUTM: true,
     position: "bottom-right",

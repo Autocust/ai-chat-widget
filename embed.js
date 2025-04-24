@@ -54,5 +54,8 @@ const chatWidget = new AIChatWidget({
     assistantMessageTextColor: getAttr("data-assistant-message-text-color", "#000000"),
     chatButtonBgColor: getAttr("data-chat-button-bg-color", "#000000"),
     chatButtonTextColor: getAttr("data-chat-button-text-color", "#ffffff"),
+    ctaButtonBgColor: getAttr("data-cta-button-bg-color", "#f8f8f8"), // Default matches light assistant bg
+    ctaButtonTextColor: getAttr("data-cta-button-text-color", "#000000"), // Default matches light assistant text
+    footerText: getAttr("data-footer-text", "Generato dall'IA. Verifica le informazioni importanti."),
   },
 });

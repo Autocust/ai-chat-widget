@@ -20,6 +20,9 @@
   export let assistantMessageTextColor = '#000000';
   export let chatButtonBgColor = '#000000';
   export let chatButtonTextColor = '#ffffff';
+  export let ctaButtonBgColor = '#f8f8f8'; // Default matches assistant bg
+  export let ctaButtonTextColor = '#000000'; // Default matches assistant text
+  export let footerText = 'Generato dall\'IA. Verifica le informazioni importanti.';
 
   let isChatVisible = false;
   let messages = [];
@@ -230,33 +233,9 @@
             <span class="current-price">${formatPrice(product.price)}</span>
           </div>
         </a>
-        <form class="product-miniature__form" action="/carrello" method="post">
-          <input type="hidden" name="id_product" value="${product.id}">
-          <input type="hidden" name="id_product_attribute" value="${product.id_product_attribute}">
-          <input type="hidden" name="qty" value="1" class="form-control input-qty">
-          <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}">
-          <input type="hidden" name="add" value="1">
-          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit">
-            <span>Acquista</span>
-            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 25 25">
-              <path d="M19.48,18.88h-11.02c-.78,0-1.49-.5-1.75-1.24L2.25,5.02c-.14-.39-.51-.65-.92-.65-.38,0-.69-.31-.69-.69s.31-.69.69-.69c.99,0,1.88.63,2.21,1.57l.55,1.56h18.7c.21,0,.4.09.53.25s.18.37.14.57l-2.17,10.46c-.18.86-.94,1.48-1.82,1.48ZM4.58,7.49l3.43,9.69c.07.19.25.32.45.32h11.02c.23,0,.42-.16.47-.38l2-9.63H4.58Z"></path>
-              <g>
-                <circle cx="18.38" cy="21.38" r="1.71"></circle>
-                <circle cx="9.64" cy="21.38" r="1.71"></circle>
-              </g>
-              <g>
-                <g>
-                  <circle fill="#00cb51" cx="18.27" cy="8.18" r="5.25"></circle>
-                  <path d="M18.27,14.22c-3.33,0-6.04-2.71-6.04-6.04s2.71-6.04,6.04-6.04,6.04,2.71,6.04,6.04-2.71,6.04-6.04,6.04ZM18.27,3.71c-2.46,0-4.46,2-4.46,4.46s2,4.46,4.46,4.46,4.46-2,4.46-4.46-2-4.46-4.46-4.46Z"></path>
-                </g>
-                <g>
-                  <path fill="#fff" d="M18.27,11.16c-.31,0-.56-.25-.56-.56v-4.83c0-.31.25-.56.56-.56s.56.25.56.56v4.83c0,.31-.25.56-.56.56Z"></path>
-                  <path fill="#fff" d="M20.68,8.74h-4.83c-.31,0-.56-.25-.56-.56s.25-.56.56-.56h4.83c.31,0,.56.25.56.56s-.25.56-.56.56Z"></path>
-                </g>
-              </g>
-            </svg>
-          </button>
-        </form>
+        <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
+          <span>Acquista</span>
+        </a>
       </div>
     `).join('');
 
@@ -408,6 +387,8 @@
   --assistant-msg-text: {assistantMessageTextColor};
   --chat-btn-bg: {chatButtonBgColor};
   --chat-btn-text: {chatButtonTextColor};
+  --cta-btn-bg: {ctaButtonBgColor};
+  --cta-btn-text: {ctaButtonTextColor};
 ">
   {#if !isChatVisible}
     <button id="chat-button" on:click={toggleChat}>
@@ -483,7 +464,7 @@
           Invia
         </button>
       </div>
-      <div id="chat-disclaimer">Generato dall'IA. Verifica le informazioni importanti.</div>
+      <div id="chat-footer">{footerText}</div>
     </div>
   {/if}
 </div>
@@ -733,7 +714,7 @@
   background-color: var(--input-area-bg); /* Use theme input area bg */
 }
 
-#chat-disclaimer {
+#chat-footer {
   text-align: center;
   font-size: 0.8rem;
   padding: 10px;
@@ -767,11 +748,11 @@
   background-color: #ccc;
 }
 
-/* Style CTA buttons like assistant messages for now */
+/* Style CTA buttons */
 .cta-button {
   display: inline-block;
-  background-color: var(--assistant-msg-bg);
-  color: var(--assistant-msg-text);
+  background-color: var(--cta-btn-bg); /* Use CTA button bg */
+  color: var(--cta-btn-text); /* Use CTA button text */
   padding: 8px 12px;
   border-radius: 20px;
   text-decoration: none;
@@ -871,24 +852,26 @@
 }
 
 :global(.add-to-cart) {
-  background: transparent;
-  border: 1px solid var(--add-to-cart-border-color); /* Use theme border */
-  border-radius: 4px;
+  background-color: var(--cta-btn-bg); /* Use CTA button bg */
+  color: var(--cta-btn-text); /* Use CTA button text */
+  border: none; /* Remove border */
+  border-radius: 20px; /* Match CTA button radius */
   padding: 8px 12px;
   cursor: pointer;
-  display: flex;
+  display: inline-block;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s;
-  margin: 0 auto;
-}
-
-:global(.add-to-cart svg) {
-  width: 20px;
-  height: 20px;
+  transition: background-color 0.3s, color 0.3s; /* Match CTA transition */
+  margin: 10px auto 0;
+  text-decoration: none;
+  font-size: 14px; /* Match CTA font size */
+  text-align: center; /* Match CTA text align */
+  width: 100%; /* Match CTA width */
+  box-sizing: border-box; /* Match CTA box sizing */
 }
 
 :global(.add-to-cart:hover) {
-  background-color: var(--add-to-cart-hover-bg); /* Use theme hover bg */
+  background-color: var(--cta-hover-bg); /* Use theme hover color */
+  color: var(--cta-hover-text); /* Use theme hover text color */
 }
 </style>

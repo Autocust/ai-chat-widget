@@ -40,6 +40,8 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-assistant-message-text-color`: Text color for assistant messages (e.g., '#000000').
 - `data-chat-button-bg-color`: Background color for the chat toggle button (e.g., '#000000').
 - `data-chat-button-text-color`: Text/icon color for the chat toggle button (e.g., '#ffffff').
+- `data-cta-button-bg-color`: Background color for Call-To-Action buttons below messages (e.g., '#f8f8f8').
+- `data-cta-button-text-color`: Text color for Call-To-Action buttons below messages (e.g., '#000000').
 - `data-initial-message`: The initial message of the chat widget.
 - `data-button-icon`: The icon for the chat toggle button (can be text, emoji, URL to image, or SVG markup).
 - `data-position`: The position of the chat widget.
@@ -48,6 +50,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-enable-utm`: Set to `true` to include UTM parameters in product URLs. Set to `false` to disable UTM parameters. Default is `true`.
 - `data-persistent-session`: Set to `true` to enable persistent sessions, allowing users to retain their chat history across sessions. Default is `false`.
 - `data-session-expiration`: The duration (in hours) for which the session is valid. After this period, the chat history will be wiped. Default is `24`.
+- `data-footer-text`: Custom text displayed in the footer area below the input field. Default is "Generato dall'IA. Verifica le informazioni importanti.".
 
 ### Supported Positions
 
