@@ -21,7 +21,7 @@ const app = new AIChatWidget({
     enableUTM: true,
     position: "bottom-right",
     showPoweredBy: true,
-    chatbotId: 'your-dev-chatbot-id', // Add your development Chatbot ID here
+    agentId: 'your-dev-agent-id', // Add your development Agent ID here
   },
 });
 

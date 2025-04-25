@@ -58,6 +58,6 @@ const chatWidget = new AIChatWidget({
     ctaButtonTextColor: getAttr("data-cta-button-text-color", "#000000"), // Default matches light assistant text
     footerText: getAttr("data-footer-text", "Generato dall'IA. Verifica le informazioni importanti."),
     showPoweredBy: getAttr("data-show-powered-by", true),
-    chatbotId: getAttr("data-chatbot-id", "xyz"), // Add Chatbot ID
+    agentId: getAttr("data-agent-id", "xyz"), // Add Agent ID
   },
 });

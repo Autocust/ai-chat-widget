@@ -24,7 +24,7 @@
   export let ctaButtonTextColor = '#000000'; // Default matches assistant text
   export let footerText = 'Generato dall\'IA. Verifica le informazioni importanti.';
   export let showPoweredBy = true; // Show "Powered by" text by default
-  export let chatbotId = 'xyz'; // Chatbot ID for backend identification
+  export let agentId = 'xyz'; // Agent ID for backend identification
 
   let isChatVisible = false;
   let messages = [];
@@ -80,8 +80,8 @@
 
   function initWebSocket() {
     const wsUrl = apiUrl.replace(/^http/, 'ws');
-    // Append chatbotId as a query parameter for WebSocket connection
-    ws = new WebSocket(`${wsUrl}/ws-chat?sessionId=${sessionId}&chatbotId=${encodeURIComponent(chatbotId)}`);
+    // Append agentId as a query parameter for WebSocket connection
+    ws = new WebSocket(`${wsUrl}/ws-chat?sessionId=${sessionId}&agentId=${encodeURIComponent(agentId)}`);
 
     ws.onopen = () => {
     console.log('WebSocket connected');
@@ -268,7 +268,7 @@
     try {
       const response = await fetch(`${apiUrl}/products/${sessionId}`, {
         headers: {
-          'X-Chatbot-ID': chatbotId // Use Chatbot ID header
+          'X-Agent-ID': agentId // Use Agent ID header
         }
       });
       if (!response.ok) return null;
@@ -355,7 +355,7 @@
       const response = await fetch(`${apiUrl}/reset-session?sessionId=${sessionId}`, {
         method: 'DELETE',
         headers: {
-          'X-Chatbot-ID': chatbotId // Use Chatbot ID header
+          'X-Agent-ID': agentId // Use Agent ID header
         }
       });
       if (!response.ok) {
