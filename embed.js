@@ -59,5 +59,6 @@ const chatWidget = new AIChatWidget({
     footerText: getAttr("data-footer-text", "Generato dall'IA. Verifica le informazioni importanti."),
     showPoweredBy: getAttr("data-show-powered-by", true),
     agentId: getAttr("data-agent-id", "xyz"), // Add Agent ID
+    cms: getAttr("data-cms", ""), // Add CMS type ('prestashop', 'woocommerce', etc.)
   },
 });

@@ -25,6 +25,7 @@
   export let footerText = 'Generato dall\'IA. Verifica le informazioni importanti.';
   export let showPoweredBy = true; // Show "Powered by" text by default
   export let agentId = 'xyz'; // Agent ID for backend identification
+  export let cms = ''; // CMS type ('prestashop', 'woocommerce', etc.)
 
   let isChatVisible = false;
   let messages = [];
@@ -236,9 +237,7 @@
             <span class="current-price">${formatPrice(product.price)}</span>
           </div>
         </a>
-        <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
-          <span>Acquista</span>
-        </a>
+        ${renderAddToCartButton(product)} <!-- Use helper function -->
       </div>
     `).join('');
 
@@ -387,6 +386,34 @@
       clearTimeout(reconnectInterval);
     };
   });
+
+  // Helper function to render the correct Add to Cart button/form based on CMS
+  function renderAddToCartButton(product) {
+    if (cms === 'prestashop') {
+      // PrestaShop requires a form submission
+      return `
+        <form class="product-miniature__form" action="/carrello" method="post">
+          <input type="hidden" name="id_product" value="${product.id}">
+          <input type="hidden" name="id_product_attribute" value="${product.id_product_attribute || 0}"> <!-- Default attribute to 0 if not provided -->
+          <input type="hidden" name="qty" value="1" class="form-control input-qty">
+          <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}"> <!-- Safely access PrestaShop token -->
+          <input type="hidden" name="add" value="1">
+          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit">
+            <span>Acquista</span>
+          </button>
+        </form>
+      `;
+    }
+    // Add other CMS checks here if needed in the future
+    // else if (cms === 'woocommerce') { ... return woocommerce_button_html ... }
+
+    // Default: Render a simple link (fallback behavior)
+    return `
+      <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
+        <span>Acquista</span>
+      </a>
+    `;
+  }
 </script>
 
 <!-- Template remains largely unchanged -->

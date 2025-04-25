@@ -22,6 +22,7 @@ const app = new AIChatWidget({
     position: "bottom-right",
     showPoweredBy: true,
     agentId: 'your-dev-agent-id', // Add your development Agent ID here
+    cms: 'prestashop', // Set to 'prestashop' or other CMS for local testing
   },
 });
 
