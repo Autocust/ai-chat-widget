@@ -10,7 +10,7 @@
   export let position = 'bottom-right';
   export let openInNewTab = true;
   export let enableUTM = true;
-  // export let brandColor = '#000000'; // Removed brandColor
+  export let startOpen = false; // New prop to control initial state
 
   // New Theming Props
   export let theme = 'light'; // 'light' or 'dark'
@@ -27,7 +27,7 @@
   export let agentId = 'xyz'; // Agent ID for backend identification
   export let cms = ''; // CMS type ('prestashop', 'woocommerce', etc.)
 
-  let isChatVisible = false;
+  let isChatVisible = startOpen; // Initialize based on startOpen prop
   let messages = [];
   let userInput = '';
   let loadingState = null;
@@ -64,8 +64,10 @@
       if (chatMessages) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
-      // Inizializza WebSocket quando la chat viene aperta
-      initWebSocket();
+      // Inizializza WebSocket quando la chat viene aperta (se non già connesso)
+      if (!wsConnected && !isReconnecting) {
+        initWebSocket();
+      }
     } else {
       clearTimeout(reconnectInterval);
       isReconnecting = false;
@@ -80,6 +82,11 @@
   }
 
   function initWebSocket() {
+    if (!apiUrl) {
+        console.error("API URL is not defined. WebSocket connection cannot be established.");
+        addMessageToUI("Errore di configurazione: URL API mancante.", 'bot');
+        return;
+    }
     const wsUrl = apiUrl.replace(/^http/, 'ws');
     // Append agentId as a query parameter for WebSocket connection
     ws = new WebSocket(`${wsUrl}/ws-chat?sessionId=${sessionId}&agentId=${encodeURIComponent(agentId)}`);
@@ -379,6 +386,11 @@
   onMount(() => {
     saveSessionIdToCookie(sessionId);
     addMessageToUI(initialMessage, 'bot');
+
+    // If the chat should start open, initialize WebSocket immediately
+    if (startOpen) {
+      initWebSocket();
+    }
 
     return () => {
       // Cleanup

@@ -60,5 +60,6 @@ const chatWidget = new AIChatWidget({
     showPoweredBy: getAttr("data-show-powered-by", true),
     agentId: getAttr("data-agent-id", "xyz"), // Add Agent ID
     cms: getAttr("data-cms", ""), // Add CMS type ('prestashop', 'woocommerce', etc.)
+    startOpen: getAttr("data-start-open", false), // Add startOpen prop
   },
 });

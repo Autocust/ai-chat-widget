@@ -26,6 +26,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
     data-position="bottom-right"
     data-cta-text="Chiedi informazioni"
     data-open-in-new-tab="true"
+    data-start-open="false"
 ></script>
 ```
 
@@ -55,6 +56,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-session-expiration`: The duration (in hours) for which the session is valid. After this period, the chat history will be wiped. Default is `24`.
 - `data-footer-text`: Custom text displayed in the footer area below the input field. Default is "Generato dall'IA. Verifica le informazioni importanti.".
 - `data-show-powered-by`: Set to `false` to hide the "Powered by Autocust" text at the bottom. Default is `true`.
+- `data-start-open`: Set to `true` to make the chat widget open by default when the page loads. Default is `false`.
 
 ### Supported Positions
 
