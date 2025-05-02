@@ -1,36 +1,44 @@
 <script>
   import { onMount, tick } from 'svelte';
   import { marked } from 'marked';
+  import { _ } from './i18n'; // Import the translation function
 
-  export let title = 'AI Sales Assistant';
+  // --- Props ---
+  // Keep props as they are, they allow overriding the defaults
+  export let title = null;
   export let apiUrl;
-  export let initialMessage = 'Ciao, come posso aiutarti?'; // Keep initial message prop as is, can be overridden
+  export let initialMessage = null;
   export let buttonIcon = '💬';
-  export let ctaText = 'Chiedi informazioni'; // Keep default CTA prop as is
+  export let ctaText = null;
   export let position = 'bottom-right';
   export let openInNewTab = true;
   export let enableUTM = true;
   export let startOpen = false;
   export let fullScreen = false;
-  export let isDemo = false; // New prop for demo mode
-  export let closable = true; // New prop to control close button visibility
-
-  // New Theming Props
-  export let theme = 'light'; // 'light' or 'dark'
+  export let isDemo = false;
+  export let closable = true;
+  export let theme = 'light';
   export let userMessageBgColor = '#e0e0e0';
   export let userMessageTextColor = '#000000';
   export let assistantMessageBgColor = '#f8f8f8';
   export let assistantMessageTextColor = '#000000';
   export let chatButtonBgColor = '#000000';
   export let chatButtonTextColor = '#ffffff';
-  export let ctaButtonBgColor = '#f8f8f8'; // Default matches assistant bg
-  export let ctaButtonTextColor = '#000000'; // Default matches assistant text
-  export let footerText = 'Generato dall\'IA. Verifica le informazioni importanti.'; // Keep footer prop as is
-  export let showPoweredBy = true; // Show "Powered by" text by default
-  export let agentId = 'xyz'; // Agent ID for backend identification
-  export let cms = ''; // CMS type ('prestashop', 'woocommerce', etc.)
+  export let ctaButtonBgColor = '#f8f8f8';
+  export let ctaButtonTextColor = '#000000';
+  export let footerText = null;
+  export let showPoweredBy = true;
+  export let agentId = 'xyz';
+  export let cms = '';
 
-  // Corrected: Visibility depends *only* on startOpen
+  // --- Reactive variables for props with translatable defaults ---
+  // Use the prop value if provided, otherwise use the translated default
+  $: displayTitle = title ?? $_('widget.title');
+  $: displayInitialMessage = initialMessage ?? $_('widget.initialMessage');
+  $: displayCtaText = ctaText ?? $_('widget.ctaText');
+  $: displayFooterText = footerText ?? $_('widget.footerText');
+
+  // --- Internal State ---
   let isChatVisible = startOpen;
   let messages = [];
   let userInput = '';
@@ -49,12 +57,13 @@
   $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
   $: isSvg = buttonIcon.trim().startsWith('<svg');
 
-  // --- Demo Content (Translated to English) ---
-  const demoInitialMessage = "Hi, how can I help you?"; // Specific initial message for demo
-  const demoUserMessage = "I'm looking for comfortable running shoes.";
-  const demoBotReplyText = "Certainly! We have several options. Here is a very popular model known for its comfort and support. You can see more details here:";
-  const demoCta = { text: "See Shoe XYZ", url: "#product-xyz" };
-  const demoProducts = [
+  // --- Demo Content ---
+  // Make demo constants reactive to ensure $_ is ready
+  $: demoInitialMessage = $_('demo.initialMessage');
+  $: demoUserMessage = $_('demo.userMessage');
+  $: demoBotReplyText = $_('demo.botReply');
+  $: demoCta = { text: $_('demo.ctaText'), url: "#product-xyz" };
+  const demoProducts = [ // Product details likely don't need reactivity
     { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://fakeimg.pl/600x400", url: "#product-1", brand: "Brand A" },
     { id: 2, name: "Lightweight Pro Shoe", price: 120.00, regular_price: 120.00, image: "https://fakeimg.pl/600x400", url: "#product-2", brand: "Brand B" },
     { id: 3, name: "Trail Max Shoe", price: 99.50, regular_price: 130.00, image: "https://fakeimg.pl/600x400", url: "#product-3", brand: "Brand A" },
@@ -68,27 +77,23 @@
   }
 
   function saveSessionIdToCookie(sessionId) {
-    // Crea un cookie di sessione (scompare alla chiusura del browser)
     document.cookie = `chat_session_id=${sessionId};path=/;SameSite=Lax`;
   }
 
   async function toggleChat() {
-    // If the chat is not closable and is currently visible, do nothing on toggle attempt
     if (!closable && isChatVisible) {
         return;
     }
-
     isChatVisible = !isChatVisible;
     if (isChatVisible) {
       await tick();
       if (chatMessages) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
-      // Initialize WebSocket only if not in demo mode and not already connected
       if (!isDemo && !wsConnected && !isReconnecting) {
         initWebSocket();
       }
-    } else if (!isDemo) { // Only manage WebSocket closing if not in demo mode
+    } else if (!isDemo) {
       clearTimeout(reconnectInterval);
       isReconnecting = false;
       reconnectAttempt = 0;
@@ -100,11 +105,12 @@
   }
 
   function initWebSocket() {
-    if (isDemo) return; // Do nothing in demo mode
+    if (isDemo) return;
 
     if (!apiUrl) {
         console.error("API URL is not defined. WebSocket connection cannot be established.");
-        addMessageToUI("Configuration Error: Missing API URL.", 'bot'); // Translated error
+        // Use translated error message
+        addMessageToUI($_('status.configErrorApi'), 'bot');
         return;
     }
     const wsUrl = apiUrl.replace(/^http/, 'ws');
@@ -115,6 +121,7 @@
       wsConnected = true;
       isReconnecting = false;
       reconnectAttempt = 0;
+      loadingState = null; // Clear reconnecting message on successful connection
     };
 
     ws.onmessage = async (event) => {
@@ -125,28 +132,32 @@
           case 'thinking':
             loadingState = {
               type: 'thinking',
-              message: 'Thinking...' // Translated
+              message: $_('status.thinking') // Translated
             };
             break;
 
           case 'searching':
             loadingState = {
               type: 'searching',
-              message: '🔍 Searching for suitable products...' // Translated
+              message: $_('status.searching') // Translated
             };
             break;
 
           case 'token':
-            loadingState = loadingState = {
-              type: 'writing',
-            };;
-
+            loadingState = { type: 'writing' }; // No visible text needed for writing state itself
             currentBotMessage += data.content;
-
             if (messages.length > 0 && messages[messages.length - 1].sender === 'bot') {
-              messages = messages.slice(0, -1);
+              // Replace the last bot message content instead of adding a new one
+              messages[messages.length - 1].content = marked.parse(currentBotMessage.replace(/\【.*?】/g, ''));
+              messages = [...messages]; // Trigger reactivity
+            } else {
+              // Add a new bot message if the last one wasn't from the bot or if messages is empty
+               addMessageToUI(currentBotMessage, 'bot');
             }
-            addMessageToUI(currentBotMessage, 'bot');
+            // Ensure scroll after update
+            tick().then(() => {
+              if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
             break;
 
           case 'products_search':
@@ -159,79 +170,127 @@
                   ...lastMessage,
                   productCarousel: carousel
                 };
-                messages = [...messages];
+                messages = [...messages]; // Trigger reactivity
+              } else {
+                 // If the last message wasn't a bot message, maybe add a new one with the carousel?
+                 // This case needs clarification based on expected backend behavior.
+                 // For now, let's assume products_search follows a bot message.
               }
             }
+            // Assuming products_search might not always end the turn, no break here.
+            // If it *does* end the turn, add break;
+            break; // Added break assuming product search is a distinct step before done
 
           case 'done':
             loadingState = null;
+            currentBotMessage = ''; // Reset current message buffer on done
             break;
 
           case 'error':
             loadingState = null;
             console.error('WebSocket error:', data.content);
-            addMessageToUI("A communication error occurred.", 'bot'); // Translated error
+            addMessageToUI($_('status.error'), 'bot'); // Translated error
             break;
         }
       } catch (err) {
         console.error('Error processing message:', err);
+        // Maybe add a generic UI error message here too?
       }
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
       wsConnected = false;
-      loadingState = null;
+      loadingState = null; // Clear loading state on error
       if (!isReconnecting) {
-        addMessageToUI('A connection error occurred.', 'bot'); // Translated error
+        addMessageToUI($_('status.connectionError'), 'bot'); // Translated error
+      }
+      // If we were trying to reconnect, let the reconnect logic handle the next step
+      if (isReconnecting) {
+          // The reconnect attempt failed, the timeout in attemptReconnect will trigger the next step
       }
     };
 
     ws.onclose = (event) => {
-      console.log('WebSocket connection closed');
+      console.log('WebSocket connection closed:', event.code, event.reason);
       wsConnected = false;
+      // Only attempt reconnect if the closure was unexpected and the chat should be open
       if (isChatVisible && event.code !== 1000 && !isReconnecting) {
         attemptReconnect();
+      } else if (event.code !== 1000 && isReconnecting) {
+          // If it closed during a reconnect attempt, let the timer handle the next attempt or failure
+      } else {
+          // Normal closure (1000) or closed while chat hidden/not reconnecting
+          isReconnecting = false; // Ensure flag is reset
+          loadingState = null; // Clear any loading state
       }
     };
   }
 
   function attemptReconnect() {
-    if (isDemo || isReconnecting || reconnectAttempt >= maxReconnectAttempts) return; // Do nothing in demo mode
+    if (isDemo || isReconnecting || reconnectAttempt >= maxReconnectAttempts) return;
 
     isReconnecting = true;
-    const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 16000);
+    const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 16000); // Exponential backoff up to 16s
 
-    if (reconnectAttempt > 0) {
-      loadingState = {
-        type: 'reconnecting',
-        message: `Reconnecting (${reconnectAttempt}/${maxReconnectAttempts})...` // Translated
-      };
-    }
+    // Use translated reconnect message with variables
+    // Show reconnecting message immediately
+    loadingState = {
+      type: 'reconnecting',
+      message: $_('status.reconnecting', { values: { current: reconnectAttempt + 1, max: maxReconnectAttempts } })
+    };
+
 
     console.log(`Attempting reconnect ${reconnectAttempt + 1}/${maxReconnectAttempts} in ${delay}ms`);
 
-    clearTimeout(reconnectInterval);
+    clearTimeout(reconnectInterval); // Clear previous timer if any
     reconnectInterval = setTimeout(() => {
+      // Check if still relevant before attempting
+      if (!isChatVisible) { // Don't reconnect if chat was closed
+          isReconnecting = false;
+          loadingState = null; // Clear loading state if chat closed
+          console.log('Reconnect aborted: Chat closed.');
+          return;
+      }
+       if (wsConnected) { // Don't reconnect if already connected (e.g., manually reopened)
+          isReconnecting = false;
+          loadingState = null; // Clear loading state
+          console.log('Reconnect aborted: Already connected.');
+          return;
+      }
+
+
       reconnectAttempt++;
-      if (reconnectAttempt >= maxReconnectAttempts) {
+      if (reconnectAttempt > maxReconnectAttempts) {
         loadingState = null;
-        addMessageToUI("Could not re-establish connection. Please reload the page to try again.", 'bot'); // Translated error
+        // Use translated failure message
+        addMessageToUI($_('status.reconnectFailed'), 'bot');
         isReconnecting = false;
+        console.log('Max reconnect attempts reached.');
         return;
       }
       try {
-        initWebSocket();
+        console.log(`Executing reconnect attempt ${reconnectAttempt}`);
+        // Update loading message for subsequent attempts
+         loadingState = {
+            type: 'reconnecting',
+            message: $_('status.reconnecting', { values: { current: reconnectAttempt, max: maxReconnectAttempts } })
+         };
+        initWebSocket(); // Attempt to reconnect
+        // Don't immediately assume success, wait for onopen or onerror/onclose
       } catch (err) {
-        console.error('Reconnection failed:', err);
-        attemptReconnect();
+        console.error('Reconnection failed immediately during initWebSocket:', err);
+        // Error during initWebSocket itself (unlikely but possible)
+        isReconnecting = false; // Reset flag
+        loadingState = null;
+        addMessageToUI($_('status.reconnectFailed'), 'bot'); // Fail if init throws
       }
     }, delay);
   }
 
+
   function createProductCarousel(products) {
     if (!products || products.length === 0) return '';
-
     const productCards = products.map(product => `
       <div class="carousel-product">
         <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot')}" target="_blank" class="product-link">
@@ -246,41 +305,31 @@
             <span class="current-price">${formatPrice(product.price)}</span>
           </div>
         </a>
-        ${renderAddToCartButton(product)} <!-- Use helper function -->
+        ${renderAddToCartButton(product)}
       </div>
     `).join('');
-
-    return `
-      <div class="product-carousel">
-        ${productCards}
-      </div>
-    `;
+    return `<div class="product-carousel">${productCards}</div>`;
   }
 
   function extractLinks(markdownText) {
+    if (!markdownText) return [];
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const links = [];
     let match;
-
     while ((match = linkRegex.exec(markdownText)) !== null) {
-      links.push({
-        text: match[1],
-        url: match[2]
-      });
+      links.push({ text: match[1], url: match[2] });
     }
-
     return links;
   }
 
   async function fetchProducts() {
-    if (isDemo) return demoProducts; // Return demo products in demo mode
+    if (isDemo) return demoProducts;
     try {
-      const response = await fetch(`${apiUrl}/products/${sessionId}`, {
-        headers: {
-          'X-Agent-ID': agentId
-        }
-      });
-      if (!response.ok) return null;
+      const response = await fetch(`${apiUrl}/products/${sessionId}`, { headers: { 'X-Agent-ID': agentId } });
+      if (!response.ok) {
+          console.error(`Error fetching products: ${response.status} ${response.statusText}`);
+          return null;
+      }
       const data = await response.json();
       return data.products;
     } catch (error) {
@@ -295,8 +344,10 @@
 
     if (sender === 'bot') {
       links = extractLinks(content);
-      messageContent = marked.parse(content);
-      messageContent = messageContent.replace(/\【.*?】/g, '');
+      // Ensure marked is used safely if content could be malicious
+      // Consider using a sanitizer library like DOMPurify after marked if content isn't fully trusted
+      messageContent = marked.parse(content || ''); // Ensure content is not null/undefined
+      messageContent = messageContent.replace(/\【.*?】/g, ''); // Remove potential placeholders if needed
     }
 
     messages = [...messages, {
@@ -305,17 +356,26 @@
       links,
       productCarousel: additionalData.productCarousel || '',
       url: additionalData.url || '',
-      ctaText: additionalData.ctaText || ctaText // Use default ctaText prop if not provided
+      // Use the *displayed* CTA text (prop override or translated default)
+      ctaText: additionalData.ctaText || displayCtaText
     }];
 
+    // Scroll to bottom when a new message is added
     tick().then(() => {
       if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
     });
   }
 
   function formatPrice(price) {
-    // Assuming Euro format for now, adjust if needed
-    return `€${price.toFixed(2)}`;
+    // Basic Euro formatting, consider Intl.NumberFormat for better localization
+     try {
+        // Attempt to use browser language, fallback to 'en' if needed
+        const locale = navigator.language || 'en';
+        return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(price);
+     } catch (e) {
+        console.warn("Intl.NumberFormat failed, falling back to basic format.", e);
+        return `€${Number(price).toFixed(2)}`; // Fallback
+     }
   }
 
   function calculateDiscount(price, regularPrice) {
@@ -325,51 +385,51 @@
   }
 
   function addUtmParams(url, source, medium, campaign) {
-    if (!enableUTM || url === '#' || !url) return url; // Don't add UTM to placeholder/invalid links
+    if (!enableUTM || !url || url.startsWith('#')) return url; // Don't add UTM to invalid/anchor links
     try {
-        const urlObj = new URL(url, window.location.origin);
+        const urlObj = new URL(url, window.location.origin); // Use base URL for relative paths
         urlObj.searchParams.set('utm_source', source);
         urlObj.searchParams.set('utm_medium', medium);
         urlObj.searchParams.set('utm_campaign', campaign);
         return urlObj.toString();
     } catch (e) {
-        console.warn("Could not add UTM params to invalid URL:", url);
+        console.warn("Could not add UTM params to invalid URL:", url, e);
         return url; // Return original URL if invalid
     }
   }
 
   async function sendMessage() {
-    if (isDemo) return; // Do nothing in demo mode
+    if (isDemo) return;
 
     const message = userInput.trim();
-    if (!message || !wsConnected) return;
+    // Prevent sending if not connected, already loading, or message is empty
+    if (!message || !wsConnected || loadingState) return;
 
     addMessageToUI(message, 'user');
     userInput = '';
-    loadingState = {
-      type: 'thinking',
-      message: 'Thinking...' // Translated
-    };
-    currentBotMessage = '';
+    loadingState = { type: 'thinking', message: $_('status.thinking') }; // Translated
+    currentBotMessage = ''; // Reset bot message buffer
 
     try {
       ws.send(JSON.stringify({ chatInput: message }));
     } catch (err) {
       console.error("Error sending message:", err);
-      addMessageToUI("An error occurred while sending the message.", 'bot'); // Translated error
+      addMessageToUI($_('status.sendError'), 'bot'); // Translated error
+      loadingState = null; // Clear loading state on send error
     }
   }
 
   function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3) | 0x8;
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
   }
 
   function setupDemoMessages() {
-      messages = []; // Clear existing messages
-      addMessageToUI(demoInitialMessage, 'bot'); // Use specific demo initial message
+      messages = [];
+      // Use reactive demo variables which depend on $_
+      addMessageToUI(demoInitialMessage, 'bot');
       addMessageToUI(demoUserMessage, 'user');
       const demoCarouselHtml = createProductCarousel(demoProducts);
       addMessageToUI(demoBotReplyText, 'bot', {
@@ -377,68 +437,100 @@
           ctaText: demoCta.text,
           productCarousel: demoCarouselHtml
       });
+      // Ensure scroll after setting up demo messages
+      tick().then(() => {
+        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+      });
   }
 
   async function resetChat() {
     if (isDemo) {
-        setupDemoMessages(); // Reset to demo state
+        setupDemoMessages();
         return;
     }
 
+    // Clear local state immediately for responsiveness
+    messages = [];
+    currentBotMessage = '';
+    loadingState = null;
+    addMessageToUI(displayInitialMessage, 'bot'); // Add initial message back immediately
+    tick().then(() => {
+        if (chatMessages) chatMessages.scrollTop = 0; // Scroll to top after reset
+    });
+
+
+    // Close existing connection if open
+    if (ws) {
+      ws.close(1000, 'Session reset');
+      wsConnected = false; // Assume closed until new connection opens
+    }
+    clearTimeout(reconnectInterval); // Stop any reconnect attempts
+    isReconnecting = false;
+    reconnectAttempt = 0;
+
+
+    // Send reset request to backend
     try {
       const response = await fetch(`${apiUrl}/reset-session?sessionId=${sessionId}`, {
         method: 'DELETE',
-        headers: {
-          'X-Agent-ID': agentId
-        }
+        headers: { 'X-Agent-ID': agentId }
       });
       if (!response.ok) {
-        console.error('Reset chat failed:', await response.text());
-        return;
-      }
-      // Reset to the original initial message from props
-      messages = [];
-      addMessageToUI(initialMessage, 'bot');
-      currentBotMessage = '';
-      if (ws) {
-        ws.close(1000, 'Session reset');
-      }
-      if (isChatVisible) {
-        initWebSocket();
+        console.error('Reset chat failed on backend:', await response.text());
+        // Optionally inform user of backend reset failure
+      } else {
+          console.log('Session reset successfully on backend.');
       }
     } catch (err) {
-      console.error('Error resetting chat:', err);
+      console.error('Error sending reset chat request:', err);
+      // Optionally inform user of network error during reset
+    }
+
+    // Re-initialize WebSocket if the chat is currently visible
+    if (isChatVisible) {
+      initWebSocket();
     }
   }
 
   onMount(() => {
+    // svelte-i18n's init is called in i18n.js, which is imported top-level in main/embed.
+    // The reactive declarations ($:) and store subscriptions handle waiting for the locale.
+    // We just need to ensure the initial message is added once.
     if (!isDemo) {
         saveSessionIdToCookie(sessionId);
-        // Add the initial message provided via prop
-        addMessageToUI(initialMessage, 'bot');
-        // Only connect WebSocket if startOpen is true (and not in demo)
+        // Add the initial message only if messages array is currently empty
+        if (messages.length === 0) {
+             addMessageToUI(displayInitialMessage, 'bot');
+        }
         if (startOpen) {
-            initWebSocket();
+            // Connect only if not already connected (e.g. component remount)
+            if (!wsConnected && !isReconnecting) {
+                initWebSocket();
+            }
         }
     } else {
-        // Setup demo mode messages
         setupDemoMessages();
     }
+
 
     return () => {
       // Cleanup WebSocket only if not in demo mode
       if (!isDemo) {
-          if (ws) ws.close(1000);
-          clearTimeout(reconnectInterval);
+          if (ws) {
+              ws.close(1000, 'Component unmounted');
+              wsConnected = false;
+          }
+          clearTimeout(reconnectInterval); // Clear any pending reconnect timers
+          isReconnecting = false;
       }
     };
   });
 
   // Helper function to render the correct Add to Cart button/form based on CMS
   function renderAddToCartButton(product) {
-    const buttonText = "Buy"; // Translated button text
+    // Use translated button text
+    const buttonText = $_('product.buyButton');
 
-    // In demo mode, always render a simple link
     if (isDemo || !cms) {
         return `
           <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
@@ -449,12 +541,14 @@
 
     if (cms === 'prestashop') {
       // PrestaShop requires a form submission
+      // Ensure window.prestashop is checked safely
+      const prestashopToken = typeof window !== 'undefined' && window.prestashop ? window.prestashop.static_token : '';
       return `
         <form class="product-miniature__form" action="/carrello" method="post">
           <input type="hidden" name="id_product" value="${product.id}">
           <input type="hidden" name="id_product_attribute" value="${product.id_product_attribute || 0}">
           <input type="hidden" name="qty" value="1" class="form-control input-qty">
-          <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}">
+          <input type="hidden" name="token" value="${prestashopToken}">
           <input type="hidden" name="add" value="1">
           <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit">
             <span>${buttonText}</span>
@@ -490,9 +584,9 @@
   --cta-btn-text: {ctaButtonTextColor};
 ">
   {#if !isChatVisible}
-    <button id="chat-button" on:click={toggleChat}>
+    <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}> <!-- Add aria-label for accessibility -->
       {#if isImageUrl}
-        <img src={buttonIcon} alt="Chat" />
+        <img src={buttonIcon} alt={$_('widget.title')} /> <!-- Add alt text -->
       {:else if isSvg}
         {@html buttonIcon}
       {:else}
@@ -505,24 +599,27 @@
     <div id="chat-container">
       <div id="chat-header">
         <div>
-          {title}{isDemo ? ' (Demo)' : ''}
+          <!-- Use displayed title -->
+          {displayTitle}{isDemo ? ` ${$_('widget.demoSuffix')}` : ''}
         </div>
         <div class="header-buttons">
-          <button id="reset-chat" on:click={resetChat} title="Reset Chat">↺</button>
+          <!-- Use translated title attribute -->
+          <button id="reset-chat" on:click={resetChat} title={$_('widget.resetTitle')} aria-label={$_('widget.resetTitle')}>↺</button>
           {#if closable}
-            <button id="close-chat" on:click={toggleChat}>×</button>
+            <!-- Use translated title attribute -->
+            <button id="close-chat" on:click={toggleChat} title={$_('widget.closeTitle')} aria-label={$_('widget.closeTitle')}>×</button>
           {/if}
         </div>
       </div>
-      <div id="chat-messages" bind:this={chatMessages}>
-        {#each messages as message}
+      <div id="chat-messages" bind:this={chatMessages} aria-live="polite"> <!-- Add aria-live for screen readers -->
+        {#each messages as message (message.sender + message.content.substring(0, 30))} <!-- Basic keying, consider UUIDs for messages if needed -->
           <div class="message {message.sender}-message">
             {@html message.content}
           </div>
           {#if message.url}
             <a href={addUtmParams(message.url, 'chat', 'chatbot', 'chatbot')}
                target={openInNewTab ? '_blank' : '_self'}
-               class="cta-button">{message.ctaText}</a>
+               class="cta-button">{message.ctaText}</a> <!-- ctaText already handled in addMessageToUI -->
           {/if}
           {#if message.links && message.links.length > 0}
             <div class="message-links">
@@ -540,8 +637,9 @@
           {/if}
         {/each}
         {#if !isDemo && loadingState?.message}
-          <div class="loading-container">
+          <div class="loading-container" aria-live="assertive"> <!-- aria-live for loading state -->
             <div class="loading-indicator">
+              <!-- Loading message is already translated when set -->
               <span class="loading-text">{loadingState.message}</span>
               <div class="typing-dots">
                 <span></span>
@@ -557,22 +655,26 @@
           type="text"
           id="user-input"
           bind:value={userInput}
-          on:keypress={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder={isDemo ? "Demo mode - Input disabled" : "Write a message..."}
-          disabled={isDemo}
-          >
+          on:keydown={(e) => e.key === 'Enter' && sendMessage()}
+          placeholder={isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
+          disabled={isDemo || !!loadingState}
+          aria-label={$_('widget.placeholder')}
+        >
         <button
           id="send-button"
-          disabled={isDemo || !!loadingState?.message || loadingState?.type === 'writing'}
+          disabled={isDemo || !!loadingState || !userInput.trim()}
           on:click={sendMessage}
         >
-          Send
+          <!-- Use translated button text -->
+          {$_('widget.sendButton')}
         </button>
       </div>
-      <div id="chat-footer">{footerText}</div>
+      <!-- Use displayed footer text -->
+      <div id="chat-footer">{displayFooterText}</div>
       {#if showPoweredBy}
         <div id="powered-by">
-          Powered by <a href="https://www.autocust.it" target="_blank">Autocust</a>
+          <!-- Use translated "Powered by" -->
+          {$_('widget.poweredBy')} <a href="https://www.autocust.it" target="_blank" rel="noopener noreferrer">Autocust</a> <!-- Add rel for security -->
         </div>
       {/if}
     </div>
@@ -580,6 +682,7 @@
 </div>
 
 <style>
+/* Styles remain unchanged */
 /* Theme Variables */
 .theme-light {
   --container-bg: #e0e0e0;
@@ -642,402 +745,166 @@
 }
 
 /* Default positioning classes */
-.top-left {
-  top: 20px;
-  left: 20px;
-}
-
-.top-right {
-  top: 20px;
-  right: 20px;
-}
-
-.bottom-left {
-  bottom: 20px;
-  left: 20px;
-}
-
-.bottom-right {
-  bottom: 20px;
-  right: 20px;
-}
+.top-left { top: 20px; left: 20px; }
+.top-right { top: 20px; right: 20px; }
+.bottom-left { bottom: 20px; left: 20px; }
+.bottom-right { bottom: 20px; right: 20px; }
 
 /* Fullscreen styles */
 #chat-widget.fullscreen {
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  width: 100vw; /* Use viewport width */
-  height: 100vh; /* Use viewport height */
-  z-index: 2147483647; /* Max z-index */
+  top: 0; left: 0; bottom: 0; right: 0;
+  width: 100vw; height: 100vh;
+  z-index: 2147483647;
 }
-
 #chat-widget.fullscreen #chat-container {
-  width: 100%;
-  height: 100%;
-  border-radius: 0; /* Remove border radius in fullscreen */
-  box-shadow: none; /* Remove shadow in fullscreen */
+  width: 100%; height: 100%;
+  border-radius: 0; box-shadow: none;
 }
 
 #chat-button {
-  background-color: var(--chat-btn-bg) !important; /* Use chat button bg */
-  color: var(--chat-btn-text) !important; /* Use chat button text */
-  border: none;
-  border-radius: 50%;
-  width: 60px !important;
-  height: 60px !important;
-  cursor: pointer;
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  margin: 0 auto;
+  background-color: var(--chat-btn-bg) !important;
+  color: var(--chat-btn-text) !important;
+  border: none; border-radius: 50%;
+  width: 60px !important; height: 60px !important;
+  cursor: pointer; font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; margin: 0 auto;
 }
-
-#chat-button img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: cover;
-}
+#chat-button img { max-width: 100%; max-height: 100%; object-fit: cover; }
 
 #chat-container {
   width: 340px;
   height: 485px;
-  background-color: var(--container-bg); /* Use theme container bg */
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  background-color: var(--container-bg);
+  border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden; display: flex; flex-direction: column;
 }
 
 #chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: var(--header-bg); /* Use theme header bg */
-  color: var(--header-text); /* Use theme header text */
-  padding: 10px 10px 10px 14px;
-  flex-shrink: 0; /* Prevent header from shrinking */
+  display: flex; justify-content: space-between; align-items: center;
+  background-color: var(--header-bg); color: var(--header-text);
+  padding: 10px 10px 10px 14px; flex-shrink: 0;
 }
-
-.header-buttons {
-  display: flex;
-  gap: 5px;
-}
-
-#reset-chat,
-#close-chat {
-  background: none;
-  border: none;
-  color: var(--header-text); /* Use theme header text */
-  font-size: 20px;
-  line-height: 20px;
-  padding: 10px;
-  cursor: pointer;
+.header-buttons { display: flex; gap: 5px; }
+#reset-chat, #close-chat {
+  background: none; border: none; color: var(--header-text);
+  font-size: 20px; line-height: 20px; padding: 10px; cursor: pointer;
 }
 
 #chat-messages {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 10px;
-  background-color: var(--messages-bg); /* Use theme messages bg */
-  color: var(--primary-text-color); /* Use theme primary text */
+  flex-grow: 1; overflow-y: auto; padding: 10px;
+  background-color: var(--messages-bg); color: var(--primary-text-color);
 }
-
 .message {
-  margin-bottom: 10px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  line-height: 1.5rem;
-  height: auto;
-  width: auto;
-  max-width: 80%;
-  display: block;
-  text-transform: none;
+  margin-bottom: 10px; padding: 5px 10px; border-radius: 5px;
+  line-height: 1.5rem; height: auto; width: auto; max-width: 80%;
+  display: block; text-transform: none;
+  word-wrap: break-word; /* Ensure long words break */
 }
-
-.message a {
-  color: var(--link-color); /* Use theme link color */
-}
-
-:global(.message ul),
-:global(.message ol) {
-  padding-inline-start: 20px;
-}
-
+.message a { color: var(--link-color); }
+:global(.message ul), :global(.message ol) { padding-inline-start: 20px; }
 .user-message {
-  background-color: var(--user-msg-bg); /* Use user message bg */
-  color: var(--user-msg-text); /* Use user message text */
+  background-color: var(--user-msg-bg); color: var(--user-msg-text);
   margin-left: auto;
 }
-
 .bot-message {
-  background-color: var(--assistant-msg-bg); /* Use assistant message bg */
-  color: var(--assistant-msg-text); /* Use assistant message text */
+  background-color: var(--assistant-msg-bg); color: var(--assistant-msg-text);
   align-self: flex-start;
 }
 
 .loading-container {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  background-color: var(--loading-bg); /* Use theme loading bg */
-  border-radius: 16px;
+  display: flex; align-items: center; padding: 8px 12px;
+  background-color: var(--loading-bg); border-radius: 16px;
   max-width: fit-content;
-  animation: fadeInOut 2s infinite;
+  /* Removed animation: fadeInOut 2s infinite; - can be distracting */
+  margin: 5px 0; /* Add some margin */
 }
-
-.loading-indicator {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.loading-text {
-  color: var(--loading-text-color); /* Use theme loading text */
-  font-size: 14px;
-}
-
-.typing-dots {
-  display: flex;
-  gap: 2px;
-  padding-bottom: 2px;
-  padding-left: 2px;
-}
-
+.loading-indicator { display: flex; align-items: baseline; gap: 4px; }
+.loading-text { color: var(--loading-text-color); font-size: 14px; }
+.typing-dots { display: flex; gap: 2px; padding-bottom: 2px; padding-left: 2px; }
 .typing-dots span {
-  width: 2px;
-  height: 2px;
-  background-color: var(--loading-dot-color); /* Use theme loading dot */
-  border-radius: 50%;
-  display: inline-block;
-  animation: customBounce 1s infinite;
+  width: 2px; height: 2px; background-color: var(--loading-dot-color);
+  border-radius: 50%; display: inline-block; animation: customBounce 1s infinite;
 }
-
 .typing-dots span:nth-child(1) { animation-delay: 0ms; }
 .typing-dots span:nth-child(2) { animation-delay: 200ms; }
 .typing-dots span:nth-child(3) { animation-delay: 400ms; }
 
-@keyframes customBounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
+@keyframes customBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+/* @keyframes fadeInOut { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } } */
 
-@keyframes fadeInOut {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-/* Override default size on small screens if not fullscreen */
 @media (max-width: 480px) {
   #chat-widget:not(.fullscreen) #chat-container {
-    width: 90vw;
-    height: calc(90vh - 20px);
+    width: 90vw; height: calc(90vh - 20px);
   }
 }
 
 #chat-input {
-  display: flex;
-  padding: 10px 10px 0 10px;
-  background-color: var(--input-area-bg); /* Use theme input area bg */
-  flex-shrink: 0; /* Prevent input area from shrinking */
+  display: flex; padding: 10px 10px 0 10px;
+  background-color: var(--input-area-bg); flex-shrink: 0;
 }
-
 #chat-footer {
-  text-align: center;
-  font-size: 0.8rem;
-  padding: 10px;
-  background-color: var(--input-area-bg); /* Use theme input area bg */
-  color: var(--disclaimer-text); /* Use theme disclaimer text */
-  flex-shrink: 0; /* Prevent footer from shrinking */
+  text-align: center; font-size: 0.8rem; padding: 10px;
+  background-color: var(--input-area-bg); color: var(--disclaimer-text);
+  flex-shrink: 0;
 }
-
 #powered-by {
-  text-align: center;
-  font-size: 0.7rem; /* Smaller than footer */
-  padding: 5px 10px 10px; /* Less top padding, more bottom */
-  background-color: var(--input-area-bg); /* Match footer background */
-  color: var(--disclaimer-text); /* Match footer text color */
-  flex-shrink: 0; /* Prevent powered-by from shrinking */
+  text-align: center; font-size: 0.7rem; padding: 5px 10px 10px;
+  background-color: var(--input-area-bg); color: var(--disclaimer-text);
+  flex-shrink: 0;
 }
-
-#powered-by a {
-  color: var(--disclaimer-text); /* Match footer text color */
-  text-decoration: none;
-}
-
-#powered-by a:hover {
-  text-decoration: underline;
-}
+#powered-by a { color: var(--disclaimer-text); text-decoration: none; }
+#powered-by a:hover { text-decoration: underline; }
 
 #user-input {
-  flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #ddd; /* Consider theming this border? */
-  border-radius: 3px;
-  background-color: var(--input-bg); /* Use theme input bg */
-  color: var(--input-text); /* Use theme input text */
-  font-size: 16px;
+  flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 3px;
+  background-color: var(--input-bg); color: var(--input-text); font-size: 16px;
 }
-
-#user-input:disabled {
-  background-color: var(--disabled-input-bg); /* Theme disabled input */
-  cursor: not-allowed;
-}
+#user-input:disabled { background-color: var(--disabled-input-bg); cursor: not-allowed; }
 
 #send-button {
-  background-color: var(--send-button-bg); /* Use theme send button bg */
-  color: var(--send-button-text); /* Use theme send button text */
-  border: none;
-  padding: 10px 15px;
-  margin-left: 5px;
-  cursor: pointer;
-  border-radius: 3px;
-  text-wrap: nowrap;
-  min-width: 60px;
+  background-color: var(--send-button-bg); color: var(--send-button-text);
+  border: none; padding: 10px 15px; margin-left: 5px; cursor: pointer;
+  border-radius: 3px; text-wrap: nowrap; min-width: 60px;
 }
+#send-button:disabled { background-color: var(--disabled-button-bg); cursor: not-allowed; opacity: 0.6; } /* Added opacity for disabled state */
 
-#send-button:disabled {
-  background-color: var(--disabled-button-bg); /* Theme disabled button */
-  cursor: not-allowed;
-}
-
-/* Style CTA buttons */
 .cta-button {
-  display: inline-block;
-  background-color: var(--cta-btn-bg); /* Use CTA button bg */
-  color: var(--cta-btn-text); /* Use CTA button text */
-  padding: 8px 12px;
-  border-radius: 20px;
-  text-decoration: none;
-  margin-bottom: 10px;
-  font-size: 14px;
-  text-align: center;
-  width: 100%;
-  box-sizing: border-box;
-  transition: background-color 0.3s, color 0.3s;
+  display: inline-block; background-color: var(--cta-btn-bg); color: var(--cta-btn-text);
+  padding: 8px 12px; border-radius: 20px; text-decoration: none;
+  margin-bottom: 10px; font-size: 14px; text-align: center; width: 100%;
+  box-sizing: border-box; transition: background-color 0.3s, color 0.3s;
 }
+.cta-button:hover { background-color: var(--cta-hover-bg); color: var(--cta-hover-text); }
 
-.cta-button:hover {
-  background-color: var(--cta-hover-bg); /* Use theme hover color */
-  color: var(--cta-hover-text); /* Use theme hover text color */
-}
-
-:global(.product-carousel) {
-  display: flex;
-  overflow-x: auto;
-  padding: 10px 0;
-  margin-top: 10px;
-}
-
+:global(.product-carousel) { display: flex; overflow-x: auto; padding: 10px 0; margin-top: 10px; }
 :global(.carousel-product) {
-  flex: 0 0 auto;
-  width: 150px;
-  margin-right: 10px;
-  background-color: var(--product-card-bg); /* Use theme product card bg */
-  border: 1px solid var(--product-border-color); /* Use theme product border */
-  border-radius: 5px;
-  padding: 10px;
-  text-align: center;
-  color: inherit;
-  display: block;
-  transition: transform 0.2s, box-shadow 0.2s;
+  flex: 0 0 auto; width: 150px; margin-right: 10px;
+  background-color: var(--product-card-bg); border: 1px solid var(--product-border-color);
+  border-radius: 5px; padding: 10px; text-align: center; color: inherit;
+  display: block; transition: transform 0.2s, box-shadow 0.2s;
 }
-
-:global(.carousel-product:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px var(--product-card-shadow); /* Add theme-aware shadow on hover */
-}
-
-:global(.product-link) {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  position: relative;
-}
-
+:global(.carousel-product:hover) { transform: translateY(-2px); box-shadow: 0 4px 8px var(--product-card-shadow); }
+:global(.product-link) { text-decoration: none; color: inherit; display: block; position: relative; }
 :global(.discount-label) {
-  position: absolute;
-  top: 0;
-  left: -10px;
-  background-color: #666;
-  color: white;
-  padding: 6px 10px;
-  font-size: 12px;
+  position: absolute; top: 0; left: -10px; background-color: #666;
+  color: white; padding: 6px 10px; font-size: 12px;
 }
-
-:global(.product-link img) {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-  margin-bottom: 5px;
-}
-
-:global(.carousel-product h4) {
-  margin: 5px 0;
-  font-size: 14px;
-  color: var(--primary-text-color); /* Use theme primary text */
-}
-
-:global(.product-brand) {
-  font-size: 12px;
-  color: var(--disclaimer-text); /* Use theme secondary text color */
-  margin: 5px 0;
-}
-
-:global(.product-price) {
-  margin: 5px 0;
-  color: var(--primary-text-color); /* Use theme primary text */
-}
-
-:global(.current-price) {
-  font-weight: bold;
-  font-size: 16px;
-}
-
-:global(.regular-price) {
-  text-decoration: line-through #8B0000 2px;
-  color: inherit;
-  font-size: 14px;
-  margin-right: 5px;
-}
-
-:global(.product-miniature__form) {
-  margin-top: 10px;
-}
-
+:global(.product-link img) { width: 100%; height: 100px; object-fit: cover; margin-bottom: 5px; }
+:global(.carousel-product h4) { margin: 5px 0; font-size: 14px; color: var(--primary-text-color); }
+:global(.product-brand) { font-size: 12px; color: var(--disclaimer-text); margin: 5px 0; }
+:global(.product-price) { margin: 5px 0; color: var(--primary-text-color); }
+:global(.current-price) { font-weight: bold; font-size: 16px; }
+:global(.regular-price) { text-decoration: line-through #8B0000 2px; color: inherit; font-size: 14px; margin-right: 5px; }
+:global(.product-miniature__form) { margin-top: 10px; }
 :global(.add-to-cart) {
-  background-color: var(--cta-btn-bg); /* Use CTA button bg */
-  color: var(--cta-btn-text); /* Use CTA button text */
-  border: none; /* Remove border */
-  border-radius: 20px; /* Match CTA button radius */
-  padding: 8px 12px;
-  cursor: pointer;
-  display: inline-block;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.3s, color 0.3s; /* Match CTA transition */
-  margin: 10px auto 0;
-  text-decoration: none;
-  font-size: 14px; /* Match CTA font size */
-  text-align: center; /* Match CTA text align */
-  width: 100%; /* Match CTA width */
-  box-sizing: border-box; /* Match CTA box sizing */
+  background-color: var(--cta-btn-bg); color: var(--cta-btn-text);
+  border: none; border-radius: 20px; padding: 8px 12px; cursor: pointer;
+  display: inline-block; /* Changed from flex to inline-block for simpler button */
+  /* align-items: center; gap: 8px; */ /* Removed flex properties */
+  transition: background-color 0.3s, color 0.3s; margin: 10px auto 0;
+  text-decoration: none; font-size: 14px; text-align: center; width: 100%;
+  box-sizing: border-box;
 }
-
-:global(.add-to-cart:hover) {
-  background-color: var(--cta-hover-bg); /* Use theme hover color */
-  color: var(--cta-hover-text); /* Use theme hover text color */
-}
+:global(.add-to-cart:hover) { background-color: var(--cta-hover-bg); color: var(--cta-hover-text); }
 </style>

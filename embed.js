@@ -1,68 +1,85 @@
+import { initPromise } from './i18n.js'; // Import the promise
 import AIChatWidget from "./AIChatWidget.svelte";
 
-// Create a new div element to host our Svelte component
-const targetDiv = document.createElement("div");
+// Wrap instantiation in an async IIFE
+(async () => {
+  try {
+    await initPromise; // Wait for i18n initialization to complete
 
-// Get the current script tag
-const currentScript = document.currentScript;
+    // Create a new div element to host our Svelte component
+    const targetDiv = document.createElement("div");
 
-// Insert the new div before the script tag
-currentScript.parentNode.insertBefore(targetDiv, currentScript);
+    // Get the current script tag
+    const currentScript = document.currentScript;
 
-// Function to get attribute value with a default
-function getAttr(name, defaultValue) {
-    const value = currentScript.getAttribute(name);
-    if (value === null) {
-        return defaultValue;
+    // Insert the new div before the script tag
+    if (currentScript && currentScript.parentNode) {
+        currentScript.parentNode.insertBefore(targetDiv, currentScript);
+    } else {
+        // Fallback if script tag isn't found (e.g., async loading issues)
+        console.warn("Could not find current script tag to insert widget. Appending to body.");
+        document.body.appendChild(targetDiv);
     }
-    // Convert "true" and "false" strings to boolean
-    if (value.toLowerCase() === 'true') {
-        return true;
-    } else if (value.toLowerCase() === 'false') {
-        return false;
+
+
+    // Function to get attribute value with a default
+    function getAttr(name, defaultValue) {
+        // Ensure currentScript exists before trying to access attributes
+        const value = currentScript ? currentScript.getAttribute(name) : null;
+        if (value === null) {
+            return defaultValue;
+        }
+        // Convert "true" and "false" strings to boolean
+        if (value.toLowerCase() === 'true') {
+            return true;
+        } else if (value.toLowerCase() === 'false') {
+            return false;
+        }
+        return value; // Return the value as is if it's not a boolean string or null
     }
-    return value; // Return the value as is if it's not a boolean string
-}
 
-// Function to get position with a default
-function getPosition(defaultValue) {
-    const position = currentScript.getAttribute('data-position');
-    return ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(position) ? position : defaultValue;
-}
+    // Function to get position with a default
+    function getPosition(defaultValue) {
+        const position = currentScript ? currentScript.getAttribute('data-position') : null;
+        return ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(position) ? position : defaultValue;
+    }
 
-// Instantiate the Svelte component
-const chatWidget = new AIChatWidget({
-  target: targetDiv,
-  props: {
-    title: getAttr("data-title", "AI Sales Assistant"),
-    apiUrl: getAttr("data-api-url", "https://your-default-api-url.com"),
-    initialMessage: getAttr(
-      "data-initial-message",
-      "Ciao, come posso aiutarti?"
-    ),
-    buttonIcon: getAttr("data-button-icon", "💬"),
-    ctaText: getAttr("data-cta-text", "Chiedi informazioni"),
-    openInNewTab: getAttr("data-open-in-new-tab", true),
-    enableUTM: getAttr("data-enable-utm", true),
-    position: getPosition("bottom-right"),
-    persistentSession: getAttr("data-persistent-session", false),
-    sessionExpiration: getAttr("data-session-expiration", 24),
-    theme: getAttr("data-theme", "light"),
-    userMessageBgColor: getAttr("data-user-message-bg-color", "#e0e0e0"),
-    userMessageTextColor: getAttr("data-user-message-text-color", "#000000"),
-    assistantMessageBgColor: getAttr("data-assistant-message-bg-color", "#f8f8f8"),
-    assistantMessageTextColor: getAttr("data-assistant-message-text-color", "#000000"),
-    chatButtonBgColor: getAttr("data-chat-button-bg-color", "#000000"),
-    chatButtonTextColor: getAttr("data-chat-button-text-color", "#ffffff"),
-    ctaButtonBgColor: getAttr("data-cta-button-bg-color", "#f8f8f8"), // Default matches light assistant bg
-    ctaButtonTextColor: getAttr("data-cta-button-text-color", "#000000"), // Default matches light assistant text
-    footerText: getAttr("data-footer-text", "Generato dall'IA. Verifica le informazioni importanti."),
-    showPoweredBy: getAttr("data-show-powered-by", true),
-    agentId: getAttr("data-agent-id", "xyz"), // Add Agent ID
-    cms: getAttr("data-cms", ""), // Add CMS type ('prestashop', 'woocommerce', etc.)
-    startOpen: getAttr("data-start-open", false), // Add startOpen prop
-    fullScreen: getAttr("data-full-screen", false), // Add fullScreen prop
-    isDemo: getAttr("data-is-demo", false), // Add isDemo prop
-    closable: getAttr("data-closable", true), // Add closable prop
-  },
-});
+    // Instantiate the Svelte component
+    const chatWidget = new AIChatWidget({
+      target: targetDiv,
+      props: {
+        // Remove default values for translatable strings - let the component handle them via i18n
+        title: getAttr("data-title", null),
+        apiUrl: getAttr("data-api-url", null), // Keep null or default URL if applicable
+        initialMessage: getAttr("data-initial-message", null),
+        buttonIcon: getAttr("data-button-icon", "💬"), // Keep non-translatable defaults
+        ctaText: getAttr("data-cta-text", null),
+        openInNewTab: getAttr("data-open-in-new-tab", true),
+        enableUTM: getAttr("data-enable-utm", true),
+        position: getPosition("bottom-right"),
+        persistentSession: getAttr("data-persistent-session", false),
+        sessionExpiration: getAttr("data-session-expiration", 24),
+        theme: getAttr("data-theme", "light"),
+        userMessageBgColor: getAttr("data-user-message-bg-color", "#e0e0e0"),
+        userMessageTextColor: getAttr("data-user-message-text-color", "#000000"),
+        assistantMessageBgColor: getAttr("data-assistant-message-bg-color", "#f8f8f8"),
+        assistantMessageTextColor: getAttr("data-assistant-message-text-color", "#000000"),
+        chatButtonBgColor: getAttr("data-chat-button-bg-color", "#000000"),
+        chatButtonTextColor: getAttr("data-chat-button-text-color", "#ffffff"),
+        ctaButtonBgColor: getAttr("data-cta-button-bg-color", "#f8f8f8"),
+        ctaButtonTextColor: getAttr("data-cta-button-text-color", "#000000"),
+        footerText: getAttr("data-footer-text", null),
+        showPoweredBy: getAttr("data-show-powered-by", true),
+        agentId: getAttr("data-agent-id", "xyz"),
+        cms: getAttr("data-cms", ""),
+        startOpen: getAttr("data-start-open", false),
+        fullScreen: getAttr("data-full-screen", false),
+        isDemo: getAttr("data-is-demo", false),
+        closable: getAttr("data-closable", true),
+      },
+    });
+  } catch (error) {
+      console.error("Error initializing chat widget:", error);
+      // Optionally display an error message to the user
+  }
+})();
