@@ -23,9 +23,9 @@ const app = new AIChatWidget({
     showPoweredBy: true,
     agentId: "cc669ca2-4594-4c3a-beaf-50fe6985e8cb", // Add your development Agent ID here
     cms: "prestashop", // Set to 'prestashop' or other CMS for local testing
-    startOpen: false, // Set to true to test the widget starting open
+    startOpen: false,
     fullScreen: false,
-    isDemo: true,
+    isDemo: false,
   },
 });
 

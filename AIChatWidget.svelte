@@ -4,9 +4,9 @@
 
   export let title = 'AI Sales Assistant';
   export let apiUrl;
-  export let initialMessage = 'Ciao, come posso aiutarti?';
+  export let initialMessage = 'Ciao, come posso aiutarti?'; // Keep initial message prop as is, can be overridden
   export let buttonIcon = '💬';
-  export let ctaText = 'Chiedi informazioni';
+  export let ctaText = 'Chiedi informazioni'; // Keep default CTA prop as is
   export let position = 'bottom-right';
   export let openInNewTab = true;
   export let enableUTM = true;
@@ -24,12 +24,13 @@
   export let chatButtonTextColor = '#ffffff';
   export let ctaButtonBgColor = '#f8f8f8'; // Default matches assistant bg
   export let ctaButtonTextColor = '#000000'; // Default matches assistant text
-  export let footerText = 'Generato dall\'IA. Verifica le informazioni importanti.';
+  export let footerText = 'Generato dall\'IA. Verifica le informazioni importanti.'; // Keep footer prop as is
   export let showPoweredBy = true; // Show "Powered by" text by default
   export let agentId = 'xyz'; // Agent ID for backend identification
   export let cms = ''; // CMS type ('prestashop', 'woocommerce', etc.)
 
-  let isChatVisible = startOpen || isDemo; // Start open if startOpen or isDemo is true
+  // Corrected: Visibility depends *only* on startOpen
+  let isChatVisible = startOpen;
   let messages = [];
   let userInput = '';
   let loadingState = null;
@@ -47,14 +48,15 @@
   $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
   $: isSvg = buttonIcon.trim().startsWith('<svg');
 
-  // --- Demo Content ---
-  const demoUserMessage = "Sto cercando delle scarpe da corsa comode.";
-  const demoBotReplyText = "Certamente! Abbiamo diverse opzioni. Ecco un modello molto popolare per la sua comodità e supporto. Puoi vedere più dettagli qui:";
-  const demoCta = { text: "Vedi Scarpa XYZ", url: "#product-xyz" };
+  // --- Demo Content (Translated to English) ---
+  const demoInitialMessage = "Hi, how can I help you?"; // Specific initial message for demo
+  const demoUserMessage = "I'm looking for comfortable running shoes.";
+  const demoBotReplyText = "Certainly! We have several options. Here is a very popular model known for its comfort and support. You can see more details here:";
+  const demoCta = { text: "See Shoe XYZ", url: "#product-xyz" };
   const demoProducts = [
-    { id: 1, name: "Scarpa Running Comfort", price: 89.99, regular_price: 110.00, image: "https://via.placeholder.com/150/EEEEEE/000000?text=Scarpa+1", url: "#product-1", brand: "Marca A" },
-    { id: 2, name: "Scarpa Leggera Pro", price: 120.00, regular_price: 120.00, image: "https://via.placeholder.com/150/DDDDDD/000000?text=Scarpa+2", url: "#product-2", brand: "Marca B" },
-    { id: 3, name: "Scarpa Trail Max", price: 99.50, regular_price: 130.00, image: "https://via.placeholder.com/150/CCCCCC/000000?text=Scarpa+3", url: "#product-3", brand: "Marca A" },
+    { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://via.placeholder.com/150/EEEEEE/000000?text=Shoe+1", url: "#product-1", brand: "Brand A" },
+    { id: 2, name: "Lightweight Pro Shoe", price: 120.00, regular_price: 120.00, image: "https://via.placeholder.com/150/DDDDDD/000000?text=Shoe+2", url: "#product-2", brand: "Brand B" },
+    { id: 3, name: "Trail Max Shoe", price: 99.50, regular_price: 130.00, image: "https://via.placeholder.com/150/CCCCCC/000000?text=Shoe+3", url: "#product-3", brand: "Brand A" },
   ];
   // --- End Demo Content ---
 
@@ -76,7 +78,7 @@
       if (chatMessages) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
-      // Inizializza WebSocket solo se non in demo mode e non già connesso
+      // Initialize WebSocket only if not in demo mode and not already connected
       if (!isDemo && !wsConnected && !isReconnecting) {
         initWebSocket();
       }
@@ -96,7 +98,7 @@
 
     if (!apiUrl) {
         console.error("API URL is not defined. WebSocket connection cannot be established.");
-        addMessageToUI("Errore di configurazione: URL API mancante.", 'bot');
+        addMessageToUI("Configuration Error: Missing API URL.", 'bot'); // Translated error
         return;
     }
     const wsUrl = apiUrl.replace(/^http/, 'ws');
@@ -110,7 +112,6 @@
     };
 
     ws.onmessage = async (event) => {
-      // Existing onmessage logic... (no changes needed here for demo mode)
       try {
         const data = JSON.parse(event.data);
 
@@ -118,14 +119,14 @@
           case 'thinking':
             loadingState = {
               type: 'thinking',
-              message: 'Sto pensando'
+              message: 'Thinking...' // Translated
             };
             break;
 
           case 'searching':
             loadingState = {
               type: 'searching',
-              message: '🔍 Cerco i prodotti più adatti'
+              message: '🔍 Searching for suitable products...' // Translated
             };
             break;
 
@@ -163,7 +164,7 @@
           case 'error':
             loadingState = null;
             console.error('WebSocket error:', data.content);
-            addMessageToUI("Si è verificato un errore nella comunicazione.", 'bot');
+            addMessageToUI("A communication error occurred.", 'bot'); // Translated error
             break;
         }
       } catch (err) {
@@ -176,7 +177,7 @@
       wsConnected = false;
       loadingState = null;
       if (!isReconnecting) {
-        addMessageToUI('Si è verificato un errore nella connessione.', 'bot');
+        addMessageToUI('A connection error occurred.', 'bot'); // Translated error
       }
     };
 
@@ -198,7 +199,7 @@
     if (reconnectAttempt > 0) {
       loadingState = {
         type: 'reconnecting',
-        message: `Riconnessione in corso (${reconnectAttempt}/${maxReconnectAttempts})`
+        message: `Reconnecting (${reconnectAttempt}/${maxReconnectAttempts})...` // Translated
       };
     }
 
@@ -209,7 +210,7 @@
       reconnectAttempt++;
       if (reconnectAttempt >= maxReconnectAttempts) {
         loadingState = null;
-        addMessageToUI("Impossibile ristabilire la connessione. Ricarica la pagina per riprovare.", 'bot');
+        addMessageToUI("Could not re-establish connection. Please reload the page to try again.", 'bot'); // Translated error
         isReconnecting = false;
         return;
       }
@@ -298,7 +299,7 @@
       links,
       productCarousel: additionalData.productCarousel || '',
       url: additionalData.url || '',
-      ctaText: additionalData.ctaText || ctaText
+      ctaText: additionalData.ctaText || ctaText // Use default ctaText prop if not provided
     }];
 
     tick().then(() => {
@@ -307,7 +308,8 @@
   }
 
   function formatPrice(price) {
-    return `${price.toFixed(2).replace('.', ',')} €`;
+    // Assuming Euro format for now, adjust if needed
+    return `€${price.toFixed(2)}`;
   }
 
   function calculateDiscount(price, regularPrice) {
@@ -317,7 +319,7 @@
   }
 
   function addUtmParams(url, source, medium, campaign) {
-    if (!enableUTM || url === '#') return url; // Don't add UTM to placeholder links
+    if (!enableUTM || url === '#' || !url) return url; // Don't add UTM to placeholder/invalid links
     try {
         const urlObj = new URL(url, window.location.origin);
         urlObj.searchParams.set('utm_source', source);
@@ -340,7 +342,7 @@
     userInput = '';
     loadingState = {
       type: 'thinking',
-      message: 'Sto pensando'
+      message: 'Thinking...' // Translated
     };
     currentBotMessage = '';
 
@@ -348,7 +350,7 @@
       ws.send(JSON.stringify({ chatInput: message }));
     } catch (err) {
       console.error("Error sending message:", err);
-      addMessageToUI("Si è verificato un errore nell'invio del messaggio.", 'bot');
+      addMessageToUI("An error occurred while sending the message.", 'bot'); // Translated error
     }
   }
 
@@ -361,7 +363,7 @@
 
   function setupDemoMessages() {
       messages = []; // Clear existing messages
-      addMessageToUI(initialMessage, 'bot');
+      addMessageToUI(demoInitialMessage, 'bot'); // Use specific demo initial message
       addMessageToUI(demoUserMessage, 'user');
       const demoCarouselHtml = createProductCarousel(demoProducts);
       addMessageToUI(demoBotReplyText, 'bot', {
@@ -388,7 +390,9 @@
         console.error('Reset chat failed:', await response.text());
         return;
       }
-      messages = messages.length ? messages.slice(0, 1) : [];
+      // Reset to the original initial message from props
+      messages = [];
+      addMessageToUI(initialMessage, 'bot');
       currentBotMessage = '';
       if (ws) {
         ws.close(1000, 'Session reset');
@@ -404,12 +408,14 @@
   onMount(() => {
     if (!isDemo) {
         saveSessionIdToCookie(sessionId);
+        // Add the initial message provided via prop
         addMessageToUI(initialMessage, 'bot');
+        // Only connect WebSocket if startOpen is true (and not in demo)
         if (startOpen) {
             initWebSocket();
         }
     } else {
-        // Setup demo mode
+        // Setup demo mode messages
         setupDemoMessages();
     }
 
@@ -424,11 +430,13 @@
 
   // Helper function to render the correct Add to Cart button/form based on CMS
   function renderAddToCartButton(product) {
+    const buttonText = "Buy"; // Translated button text
+
     // In demo mode, always render a simple link
     if (isDemo || !cms) {
         return `
           <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
-            <span>Acquista</span>
+            <span>${buttonText}</span>
           </a>
         `;
     }
@@ -443,7 +451,7 @@
           <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}">
           <input type="hidden" name="add" value="1">
           <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit">
-            <span>Acquista</span>
+            <span>${buttonText}</span>
           </button>
         </form>
       `;
@@ -454,7 +462,7 @@
     // Default: Render a simple link (fallback behavior)
     return `
       <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
-        <span>Acquista</span>
+        <span>${buttonText}</span>
       </a>
     `;
   }
@@ -492,7 +500,6 @@
       <div id="chat-header">
         <div>
           {title}{isDemo ? ' (Demo)' : ''}
-
         </div>
         <div class="header-buttons">
           <button id="reset-chat" on:click={resetChat} title="Reset Chat">↺</button>
@@ -543,7 +550,7 @@
           id="user-input"
           bind:value={userInput}
           on:keypress={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder={isDemo ? "Demo mode - Input disabled" : "Scrivi un messaggio..."}
+          placeholder={isDemo ? "Demo mode - Input disabled" : "Write a message..."}
           disabled={isDemo}
           >
         <button
@@ -551,7 +558,7 @@
           disabled={isDemo || !!loadingState?.message || loadingState?.type === 'writing'}
           on:click={sendMessage}
         >
-          Invia
+          Send
         </button>
       </div>
       <div id="chat-footer">{footerText}</div>
