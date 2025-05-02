@@ -603,10 +603,8 @@
           {displayTitle}{isDemo ? ` ${$_('widget.demoSuffix')}` : ''}
         </div>
         <div class="header-buttons">
-          <!-- Use translated title attribute -->
           <button id="reset-chat" on:click={resetChat} title={$_('widget.resetTitle')} aria-label={$_('widget.resetTitle')}>↺</button>
           {#if closable}
-            <!-- Use translated title attribute -->
             <button id="close-chat" on:click={toggleChat} title={$_('widget.closeTitle')} aria-label={$_('widget.closeTitle')}>×</button>
           {/if}
         </div>

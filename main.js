@@ -34,7 +34,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         fullScreen: false,
         isDemo: false,
         closable: true, // Add closable prop for development
-        // footerText: "Generato dall'IA...", // Let component handle default via i18n
+        // footerText: "", // Let component handle default via i18n
       },
     });
 
