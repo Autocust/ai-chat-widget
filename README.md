@@ -27,6 +27,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
     data-cta-text="Chiedi informazioni"
     data-open-in-new-tab="true"
     data-start-open="false"
+    data-full-screen="false"
 ></script>
 ```
 
@@ -48,7 +49,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-cta-button-text-color`: Text color for Call-To-Action buttons below messages (e.g., '#000000').
 - `data-initial-message`: The initial message of the chat widget.
 - `data-button-icon`: The icon for the chat toggle button (can be text, emoji, URL to image, or SVG markup).
-- `data-position`: The position of the chat widget.
+- `data-position`: The position of the chat widget. Ignored if `data-full-screen` is `true`.
 - `data-cta-text`: The text for the call-to-action button in the chat widget.
 - `data-open-in-new-tab`: A boolean value to determine if URLs should open in a new tab (default is `true`).
 - `data-enable-utm`: Set to `true` to include UTM parameters in product URLs. Set to `false` to disable UTM parameters. Default is `true`.
@@ -57,6 +58,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-footer-text`: Custom text displayed in the footer area below the input field. Default is "Generato dall'IA. Verifica le informazioni importanti.".
 - `data-show-powered-by`: Set to `false` to hide the "Powered by Autocust" text at the bottom. Default is `true`.
 - `data-start-open`: Set to `true` to make the chat widget open by default when the page loads. Default is `false`.
+- `data-full-screen`: Set to `true` to make the chat widget open in fullscreen mode, covering the entire viewport. Default is `false`.
 
 ### Supported Positions
 
@@ -67,7 +69,7 @@ The `data-position` attribute can be set to one of the following values:
 - `bottom-left`: Positions the widget in the bottom-left corner of the page
 - `bottom-right`: Positions the widget in the bottom-right corner of the page (default)
 
-If no position is specified or an invalid value is provided, the widget will default to the `bottom-right` position.
+If no position is specified or an invalid value is provided, the widget will default to the `bottom-right` position. **Note:** This setting is ignored if `data-full-screen` is set to `true`.
 
 ## Development
 

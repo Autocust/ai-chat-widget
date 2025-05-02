@@ -10,7 +10,8 @@
   export let position = 'bottom-right';
   export let openInNewTab = true;
   export let enableUTM = true;
-  export let startOpen = false; // New prop to control initial state
+  export let startOpen = false;
+  export let fullScreen = false; // New prop for fullscreen mode
 
   // New Theming Props
   export let theme = 'light'; // 'light' or 'dark'
@@ -428,8 +429,12 @@
   }
 </script>
 
-<!-- Template remains largely unchanged -->
-<div id="chat-widget" class="{position} theme-{theme}" style="
+<!-- Apply fullscreen class conditionally -->
+<div
+  id="chat-widget"
+  class="{position} theme-{theme}"
+  class:fullscreen="{isChatVisible && fullScreen}"
+  style="
   --user-msg-bg: {userMessageBgColor};
   --user-msg-text: {userMessageTextColor};
   --assistant-msg-bg: {assistantMessageBgColor};
@@ -581,6 +586,7 @@
   font-family: Arial, sans-serif;
 }
 
+/* Default positioning classes */
 .top-left {
   top: 20px;
   left: 20px;
@@ -599,6 +605,24 @@
 .bottom-right {
   bottom: 20px;
   right: 20px;
+}
+
+/* Fullscreen styles */
+#chat-widget.fullscreen {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  width: 100vw; /* Use viewport width */
+  height: 100vh; /* Use viewport height */
+  z-index: 2147483647; /* Max z-index */
+}
+
+#chat-widget.fullscreen #chat-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 0; /* Remove border radius in fullscreen */
+  box-shadow: none; /* Remove shadow in fullscreen */
 }
 
 #chat-button {
@@ -641,6 +665,7 @@
   background-color: var(--header-bg); /* Use theme header bg */
   color: var(--header-text); /* Use theme header text */
   padding: 10px 10px 10px 14px;
+  flex-shrink: 0; /* Prevent header from shrinking */
 }
 
 .header-buttons {
@@ -759,8 +784,9 @@
   }
 }
 
+/* Override default size on small screens if not fullscreen */
 @media (max-width: 480px) {
-  #chat-container {
+  #chat-widget:not(.fullscreen) #chat-container {
     width: 90vw;
     height: calc(90vh - 20px);
   }
@@ -770,6 +796,7 @@
   display: flex;
   padding: 10px 10px 0 10px;
   background-color: var(--input-area-bg); /* Use theme input area bg */
+  flex-shrink: 0; /* Prevent input area from shrinking */
 }
 
 #chat-footer {
@@ -778,6 +805,7 @@
   padding: 10px;
   background-color: var(--input-area-bg); /* Use theme input area bg */
   color: var(--disclaimer-text); /* Use theme disclaimer text */
+  flex-shrink: 0; /* Prevent footer from shrinking */
 }
 
 #powered-by {
@@ -786,6 +814,7 @@
   padding: 5px 10px 10px; /* Less top padding, more bottom */
   background-color: var(--input-area-bg); /* Match footer background */
   color: var(--disclaimer-text); /* Match footer text color */
+  flex-shrink: 0; /* Prevent powered-by from shrinking */
 }
 
 #powered-by a {

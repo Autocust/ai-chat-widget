@@ -61,5 +61,6 @@ const chatWidget = new AIChatWidget({
     agentId: getAttr("data-agent-id", "xyz"), // Add Agent ID
     cms: getAttr("data-cms", ""), // Add CMS type ('prestashop', 'woocommerce', etc.)
     startOpen: getAttr("data-start-open", false), // Add startOpen prop
+    fullScreen: getAttr("data-full-screen", false), // Add fullScreen prop
   },
 });
