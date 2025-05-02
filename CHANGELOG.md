@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.0](https://github.com/Autocust/ai-chat-widget/compare/v2.0.0...v2.1.0) (2025-05-02)
+
+### Features
+
+* demo mode ([e20de4a](https://github.com/Autocust/ai-chat-widget/commit/e20de4aaeb5649cd848a20c0011a803d2ddc5270))
+* fullscreen mode ([68b868b](https://github.com/Autocust/ai-chat-widget/commit/68b868b2776115c387830fa4c5895e9143a4095b))
+* initial open state ([9542663](https://github.com/Autocust/ai-chat-widget/commit/95426633ace59025795f42a9f14c52037f0541b1))
+
+### Code Refactoring
+
+* demo mode english ([497f1da](https://github.com/Autocust/ai-chat-widget/commit/497f1da2a8f5ecc6682c0369ab9daa6144b194db))
+
+### Chores
+
+* do not publish on npm ([95a8378](https://github.com/Autocust/ai-chat-widget/commit/95a83784caefae2c21e1e818bd60c8a6eee8aa3c))
+
 ## [1.3.0](https://github.com/Autocust/ai-chat-widget/compare/v1.2.5...v1.3.0) (2024-12-18)
 
 
