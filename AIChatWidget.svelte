@@ -54,9 +54,9 @@
   const demoBotReplyText = "Certainly! We have several options. Here is a very popular model known for its comfort and support. You can see more details here:";
   const demoCta = { text: "See Shoe XYZ", url: "#product-xyz" };
   const demoProducts = [
-    { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://via.placeholder.com/150/EEEEEE/000000?text=Shoe+1", url: "#product-1", brand: "Brand A" },
-    { id: 2, name: "Lightweight Pro Shoe", price: 120.00, regular_price: 120.00, image: "https://via.placeholder.com/150/DDDDDD/000000?text=Shoe+2", url: "#product-2", brand: "Brand B" },
-    { id: 3, name: "Trail Max Shoe", price: 99.50, regular_price: 130.00, image: "https://via.placeholder.com/150/CCCCCC/000000?text=Shoe+3", url: "#product-3", brand: "Brand A" },
+    { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://fakeimg.pl/600x400", url: "#product-1", brand: "Brand A" },
+    { id: 2, name: "Lightweight Pro Shoe", price: 120.00, regular_price: 120.00, image: "https://fakeimg.pl/600x400", url: "#product-2", brand: "Brand B" },
+    { id: 3, name: "Trail Max Shoe", price: 99.50, regular_price: 130.00, image: "https://fakeimg.pl/600x400", url: "#product-3", brand: "Brand A" },
   ];
   // --- End Demo Content ---
 
