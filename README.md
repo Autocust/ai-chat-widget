@@ -8,6 +8,7 @@ This project provides a versatile, embeddable chat widget for the [Autocust](htt
 - **Embeddable**: Simple to embed and integrate into your website.
 - **Responsive**: Works seamlessly on all devices.
 - **Intelligent**: Utilizes advanced AI models to provide intelligent responses.
+- **Demo Mode**: Includes a demo mode to showcase widget features without connecting to the backend.
 
 ## Quick Start
 
@@ -28,15 +29,16 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
     data-open-in-new-tab="true"
     data-start-open="false"
     data-full-screen="false"
+    data-is-demo="false"
 ></script>
 ```
 
 ## Available options:
 
 - `data-title`: The title of the chat widget.
-- `data-api-url`: The URL of the API that will power the chat widget.
-- `data-chatbot-id`: The ID identifying the specific chatbot configuration to use (Header: `X-Chatbot-ID` for HTTP, Query Param: `chatbotId` for WebSocket). Default is `xyz`.
-- `data-agent-id`: The Agent ID used for backend identification and API calls. Default is `xyz`.
+- `data-api-url`: The URL of the API that will power the chat widget. Ignored if `data-is-demo` is `true`.
+- `data-chatbot-id`: The ID identifying the specific chatbot configuration to use (Header: `X-Chatbot-ID` for HTTP, Query Param: `chatbotId` for WebSocket). Default is `xyz`. Ignored if `data-is-demo` is `true`.
+- `data-agent-id`: The Agent ID used for backend identification and API calls. Default is `xyz`. Ignored if `data-is-demo` is `true`.
 - `data-cms`: The type of Content Management System the website uses (e.g., 'prestashop', 'woocommerce'). This can affect features like "Add to Cart" buttons in product carousels. Default is `''` (empty string).
 - `data-theme`: The overall theme ('light' or 'dark'). Default is 'light'.
 - `data-user-message-bg-color`: Background color for user messages (e.g., '#e0e0e0').
@@ -50,15 +52,16 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-initial-message`: The initial message of the chat widget.
 - `data-button-icon`: The icon for the chat toggle button (can be text, emoji, URL to image, or SVG markup).
 - `data-position`: The position of the chat widget. Ignored if `data-full-screen` is `true`.
-- `data-cta-text`: The text for the call-to-action button in the chat widget.
+- `data-cta-text`: The default text for the call-to-action button in the chat widget (can be overridden by bot messages).
 - `data-open-in-new-tab`: A boolean value to determine if URLs should open in a new tab (default is `true`).
 - `data-enable-utm`: Set to `true` to include UTM parameters in product URLs. Set to `false` to disable UTM parameters. Default is `true`.
-- `data-persistent-session`: Set to `true` to enable persistent sessions, allowing users to retain their chat history across sessions. Default is `false`.
-- `data-session-expiration`: The duration (in hours) for which the session is valid. After this period, the chat history will be wiped. Default is `24`.
+- `data-persistent-session`: Set to `true` to enable persistent sessions, allowing users to retain their chat history across sessions. Default is `false`. Ignored if `data-is-demo` is `true`.
+- `data-session-expiration`: The duration (in hours) for which the session is valid. After this period, the chat history will be wiped. Default is `24`. Ignored if `data-is-demo` is `true`.
 - `data-footer-text`: Custom text displayed in the footer area below the input field. Default is "Generato dall'IA. Verifica le informazioni importanti.".
 - `data-show-powered-by`: Set to `false` to hide the "Powered by Autocust" text at the bottom. Default is `true`.
-- `data-start-open`: Set to `true` to make the chat widget open by default when the page loads. Default is `false`.
+- `data-start-open`: Set to `true` to make the chat widget open by default when the page loads. Default is `false`. If `data-is-demo` is `true`, the widget will always start open.
 - `data-full-screen`: Set to `true` to make the chat widget open in fullscreen mode, covering the entire viewport. Default is `false`.
+- `data-is-demo`: Set to `true` to enable demo mode. This shows a predefined conversation including a product carousel and disables real chat functionality (API connection, message sending). Default is `false`.
 
 ### Supported Positions
 
@@ -83,7 +86,7 @@ npm install
 npm run dev
 ```
 
-The widget preview will be available at `http://localhost:5173` and it will automatically live update if you modify the code.
+The widget preview will be available at `http://localhost:5173` and it will automatically live update if you modify the code. You can modify the props in `main.js` to test different configurations, including `isDemo: true`.
 
 ## Build
 

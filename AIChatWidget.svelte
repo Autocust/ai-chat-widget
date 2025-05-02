@@ -11,7 +11,8 @@
   export let openInNewTab = true;
   export let enableUTM = true;
   export let startOpen = false;
-  export let fullScreen = false; // New prop for fullscreen mode
+  export let fullScreen = false;
+  export let isDemo = false; // New prop for demo mode
 
   // New Theming Props
   export let theme = 'light'; // 'light' or 'dark'
@@ -28,7 +29,7 @@
   export let agentId = 'xyz'; // Agent ID for backend identification
   export let cms = ''; // CMS type ('prestashop', 'woocommerce', etc.)
 
-  let isChatVisible = startOpen; // Initialize based on startOpen prop
+  let isChatVisible = startOpen || isDemo; // Start open if startOpen or isDemo is true
   let messages = [];
   let userInput = '';
   let loadingState = null;
@@ -46,6 +47,17 @@
   $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
   $: isSvg = buttonIcon.trim().startsWith('<svg');
 
+  // --- Demo Content ---
+  const demoUserMessage = "Sto cercando delle scarpe da corsa comode.";
+  const demoBotReplyText = "Certamente! Abbiamo diverse opzioni. Ecco un modello molto popolare per la sua comodità e supporto. Puoi vedere più dettagli qui:";
+  const demoCta = { text: "Vedi Scarpa XYZ", url: "#product-xyz" };
+  const demoProducts = [
+    { id: 1, name: "Scarpa Running Comfort", price: 89.99, regular_price: 110.00, image: "https://via.placeholder.com/150/EEEEEE/000000?text=Scarpa+1", url: "#product-1", brand: "Marca A" },
+    { id: 2, name: "Scarpa Leggera Pro", price: 120.00, regular_price: 120.00, image: "https://via.placeholder.com/150/DDDDDD/000000?text=Scarpa+2", url: "#product-2", brand: "Marca B" },
+    { id: 3, name: "Scarpa Trail Max", price: 99.50, regular_price: 130.00, image: "https://via.placeholder.com/150/CCCCCC/000000?text=Scarpa+3", url: "#product-3", brand: "Marca A" },
+  ];
+  // --- End Demo Content ---
+
   function getSessionIdFromCookie() {
     const cookieName = 'chat_session_id';
     const match = document.cookie.match(new RegExp('(^| )' + cookieName + '=([^;]+)'));
@@ -57,7 +69,6 @@
     document.cookie = `chat_session_id=${sessionId};path=/;SameSite=Lax`;
   }
 
-  // Modifica la funzione toggleChat per gestire la connessione WebSocket
   async function toggleChat() {
     isChatVisible = !isChatVisible;
     if (isChatVisible) {
@@ -65,16 +76,14 @@
       if (chatMessages) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
-      // Inizializza WebSocket quando la chat viene aperta (se non già connesso)
-      if (!wsConnected && !isReconnecting) {
+      // Inizializza WebSocket solo se non in demo mode e non già connesso
+      if (!isDemo && !wsConnected && !isReconnecting) {
         initWebSocket();
       }
-    } else {
+    } else if (!isDemo) { // Only manage WebSocket closing if not in demo mode
       clearTimeout(reconnectInterval);
       isReconnecting = false;
       reconnectAttempt = 0;
-
-      // Chiudi WebSocket quando la chat viene chiusa
       if (ws) {
         ws.close(1000, 'Chat closed by user');
         wsConnected = false;
@@ -83,23 +92,25 @@
   }
 
   function initWebSocket() {
+    if (isDemo) return; // Do nothing in demo mode
+
     if (!apiUrl) {
         console.error("API URL is not defined. WebSocket connection cannot be established.");
         addMessageToUI("Errore di configurazione: URL API mancante.", 'bot');
         return;
     }
     const wsUrl = apiUrl.replace(/^http/, 'ws');
-    // Append agentId as a query parameter for WebSocket connection
     ws = new WebSocket(`${wsUrl}/ws-chat?sessionId=${sessionId}&agentId=${encodeURIComponent(agentId)}`);
 
     ws.onopen = () => {
-    console.log('WebSocket connected');
+      console.log('WebSocket connected');
       wsConnected = true;
       isReconnecting = false;
-      reconnectAttempt = 0; // Reset dei tentativi quando la connessione ha successo
+      reconnectAttempt = 0;
     };
 
     ws.onmessage = async (event) => {
+      // Existing onmessage logic... (no changes needed here for demo mode)
       try {
         const data = JSON.parse(event.data);
 
@@ -123,10 +134,8 @@
               type: 'writing',
             };;
 
-            // Accumula il testo del messaggio
             currentBotMessage += data.content;
 
-            // Aggiorna o aggiungi il messaggio in progress
             if (messages.length > 0 && messages[messages.length - 1].sender === 'bot') {
               messages = messages.slice(0, -1);
             }
@@ -134,18 +143,16 @@
             break;
 
           case 'products_search':
-            // Fetch products and create carousel if available
             const products = await fetchProducts();
             if (products && products.length > 0) {
               const carousel = createProductCarousel(products);
-              // Aggiorna l'ultimo messaggio del bot con il carosello
               const lastMessage = messages[messages.length - 1];
               if (lastMessage && lastMessage.sender === 'bot') {
                 messages[messages.length - 1] = {
                   ...lastMessage,
                   productCarousel: carousel
                 };
-                messages = [...messages]; // Trigger reattività
+                messages = [...messages];
               }
             }
 
@@ -176,11 +183,6 @@
     ws.onclose = (event) => {
       console.log('WebSocket connection closed');
       wsConnected = false;
-
-      // Tenta la riconnessione solo se:
-      // 1. La chat è ancora visibile
-      // 2. Non è una chiusura normale (codice 1000)
-      // 3. Non stiamo già tentando la riconnessione
       if (isChatVisible && event.code !== 1000 && !isReconnecting) {
         attemptReconnect();
       }
@@ -188,14 +190,11 @@
   }
 
   function attemptReconnect() {
-    if (isReconnecting || reconnectAttempt >= maxReconnectAttempts) return;
+    if (isDemo || isReconnecting || reconnectAttempt >= maxReconnectAttempts) return; // Do nothing in demo mode
 
     isReconnecting = true;
-
-    // Calcola delay con backoff esponenziale (1s, 2s, 4s, 8s, 16s)
     const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 16000);
 
-    // Mostra messaggio di riconnessione dopo il primo tentativo
     if (reconnectAttempt > 0) {
       loadingState = {
         type: 'reconnecting',
@@ -208,21 +207,16 @@
     clearTimeout(reconnectInterval);
     reconnectInterval = setTimeout(() => {
       reconnectAttempt++;
-
-      // Se si tratta dell'ultimo tentativo
       if (reconnectAttempt >= maxReconnectAttempts) {
         loadingState = null;
         addMessageToUI("Impossibile ristabilire la connessione. Ricarica la pagina per riprovare.", 'bot');
         isReconnecting = false;
         return;
       }
-
-      // Tenta di riconnettersi
       try {
         initWebSocket();
       } catch (err) {
         console.error('Reconnection failed:', err);
-        // Se fallisce, riprova
         attemptReconnect();
       }
     }, delay);
@@ -272,10 +266,11 @@
   }
 
   async function fetchProducts() {
+    if (isDemo) return demoProducts; // Return demo products in demo mode
     try {
       const response = await fetch(`${apiUrl}/products/${sessionId}`, {
         headers: {
-          'X-Agent-ID': agentId // Use Agent ID header
+          'X-Agent-ID': agentId
         }
       });
       if (!response.ok) return null;
@@ -322,15 +317,22 @@
   }
 
   function addUtmParams(url, source, medium, campaign) {
-    if (!enableUTM) return url;
-    const urlObj = new URL(url, window.location.origin);
-    urlObj.searchParams.set('utm_source', source);
-    urlObj.searchParams.set('utm_medium', medium);
-    urlObj.searchParams.set('utm_campaign', campaign);
-    return urlObj.toString();
+    if (!enableUTM || url === '#') return url; // Don't add UTM to placeholder links
+    try {
+        const urlObj = new URL(url, window.location.origin);
+        urlObj.searchParams.set('utm_source', source);
+        urlObj.searchParams.set('utm_medium', medium);
+        urlObj.searchParams.set('utm_campaign', campaign);
+        return urlObj.toString();
+    } catch (e) {
+        console.warn("Could not add UTM params to invalid URL:", url);
+        return url; // Return original URL if invalid
+    }
   }
 
   async function sendMessage() {
+    if (isDemo) return; // Do nothing in demo mode
+
     const message = userInput.trim();
     if (!message || !wsConnected) return;
 
@@ -357,22 +359,37 @@
     });
   }
 
+  function setupDemoMessages() {
+      messages = []; // Clear existing messages
+      addMessageToUI(initialMessage, 'bot');
+      addMessageToUI(demoUserMessage, 'user');
+      const demoCarouselHtml = createProductCarousel(demoProducts);
+      addMessageToUI(demoBotReplyText, 'bot', {
+          url: demoCta.url,
+          ctaText: demoCta.text,
+          productCarousel: demoCarouselHtml
+      });
+  }
+
   async function resetChat() {
+    if (isDemo) {
+        setupDemoMessages(); // Reset to demo state
+        return;
+    }
+
     try {
       const response = await fetch(`${apiUrl}/reset-session?sessionId=${sessionId}`, {
         method: 'DELETE',
         headers: {
-          'X-Agent-ID': agentId // Use Agent ID header
+          'X-Agent-ID': agentId
         }
       });
       if (!response.ok) {
         console.error('Reset chat failed:', await response.text());
         return;
       }
-      // Mantieni il primo messaggio e svuota il resto
       messages = messages.length ? messages.slice(0, 1) : [];
       currentBotMessage = '';
-      // Chiudi e reinizializza la connessione WebSocket
       if (ws) {
         ws.close(1000, 'Session reset');
       }
@@ -385,31 +402,45 @@
   }
 
   onMount(() => {
-    saveSessionIdToCookie(sessionId);
-    addMessageToUI(initialMessage, 'bot');
-
-    // If the chat should start open, initialize WebSocket immediately
-    if (startOpen) {
-      initWebSocket();
+    if (!isDemo) {
+        saveSessionIdToCookie(sessionId);
+        addMessageToUI(initialMessage, 'bot');
+        if (startOpen) {
+            initWebSocket();
+        }
+    } else {
+        // Setup demo mode
+        setupDemoMessages();
     }
 
     return () => {
-      // Cleanup
-      if (ws) ws.close(1000);
-      clearTimeout(reconnectInterval);
+      // Cleanup WebSocket only if not in demo mode
+      if (!isDemo) {
+          if (ws) ws.close(1000);
+          clearTimeout(reconnectInterval);
+      }
     };
   });
 
   // Helper function to render the correct Add to Cart button/form based on CMS
   function renderAddToCartButton(product) {
+    // In demo mode, always render a simple link
+    if (isDemo || !cms) {
+        return `
+          <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
+            <span>Acquista</span>
+          </a>
+        `;
+    }
+
     if (cms === 'prestashop') {
       // PrestaShop requires a form submission
       return `
         <form class="product-miniature__form" action="/carrello" method="post">
           <input type="hidden" name="id_product" value="${product.id}">
-          <input type="hidden" name="id_product_attribute" value="${product.id_product_attribute || 0}"> <!-- Default attribute to 0 if not provided -->
+          <input type="hidden" name="id_product_attribute" value="${product.id_product_attribute || 0}">
           <input type="hidden" name="qty" value="1" class="form-control input-qty">
-          <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}"> <!-- Safely access PrestaShop token -->
+          <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}">
           <input type="hidden" name="add" value="1">
           <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit">
             <span>Acquista</span>
@@ -459,7 +490,10 @@
   {#if isChatVisible}
     <div id="chat-container">
       <div id="chat-header">
-        <div>{title}</div>
+        <div>
+          {title}{isDemo ? ' (Demo)' : ''}
+
+        </div>
         <div class="header-buttons">
           <button id="reset-chat" on:click={resetChat} title="Reset Chat">↺</button>
           <button id="close-chat" on:click={toggleChat}>×</button>
@@ -490,7 +524,7 @@
             {@html message.productCarousel}
           {/if}
         {/each}
-        {#if loadingState?.message}
+        {#if !isDemo && loadingState?.message}
           <div class="loading-container">
             <div class="loading-indicator">
               <span class="loading-text">{loadingState.message}</span>
@@ -509,10 +543,12 @@
           id="user-input"
           bind:value={userInput}
           on:keypress={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Scrivi un messaggio...">
+          placeholder={isDemo ? "Demo mode - Input disabled" : "Scrivi un messaggio..."}
+          disabled={isDemo}
+          >
         <button
           id="send-button"
-          disabled="{!!loadingState?.message || loadingState?.type === 'writing'}"
+          disabled={isDemo || !!loadingState?.message || loadingState?.type === 'writing'}
           on:click={sendMessage}
         >
           Invia
@@ -553,6 +589,8 @@
   --loading-bg: #f8f8f8;
   --loading-text-color: #666;
   --loading-dot-color: #666;
+  --disabled-input-bg: #eeeeee;
+  --disabled-button-bg: #cccccc;
 }
 
 .theme-dark {
@@ -578,6 +616,8 @@
   --loading-bg: #4a4a4a;
   --loading-text-color: #cccccc;
   --loading-dot-color: #cccccc;
+  --disabled-input-bg: #555555;
+  --disabled-button-bg: #777777;
 }
 
 #chat-widget {
@@ -836,6 +876,11 @@
   font-size: 16px;
 }
 
+#user-input:disabled {
+  background-color: var(--disabled-input-bg); /* Theme disabled input */
+  cursor: not-allowed;
+}
+
 #send-button {
   background-color: var(--send-button-bg); /* Use theme send button bg */
   color: var(--send-button-text); /* Use theme send button text */
@@ -849,7 +894,8 @@
 }
 
 #send-button:disabled {
-  background-color: #ccc;
+  background-color: var(--disabled-button-bg); /* Theme disabled button */
+  cursor: not-allowed;
 }
 
 /* Style CTA buttons */
