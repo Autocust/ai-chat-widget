@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.3](https://github.com/Autocust/ai-chat-widget/compare/v2.1.2...v2.1.3) (2025-05-02)
+
+### Features
+
+* make closable parameter ([25a4776](https://github.com/Autocust/ai-chat-widget/commit/25a47760bee901825437b676d6638b1da385cf00))
+
 ## [2.1.2](https://github.com/Autocust/ai-chat-widget/compare/v2.1.1...v2.1.2) (2025-05-02)
 
 ### Bug Fixes
