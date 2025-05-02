@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.2](https://github.com/Autocust/ai-chat-widget/compare/v2.1.1...v2.1.2) (2025-05-02)
+
+### Bug Fixes
+
+* missing demo images ([24fe165](https://github.com/Autocust/ai-chat-widget/commit/24fe16502b23c1618afb48154438b72fa4756e0a))
+
 ## [2.1.1](https://github.com/Autocust/ai-chat-widget/compare/v2.1.0...v2.1.1) (2025-05-02)
 
 ### Chores
