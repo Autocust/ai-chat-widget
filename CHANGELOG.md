@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.4](https://github.com/Autocust/ai-chat-widget/compare/v2.1.3...v2.1.4) (2025-05-02)
+
+### Chores
+
+* translatable GUI ([10698d0](https://github.com/Autocust/ai-chat-widget/commit/10698d05521aca80fe2ce4ed3101d035f1c3e0e8))
+
 ## [2.1.3](https://github.com/Autocust/ai-chat-widget/compare/v2.1.2...v2.1.3) (2025-05-02)
 
 ### Features
