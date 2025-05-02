@@ -13,6 +13,7 @@
   export let startOpen = false;
   export let fullScreen = false;
   export let isDemo = false; // New prop for demo mode
+  export let closable = true; // New prop to control close button visibility
 
   // New Theming Props
   export let theme = 'light'; // 'light' or 'dark'
@@ -72,6 +73,11 @@
   }
 
   async function toggleChat() {
+    // If the chat is not closable and is currently visible, do nothing on toggle attempt
+    if (!closable && isChatVisible) {
+        return;
+    }
+
     isChatVisible = !isChatVisible;
     if (isChatVisible) {
       await tick();
@@ -503,7 +509,9 @@
         </div>
         <div class="header-buttons">
           <button id="reset-chat" on:click={resetChat} title="Reset Chat">↺</button>
-          <button id="close-chat" on:click={toggleChat}>×</button>
+          {#if closable}
+            <button id="close-chat" on:click={toggleChat}>×</button>
+          {/if}
         </div>
       </div>
       <div id="chat-messages" bind:this={chatMessages}>

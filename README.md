@@ -30,6 +30,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
     data-start-open="false"
     data-full-screen="false"
     data-is-demo="false"
+    data-closable="true"
 ></script>
 ```
 
@@ -62,6 +63,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-start-open`: Set to `true` to make the chat widget open by default when the page loads. Default is `false`.
 - `data-full-screen`: Set to `true` to make the chat widget open in fullscreen mode, covering the entire viewport. Default is `false`.
 - `data-is-demo`: Set to `true` to enable demo mode. This shows a predefined conversation including a product carousel and disables real chat functionality (API connection, message sending). Default is `false`.
+- `data-closable`: Set to `false` to hide the close button (x) in the chat header, preventing users from closing the chat window once opened. Default is `true`.
 
 ### Supported Positions
 

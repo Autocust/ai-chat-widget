@@ -63,5 +63,6 @@ const chatWidget = new AIChatWidget({
     startOpen: getAttr("data-start-open", false), // Add startOpen prop
     fullScreen: getAttr("data-full-screen", false), // Add fullScreen prop
     isDemo: getAttr("data-is-demo", false), // Add isDemo prop
+    closable: getAttr("data-closable", true), // Add closable prop
   },
 });

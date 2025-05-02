@@ -26,6 +26,7 @@ const app = new AIChatWidget({
     startOpen: false,
     fullScreen: false,
     isDemo: false,
+    closable: true, // Add closable prop for development
   },
 });
 
