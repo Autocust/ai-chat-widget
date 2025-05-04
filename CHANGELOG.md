@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.1.5](https://github.com/Autocust/ai-chat-widget/compare/v2.1.4...v2.1.5) (2025-05-04)
+
+### Code Refactoring
+
+* align new tab target behavior ([02e88e5](https://github.com/Autocust/ai-chat-widget/commit/02e88e5430c3ec0f9af6db6e7ed838c09189255f))
+* clean comments ([e6686de](https://github.com/Autocust/ai-chat-widget/commit/e6686de9c5f427cf403aa4799abb06336cc894fe))
+
+### Chores
+
+* build ([f7f0690](https://github.com/Autocust/ai-chat-widget/commit/f7f0690c6ea5ad2722e6e8cb3f4c7ee34284e3f2))
+
 ## [2.1.4](https://github.com/Autocust/ai-chat-widget/compare/v2.1.3...v2.1.4) (2025-05-02)
 
 ### Chores
