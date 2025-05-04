@@ -164,7 +164,11 @@
             currentBotMessage += data.content;
             if (messages.length > 0 && messages[messages.length - 1].sender === 'bot') {
               // Replace the last bot message content instead of adding a new one
-              messages[messages.length - 1].content = marked.parse(currentBotMessage.replace(/\【.*?】/g, ''));
+              const last = messages.at(-1);
+              last.content = marked.parse(
+                currentBotMessage.replace(/\【.*?】/g,'')
+              );
+              last.links = extractLinks(currentBotMessage);
               messages = [...messages]; // Trigger reactivity
             } else {
               // Add a new bot message if the last one wasn't from the bot or if messages is empty

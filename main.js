@@ -28,13 +28,13 @@ import AIChatWidget from "./AIChatWidget.svelte";
         enableUTM: true,
         position: "bottom-right",
         showPoweredBy: true,
-        agentId: "cc669ca2-4594-4c3a-beaf-50fe6985e8cb", // Add your development Agent ID here
+        agentId: "b06dc179-fa7b-429d-a99e-4e05017abf16", // Add your development Agent ID here
         cms: "prestashop", // Set to 'prestashop' or other CMS for local testing
         startOpen: false,
         fullScreen: false,
         isDemo: false,
         closable: true, // Add closable prop for development
-        // footerText: "", // Let component handle default via i18n
+        // footerText: "",
       },
     });
 
