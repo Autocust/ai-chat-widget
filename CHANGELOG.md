@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.6](https://github.com/Autocust/ai-chat-widget/compare/v2.1.5...v2.1.6) (2025-05-04)
+
+### Bug Fixes
+
+* restore cta link extractor ([a68987f](https://github.com/Autocust/ai-chat-widget/commit/a68987fc5da18460811df5ffcf7d711698e7931a))
+* restore cta link extractor ([190454c](https://github.com/Autocust/ai-chat-widget/commit/190454c105a95039193bd4a47a4d80d4b98d8d14))
+
 ## [2.1.5](https://github.com/Autocust/ai-chat-widget/compare/v2.1.4...v2.1.5) (2025-05-04)
 
 ### Code Refactoring
