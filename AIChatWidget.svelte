@@ -70,6 +70,22 @@
   ];
   // --- End Demo Content ---
 
+  const renderer = new marked.Renderer();
+
+  // Override the link renderer to add target="_blank"
+  renderer.link = function(href, title, text) {
+    const link = marked.Renderer.prototype.link.call(this, href, title, text);
+    if (openInNewTab) {
+      return link.replace('<a ', '<a target="_blank" ');
+    }
+    return link.replace('<a ', '<a target="_self" ');
+  };
+
+  // Set the custom renderer
+  marked.setOptions({
+    renderer: renderer
+  });
+
   function getSessionIdFromCookie() {
     const cookieName = 'chat_session_id';
     const match = document.cookie.match(new RegExp('(^| )' + cookieName + '=([^;]+)'));
@@ -291,9 +307,12 @@
 
   function createProductCarousel(products) {
     if (!products || products.length === 0) return '';
+
     const productCards = products.map(product => `
       <div class="carousel-product">
-        <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot')}" target="_blank" class="product-link">
+        <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot')}"
+           target="${openInNewTab ? '_blank' : '_self'}"
+           class="product-link">
           ${product.regular_price && product.regular_price > product.price ?
             `<span class="discount-label">${calculateDiscount(product.price, product.regular_price)}</span>` : ''}
           <img src="${product.image}" alt="${product.name}">
@@ -305,10 +324,15 @@
             <span class="current-price">${formatPrice(product.price)}</span>
           </div>
         </a>
-        ${renderAddToCartButton(product)}
+        ${renderAddToCartButton(product)} <!-- Use helper function -->
       </div>
     `).join('');
-    return `<div class="product-carousel">${productCards}</div>`;
+
+    return `
+      <div class="product-carousel">
+        ${productCards}
+      </div>
+    `;
   }
 
   function extractLinks(markdownText) {
@@ -532,23 +556,20 @@
     const buttonText = $_('product.buyButton');
 
     if (isDemo || !cms) {
-        return `
-          <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
-            <span>${buttonText}</span>
-          </a>
-        `;
+      return `
+        <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
+          <span>${buttonText}</span>
+        </a>
+      `;
     }
 
     if (cms === 'prestashop') {
-      // PrestaShop requires a form submission
-      // Ensure window.prestashop is checked safely
-      const prestashopToken = typeof window !== 'undefined' && window.prestashop ? window.prestashop.static_token : '';
       return `
         <form class="product-miniature__form" action="/carrello" method="post">
           <input type="hidden" name="id_product" value="${product.id}">
           <input type="hidden" name="id_product_attribute" value="${product.id_product_attribute || 0}">
           <input type="hidden" name="qty" value="1" class="form-control input-qty">
-          <input type="hidden" name="token" value="${prestashopToken}">
+          <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}">
           <input type="hidden" name="add" value="1">
           <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit">
             <span>${buttonText}</span>
@@ -556,12 +577,12 @@
         </form>
       `;
     }
-    // Add other CMS checks here if needed in the future
-    // else if (cms === 'woocommerce') { ... return woocommerce_button_html ... }
 
     // Default: Render a simple link (fallback behavior)
     return `
-      <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
+      <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}"
+         target="${openInNewTab ? '_blank' : '_self'}"
+         class="add-to-cart">
         <span>${buttonText}</span>
       </a>
     `;
