@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.1](https://github.com/Autocust/ai-chat-widget/compare/v2.2.0...v2.2.1) (2025-05-06)
+
+### Code Refactoring
+
+* translations ([31dd2e9](https://github.com/Autocust/ai-chat-widget/commit/31dd2e92c174b71eb63edb6b6f075820b99334f2))
+
 ## [2.2.0](https://github.com/Autocust/ai-chat-widget/compare/v2.1.9...v2.2.0) (2025-05-06)
 
 ### Bug Fixes
