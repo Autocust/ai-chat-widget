@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.7](https://github.com/Autocust/ai-chat-widget/compare/v2.1.6...v2.1.7) (2025-05-06)
+
+### Features
+
+* persistent session ([2b66c15](https://github.com/Autocust/ai-chat-widget/commit/2b66c155009de98e733b334909b4ba97af40d2ce))
+
 ## [2.1.6](https://github.com/Autocust/ai-chat-widget/compare/v2.1.5...v2.1.6) (2025-05-04)
 
 ### Bug Fixes
