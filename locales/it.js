@@ -14,7 +14,7 @@ export default {
   },
   status: {
     thinking: 'Sto pensando...',
-    searching: '🔍 Ricerca di prodotti adatti in corso...',
+    searching: '🔍 Cerco...',
     reconnecting: 'Riconnessione in corso ({current}/{max})...',
     error: 'Si è verificato un errore di comunicazione.',
     connectionError: 'Si è verificato un errore di connessione.',

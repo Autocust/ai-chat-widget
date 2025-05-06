@@ -15,7 +15,7 @@ export default {
   },
   status: {
     thinking: "Réflexion...",
-    searching: "🔍 Recherche de produits adaptés...",
+    searching: "🔍 Recherche...",
     reconnecting: "Reconnexion ({current}/{max})...",
     error: "Une erreur de communication est survenue.",
     connectionError: "Une erreur de connexion est survenue.",
