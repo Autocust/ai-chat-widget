@@ -142,13 +142,13 @@
   }
 
   function getSessionIdFromCookie() {
-    const cookieName = 'chat_session_id';
+    const cookieName = `aisa_agent_${agentId}`;
     const match = document.cookie.match(new RegExp('(^| )' + cookieName + '=([^;]+)'));
     return match ? match[2] : null;
   }
 
   function saveSessionIdToCookie(sessionIdValue) {
-    let cookieString = `chat_session_id=${sessionIdValue};path=/;SameSite=Lax`;
+    let cookieString = `aisa_agent_${agentId};=${sessionIdValue};path=/;SameSite=Lax`;
     if (persistentSession && !isDemo) {
       const maxAgeSeconds = 30 * 24 * 60 * 60; // 30 days
       cookieString += `;Max-Age=${maxAgeSeconds}`;
