@@ -4,7 +4,6 @@
   import { _ } from './i18n'; // Import the translation function
 
   // --- Props ---
-  // Keep props as they are, they allow overriding the defaults
   export let title = null;
   export let apiUrl;
   export let initialMessage = null;
@@ -30,9 +29,10 @@
   export let showPoweredBy = true;
   export let agentId = 'xyz';
   export let cms = '';
+  export let persistentSession = false; // New prop
+  export let sessionExpiration = 24; // New prop (hours)
 
   // --- Reactive variables for props with translatable defaults ---
-  // Use the prop value if provided, otherwise use the translated default
   $: displayTitle = title ?? $_('widget.title');
   $: displayInitialMessage = initialMessage ?? $_('widget.initialMessage');
   $: displayCtaText = ctaText ?? $_('widget.ctaText');
@@ -58,12 +58,11 @@
   $: isSvg = buttonIcon.trim().startsWith('<svg');
 
   // --- Demo Content ---
-  // Make demo constants reactive to ensure $_ is ready
   $: demoInitialMessage = $_('demo.initialMessage');
   $: demoUserMessage = $_('demo.userMessage');
   $: demoBotReplyText = $_('demo.botReply');
   $: demoCta = { text: $_('demo.ctaText'), url: "#product-xyz" };
-  const demoProducts = [ // Product details likely don't need reactivity
+  const demoProducts = [
     { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://fakeimg.pl/600x400", url: "#product-1", brand: "Brand A" },
     { id: 2, name: "Lightweight Pro Shoe", price: 120.00, regular_price: 120.00, image: "https://fakeimg.pl/600x400", url: "#product-2", brand: "Brand B" },
     { id: 3, name: "Trail Max Shoe", price: 99.50, regular_price: 130.00, image: "https://fakeimg.pl/600x400", url: "#product-3", brand: "Brand A" },
@@ -71,8 +70,6 @@
   // --- End Demo Content ---
 
   const renderer = new marked.Renderer();
-
-  // Override the link renderer to add target="_blank"
   renderer.link = function(href, title, text) {
     const link = marked.Renderer.prototype.link.call(this, href, title, text);
     if (openInNewTab) {
@@ -80,11 +77,69 @@
     }
     return link.replace('<a ', '<a target="_self" ');
   };
+  marked.setOptions({ renderer });
 
-  // Set the custom renderer
-  marked.setOptions({
-    renderer: renderer
-  });
+  // --- Local Storage Helper Functions ---
+  const getLocalStorageKey = (type, id) => `chat_${type}_${id}`;
+
+  function loadSessionFromLocalStorage(currentSessionId) {
+    if (typeof localStorage === 'undefined' || !persistentSession || isDemo) return null;
+    try {
+      const metaKey = getLocalStorageKey('meta', currentSessionId);
+      const messagesKey = getLocalStorageKey('messages', currentSessionId);
+
+      const metaString = localStorage.getItem(metaKey);
+      if (!metaString) return null;
+
+      const meta = JSON.parse(metaString);
+      const expirationHours = parseFloat(sessionExpiration) || 24;
+      const sessionAgeHours = (Date.now() - meta.lastActivity) / (1000 * 60 * 60);
+
+      if (sessionAgeHours > expirationHours) {
+        console.log(`Session ${currentSessionId} expired. Clearing from local storage.`);
+        clearSessionFromLocalStorage(currentSessionId);
+        return null;
+      }
+
+      const messagesString = localStorage.getItem(messagesKey);
+      if (!messagesString) return null;
+
+      console.log(`Loading session ${currentSessionId} from local storage.`);
+      return { messages: JSON.parse(messagesString) };
+    } catch (e) {
+      console.error("Error loading session from local storage:", e);
+      clearSessionFromLocalStorage(currentSessionId); // Clear potentially corrupted data
+      return null;
+    }
+  }
+
+  function saveSessionToLocalStorage(currentSessionId, currentMessages) {
+    if (typeof localStorage === 'undefined' || !persistentSession || isDemo) return;
+    try {
+      const metaKey = getLocalStorageKey('meta', currentSessionId);
+      const messagesKey = getLocalStorageKey('messages', currentSessionId);
+
+      const meta = { lastActivity: Date.now() };
+      localStorage.setItem(metaKey, JSON.stringify(meta));
+      localStorage.setItem(messagesKey, JSON.stringify(currentMessages));
+      // console.log(`Session ${currentSessionId} saved to local storage.`);
+    } catch (e) {
+      console.error("Error saving session to local storage:", e);
+    }
+  }
+
+  function clearSessionFromLocalStorage(currentSessionId) {
+    if (typeof localStorage === 'undefined' || !persistentSession || isDemo) return;
+    try {
+      const metaKey = getLocalStorageKey('meta', currentSessionId);
+      const messagesKey = getLocalStorageKey('messages', currentSessionId);
+      localStorage.removeItem(metaKey);
+      localStorage.removeItem(messagesKey);
+      console.log(`Session ${currentSessionId} cleared from local storage.`);
+    } catch (e) {
+      console.error("Error clearing session from local storage:", e);
+    }
+  }
 
   function getSessionIdFromCookie() {
     const cookieName = 'chat_session_id';
@@ -92,8 +147,13 @@
     return match ? match[2] : null;
   }
 
-  function saveSessionIdToCookie(sessionId) {
-    document.cookie = `chat_session_id=${sessionId};path=/;SameSite=Lax`;
+  function saveSessionIdToCookie(sessionIdValue) {
+    let cookieString = `chat_session_id=${sessionIdValue};path=/;SameSite=Lax`;
+    if (persistentSession && !isDemo) {
+      const maxAgeSeconds = 30 * 24 * 60 * 60; // 30 days
+      cookieString += `;Max-Age=${maxAgeSeconds}`;
+    }
+    document.cookie = cookieString;
   }
 
   async function toggleChat() {
@@ -122,10 +182,8 @@
 
   function initWebSocket() {
     if (isDemo) return;
-
     if (!apiUrl) {
         console.error("API URL is not defined. WebSocket connection cannot be established.");
-        // Use translated error message
         addMessageToUI($_('status.configErrorApi'), 'bot');
         return;
     }
@@ -137,153 +195,111 @@
       wsConnected = true;
       isReconnecting = false;
       reconnectAttempt = 0;
-      loadingState = null; // Clear reconnecting message on successful connection
+      loadingState = null;
     };
 
     ws.onmessage = async (event) => {
       try {
         const data = JSON.parse(event.data);
-
         switch(data.type) {
           case 'thinking':
-            loadingState = {
-              type: 'thinking',
-              message: $_('status.thinking') // Translated
-            };
+            loadingState = { type: 'thinking', message: $_('status.thinking') };
             break;
-
           case 'searching':
-            loadingState = {
-              type: 'searching',
-              message: $_('status.searching') // Translated
-            };
+            loadingState = { type: 'searching', message: $_('status.searching') };
             break;
-
           case 'token':
-            loadingState = { type: 'writing' }; // No visible text needed for writing state itself
+            loadingState = { type: 'writing' };
             currentBotMessage += data.content;
             if (messages.length > 0 && messages[messages.length - 1].sender === 'bot') {
-              // Replace the last bot message content instead of adding a new one
               const last = messages.at(-1);
-              last.content = marked.parse(
-                currentBotMessage.replace(/\【.*?】/g,'')
-              );
+              last.content = marked.parse(currentBotMessage.replace(/\【.*?】/g,''));
               last.links = extractLinks(currentBotMessage);
-              messages = [...messages]; // Trigger reactivity
+              messages = [...messages];
+              if (persistentSession && !isDemo) { // Save after updating streamed message
+                saveSessionToLocalStorage(sessionId, messages);
+              }
             } else {
-              // Add a new bot message if the last one wasn't from the bot or if messages is empty
-               addMessageToUI(currentBotMessage, 'bot');
+               addMessageToUI(currentBotMessage, 'bot'); // This already calls saveSessionToLocalStorage
             }
-            // Ensure scroll after update
             tick().then(() => {
               if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
             });
             break;
-
           case 'products_search':
             const products = await fetchProducts();
             if (products && products.length > 0) {
               const carousel = createProductCarousel(products);
               const lastMessage = messages[messages.length - 1];
               if (lastMessage && lastMessage.sender === 'bot') {
-                messages[messages.length - 1] = {
-                  ...lastMessage,
-                  productCarousel: carousel
-                };
-                messages = [...messages]; // Trigger reactivity
-              } else {
-                 // If the last message wasn't a bot message, maybe add a new one with the carousel?
-                 // This case needs clarification based on expected backend behavior.
-                 // For now, let's assume products_search follows a bot message.
+                messages[messages.length - 1] = { ...lastMessage, productCarousel: carousel };
+                messages = [...messages];
+                if (persistentSession && !isDemo) { // Save after adding carousel
+                    saveSessionToLocalStorage(sessionId, messages);
+                }
               }
             }
-            // Assuming products_search might not always end the turn, no break here.
-            // If it *does* end the turn, add break;
-            break; // Added break assuming product search is a distinct step before done
-
+            break;
           case 'done':
             loadingState = null;
-            currentBotMessage = ''; // Reset current message buffer on done
+            // Ensure final state of messages is saved
+            if (persistentSession && !isDemo && messages.length > 0) {
+                saveSessionToLocalStorage(sessionId, messages);
+            }
+            currentBotMessage = ''; // Reset after potential save
             break;
-
           case 'error':
             loadingState = null;
             console.error('WebSocket error:', data.content);
-            addMessageToUI($_('status.error'), 'bot'); // Translated error
+            addMessageToUI($_('status.error'), 'bot'); // This will save
             break;
         }
       } catch (err) {
         console.error('Error processing message:', err);
-        // Maybe add a generic UI error message here too?
       }
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
       wsConnected = false;
-      loadingState = null; // Clear loading state on error
+      loadingState = null;
       if (!isReconnecting) {
-        addMessageToUI($_('status.connectionError'), 'bot'); // Translated error
-      }
-      // If we were trying to reconnect, let the reconnect logic handle the next step
-      if (isReconnecting) {
-          // The reconnect attempt failed, the timeout in attemptReconnect will trigger the next step
+        addMessageToUI($_('status.connectionError'), 'bot');
       }
     };
 
     ws.onclose = (event) => {
       console.log('WebSocket connection closed:', event.code, event.reason);
       wsConnected = false;
-      // Only attempt reconnect if the closure was unexpected and the chat should be open
       if (isChatVisible && event.code !== 1000 && !isReconnecting) {
         attemptReconnect();
-      } else if (event.code !== 1000 && isReconnecting) {
-          // If it closed during a reconnect attempt, let the timer handle the next attempt or failure
       } else {
-          // Normal closure (1000) or closed while chat hidden/not reconnecting
-          isReconnecting = false; // Ensure flag is reset
-          loadingState = null; // Clear any loading state
+          isReconnecting = false;
+          loadingState = null;
       }
     };
   }
 
   function attemptReconnect() {
     if (isDemo || isReconnecting || reconnectAttempt >= maxReconnectAttempts) return;
-
     isReconnecting = true;
-    const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 16000); // Exponential backoff up to 16s
-
-    // Use translated reconnect message with variables
-    // Show reconnecting message immediately
+    const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 16000);
     loadingState = {
       type: 'reconnecting',
       message: $_('status.reconnecting', { values: { current: reconnectAttempt + 1, max: maxReconnectAttempts } })
     };
-
-
     console.log(`Attempting reconnect ${reconnectAttempt + 1}/${maxReconnectAttempts} in ${delay}ms`);
-
-    clearTimeout(reconnectInterval); // Clear previous timer if any
+    clearTimeout(reconnectInterval);
     reconnectInterval = setTimeout(() => {
-      // Check if still relevant before attempting
-      if (!isChatVisible) { // Don't reconnect if chat was closed
+      if (!isChatVisible || wsConnected) {
           isReconnecting = false;
-          loadingState = null; // Clear loading state if chat closed
-          console.log('Reconnect aborted: Chat closed.');
+          loadingState = null;
+          console.log(`Reconnect aborted: Chat closed or already connected.`);
           return;
       }
-       if (wsConnected) { // Don't reconnect if already connected (e.g., manually reopened)
-          isReconnecting = false;
-          loadingState = null; // Clear loading state
-          console.log('Reconnect aborted: Already connected.');
-          return;
-      }
-
-
       reconnectAttempt++;
       if (reconnectAttempt > maxReconnectAttempts) {
         loadingState = null;
-        // Use translated failure message
         addMessageToUI($_('status.reconnectFailed'), 'bot');
         isReconnecting = false;
         console.log('Max reconnect attempts reached.');
@@ -291,27 +307,22 @@
       }
       try {
         console.log(`Executing reconnect attempt ${reconnectAttempt}`);
-        // Update loading message for subsequent attempts
-         loadingState = {
+        loadingState = {
             type: 'reconnecting',
             message: $_('status.reconnecting', { values: { current: reconnectAttempt, max: maxReconnectAttempts } })
-         };
-        initWebSocket(); // Attempt to reconnect
-        // Don't immediately assume success, wait for onopen or onerror/onclose
+        };
+        initWebSocket();
       } catch (err) {
         console.error('Reconnection failed immediately during initWebSocket:', err);
-        // Error during initWebSocket itself (unlikely but possible)
-        isReconnecting = false; // Reset flag
+        isReconnecting = false;
         loadingState = null;
-        addMessageToUI($_('status.reconnectFailed'), 'bot'); // Fail if init throws
+        addMessageToUI($_('status.reconnectFailed'), 'bot');
       }
     }, delay);
   }
 
-
   function createProductCarousel(products) {
     if (!products || products.length === 0) return '';
-
     const productCards = products.map(product => `
       <div class="carousel-product">
         <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot')}"
@@ -328,15 +339,10 @@
             <span class="current-price">${formatPrice(product.price)}</span>
           </div>
         </a>
-        ${renderAddToCartButton(product)} <!-- Use helper function -->
+        ${renderAddToCartButton(product)}
       </div>
     `).join('');
-
-    return `
-      <div class="product-carousel">
-        ${productCards}
-      </div>
-    `;
+    return `<div class="product-carousel">${productCards}</div>`;
   }
 
   function extractLinks(markdownText) {
@@ -358,8 +364,7 @@
           console.error(`Error fetching products: ${response.status} ${response.statusText}`);
           return null;
       }
-      const data = await response.json();
-      return data.products;
+      return (await response.json()).products;
     } catch (error) {
       console.error('Error fetching products:', error);
       return null;
@@ -367,42 +372,43 @@
   }
 
   function addMessageToUI(content, sender, additionalData = {}) {
-    let messageContent = content;
+    let processedContent = content; // This is the content that will be stored/displayed
     let links = [];
 
     if (sender === 'bot') {
-      links = extractLinks(content);
-      // Ensure marked is used safely if content could be malicious
-      // Consider using a sanitizer library like DOMPurify after marked if content isn't fully trusted
-      messageContent = marked.parse(content || ''); // Ensure content is not null/undefined
-      messageContent = messageContent.replace(/\【.*?】/g, ''); // Remove potential placeholders if needed
+      const rawMarkdown = content || '';
+      links = extractLinks(rawMarkdown); // Extract links from original markdown
+      // Process markdown: first remove unwanted patterns, then parse
+      const cleanedMarkdown = rawMarkdown.replace(/\【.*?】/g, '');
+      processedContent = marked.parse(cleanedMarkdown);
     }
+    // For user messages, processedContent remains plain text (original content).
 
     messages = [...messages, {
-      content: messageContent,
+      content: processedContent, // HTML for bot, plain text for user
       sender,
       links,
       productCarousel: additionalData.productCarousel || '',
       url: additionalData.url || '',
-      // Use the *displayed* CTA text (prop override or translated default)
       ctaText: additionalData.ctaText || displayCtaText
     }];
 
-    // Scroll to bottom when a new message is added
+    if (persistentSession && !isDemo) {
+      saveSessionToLocalStorage(sessionId, messages);
+    }
+
     tick().then(() => {
       if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
     });
   }
 
   function formatPrice(price) {
-    // Basic Euro formatting, consider Intl.NumberFormat for better localization
      try {
-        // Attempt to use browser language, fallback to 'en' if needed
         const locale = navigator.language || 'en';
         return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(price);
      } catch (e) {
         console.warn("Intl.NumberFormat failed, falling back to basic format.", e);
-        return `€${Number(price).toFixed(2)}`; // Fallback
+        return `€${Number(price).toFixed(2)}`;
      }
   }
 
@@ -413,37 +419,35 @@
   }
 
   function addUtmParams(url, source, medium, campaign) {
-    if (!enableUTM || !url || url.startsWith('#')) return url; // Don't add UTM to invalid/anchor links
+    if (!enableUTM || !url || url.startsWith('#')) return url;
     try {
-        const urlObj = new URL(url, window.location.origin); // Use base URL for relative paths
+        const urlObj = new URL(url, window.location.origin);
         urlObj.searchParams.set('utm_source', source);
         urlObj.searchParams.set('utm_medium', medium);
         urlObj.searchParams.set('utm_campaign', campaign);
         return urlObj.toString();
     } catch (e) {
         console.warn("Could not add UTM params to invalid URL:", url, e);
-        return url; // Return original URL if invalid
+        return url;
     }
   }
 
   async function sendMessage() {
     if (isDemo) return;
-
     const message = userInput.trim();
-    // Prevent sending if not connected, already loading, or message is empty
     if (!message || !wsConnected || loadingState) return;
 
-    addMessageToUI(message, 'user');
+    addMessageToUI(message, 'user'); // This will save if persistentSession is true
     userInput = '';
-    loadingState = { type: 'thinking', message: $_('status.thinking') }; // Translated
-    currentBotMessage = ''; // Reset bot message buffer
+    loadingState = { type: 'thinking', message: $_('status.thinking') };
+    currentBotMessage = ''; // Reset for the new bot message stream
 
     try {
       ws.send(JSON.stringify({ chatInput: message }));
     } catch (err) {
       console.error("Error sending message:", err);
-      addMessageToUI($_('status.sendError'), 'bot'); // Translated error
-      loadingState = null; // Clear loading state on send error
+      addMessageToUI($_('status.sendError'), 'bot'); // This will save
+      loadingState = null;
     }
   }
 
@@ -456,7 +460,6 @@
 
   function setupDemoMessages() {
       messages = [];
-      // Use reactive demo variables which depend on $_
       addMessageToUI(demoInitialMessage, 'bot');
       addMessageToUI(demoUserMessage, 'user');
       const demoCarouselHtml = createProductCarousel(demoProducts);
@@ -465,7 +468,6 @@
           ctaText: demoCta.text,
           productCarousel: demoCarouselHtml
       });
-      // Ensure scroll after setting up demo messages
       tick().then(() => {
         if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
       });
@@ -477,96 +479,92 @@
         return;
     }
 
-    // Clear local state immediately for responsiveness
+    if (persistentSession && !isDemo) {
+      clearSessionFromLocalStorage(sessionId);
+    }
+
     messages = [];
     currentBotMessage = '';
     loadingState = null;
-    addMessageToUI(displayInitialMessage, 'bot'); // Add initial message back immediately
+    addMessageToUI(displayInitialMessage, 'bot'); // This will also save the new session if persistent
     tick().then(() => {
-        if (chatMessages) chatMessages.scrollTop = 0; // Scroll to top after reset
+        if (chatMessages) chatMessages.scrollTop = 0;
     });
 
-
-    // Close existing connection if open
     if (ws) {
       ws.close(1000, 'Session reset');
-      wsConnected = false; // Assume closed until new connection opens
+      wsConnected = false;
     }
-    clearTimeout(reconnectInterval); // Stop any reconnect attempts
+    clearTimeout(reconnectInterval);
     isReconnecting = false;
     reconnectAttempt = 0;
 
-
-    // Send reset request to backend
     try {
       const response = await fetch(`${apiUrl}/reset-session?sessionId=${sessionId}`, {
         method: 'DELETE',
         headers: { 'X-Agent-ID': agentId }
       });
-      if (!response.ok) {
-        console.error('Reset chat failed on backend:', await response.text());
-        // Optionally inform user of backend reset failure
-      } else {
-          console.log('Session reset successfully on backend.');
-      }
+      if (!response.ok) console.error('Reset chat failed on backend:', await response.text());
+      else console.log('Session reset successfully on backend.');
     } catch (err) {
       console.error('Error sending reset chat request:', err);
-      // Optionally inform user of network error during reset
     }
 
-    // Re-initialize WebSocket if the chat is currently visible
     if (isChatVisible) {
       initWebSocket();
     }
   }
 
   onMount(() => {
-    // svelte-i18n's init is called in i18n.js, which is imported top-level in main/embed.
-    // The reactive declarations ($:) and store subscriptions handle waiting for the locale.
-    // We just need to ensure the initial message is added once.
-    if (!isDemo) {
-        saveSessionIdToCookie(sessionId);
-        // Add the initial message only if messages array is currently empty
-        if (messages.length === 0) {
-             addMessageToUI(displayInitialMessage, 'bot');
+    if (isDemo) {
+        setupDemoMessages();
+    } else {
+        saveSessionIdToCookie(sessionId); // Save/update cookie, respecting persistentSession for Max-Age
+
+        let loadedMessagesFromStorage = false;
+        if (persistentSession) {
+            const storedSession = loadSessionFromLocalStorage(sessionId);
+            if (storedSession && storedSession.messages) {
+                messages = storedSession.messages;
+                loadedMessagesFromStorage = true;
+                // Update last activity timestamp as session is now active
+                saveSessionToLocalStorage(sessionId, messages);
+                tick().then(() => {
+                    if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+                });
+            } else {
+                 // Session expired or not found, ensure it's cleared (loadSession handles this)
+            }
         }
+
+        if (!loadedMessagesFromStorage && messages.length === 0) {
+            addMessageToUI(displayInitialMessage, 'bot'); // This will also save if persistentSession is true
+        }
+
         if (startOpen) {
-            // Connect only if not already connected (e.g. component remount)
             if (!wsConnected && !isReconnecting) {
                 initWebSocket();
             }
         }
-    } else {
-        setupDemoMessages();
     }
 
-
     return () => {
-      // Cleanup WebSocket only if not in demo mode
       if (!isDemo) {
           if (ws) {
               ws.close(1000, 'Component unmounted');
               wsConnected = false;
           }
-          clearTimeout(reconnectInterval); // Clear any pending reconnect timers
+          clearTimeout(reconnectInterval);
           isReconnecting = false;
       }
     };
   });
 
-  // Helper function to render the correct Add to Cart button/form based on CMS
   function renderAddToCartButton(product) {
-    // Use translated button text
     const buttonText = $_('product.buyButton');
-
     if (isDemo || !cms) {
-      return `
-        <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart">
-          <span>${buttonText}</span>
-        </a>
-      `;
+      return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart"><span>${buttonText}</span></a>`;
     }
-
     if (cms === 'prestashop') {
       return `
         <form class="product-miniature__form" action="/carrello" method="post">
@@ -575,25 +573,13 @@
           <input type="hidden" name="qty" value="1" class="form-control input-qty">
           <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}">
           <input type="hidden" name="add" value="1">
-          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit">
-            <span>${buttonText}</span>
-          </button>
-        </form>
-      `;
+          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit"><span>${buttonText}</span></button>
+        </form>`;
     }
-
-    // Default: Render a simple link (fallback behavior)
-    return `
-      <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}"
-         target="${openInNewTab ? '_blank' : '_self'}"
-         class="add-to-cart">
-        <span>${buttonText}</span>
-      </a>
-    `;
+    return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="${openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
   }
 </script>
 
-<!-- Apply fullscreen class conditionally -->
 <div
   id="chat-widget"
   class="{position} theme-{theme}"
@@ -609,9 +595,9 @@
   --cta-btn-text: {ctaButtonTextColor};
 ">
   {#if !isChatVisible}
-    <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}> <!-- Add aria-label for accessibility -->
+    <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}>
       {#if isImageUrl}
-        <img src={buttonIcon} alt={$_('widget.title')} /> <!-- Add alt text -->
+        <img src={buttonIcon} alt={$_('widget.title')} />
       {:else if isSvg}
         {@html buttonIcon}
       {:else}
@@ -623,10 +609,7 @@
   {#if isChatVisible}
     <div id="chat-container">
       <div id="chat-header">
-        <div>
-          <!-- Use displayed title -->
-          {displayTitle}{isDemo ? ` ${$_('widget.demoSuffix')}` : ''}
-        </div>
+        <div>{displayTitle}{isDemo ? ` ${$_('widget.demoSuffix')}` : ''}</div>
         <div class="header-buttons">
           <button id="reset-chat" on:click={resetChat} title={$_('widget.resetTitle')} aria-label={$_('widget.resetTitle')}>↺</button>
           {#if closable}
@@ -634,24 +617,26 @@
           {/if}
         </div>
       </div>
-      <div id="chat-messages" bind:this={chatMessages} aria-live="polite"> <!-- Add aria-live for screen readers -->
-        {#each messages as message (message.sender + message.content.substring(0, 30))} <!-- Basic keying, consider UUIDs for messages if needed -->
+      <div id="chat-messages" bind:this={chatMessages} aria-live="polite">
+        {#each messages as message (message.sender + message.content.substring(0, 30) + Math.random())} <!-- Consider more robust keying if issues arise -->
           <div class="message {message.sender}-message">
-            {@html message.content}
+            {#if message.sender === 'bot'}
+              {@html message.content}
+            {:else}
+              {message.content} <!-- Render user messages as text -->
+            {/if}
           </div>
           {#if message.url}
             <a href={addUtmParams(message.url, 'chat', 'chatbot', 'chatbot')}
                target={openInNewTab ? '_blank' : '_self'}
-               class="cta-button">{message.ctaText}</a> <!-- ctaText already handled in addMessageToUI -->
+               class="cta-button">{message.ctaText}</a>
           {/if}
           {#if message.links && message.links.length > 0}
             <div class="message-links">
               {#each message.links as link}
                 <a href={addUtmParams(link.url, 'chat', 'chatbot', 'chatbot')}
                   target="_blank"
-                  class="cta-button">
-                  {link.text}
-                </a>
+                  class="cta-button">{link.text}</a>
               {/each}
             </div>
           {/if}
@@ -660,15 +645,10 @@
           {/if}
         {/each}
         {#if !isDemo && loadingState?.message}
-          <div class="loading-container" aria-live="assertive"> <!-- aria-live for loading state -->
+          <div class="loading-container" aria-live="assertive">
             <div class="loading-indicator">
-              <!-- Loading message is already translated when set -->
               <span class="loading-text">{loadingState.message}</span>
-              <div class="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
+              <div class="typing-dots"><span></span><span></span><span></span></div>
             </div>
           </div>
         {/if}
@@ -687,17 +667,12 @@
           id="send-button"
           disabled={isDemo || !!loadingState || !userInput.trim()}
           on:click={sendMessage}
-        >
-          <!-- Use translated button text -->
-          {$_('widget.sendButton')}
-        </button>
+        >{$_('widget.sendButton')}</button>
       </div>
-      <!-- Use displayed footer text -->
       <div id="chat-footer">{displayFooterText}</div>
       {#if showPoweredBy}
         <div id="powered-by">
-          <!-- Use translated "Powered by" -->
-          {$_('widget.poweredBy')} <a href="https://www.autocust.it" target="_blank" rel="noopener noreferrer">Autocust</a> <!-- Add rel for security -->
+          {$_('widget.poweredBy')} <a href="https://www.autocust.it" target="_blank" rel="noopener noreferrer">Autocust</a>
         </div>
       {/if}
     </div>
@@ -839,8 +814,7 @@
   display: flex; align-items: center; padding: 8px 12px;
   background-color: var(--loading-bg); border-radius: 16px;
   max-width: fit-content;
-  /* Removed animation: fadeInOut 2s infinite; - can be distracting */
-  margin: 5px 0; /* Add some margin */
+  margin: 5px 0;
 }
 .loading-indicator { display: flex; align-items: baseline; gap: 4px; }
 .loading-text { color: var(--loading-text-color); font-size: 14px; }
@@ -854,7 +828,6 @@
 .typing-dots span:nth-child(3) { animation-delay: 400ms; }
 
 @keyframes customBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-/* @keyframes fadeInOut { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } } */
 
 @media (max-width: 480px) {
   #chat-widget:not(.fullscreen) #chat-container {
@@ -890,7 +863,7 @@
   border: none; padding: 10px 15px; margin-left: 5px; cursor: pointer;
   border-radius: 3px; text-wrap: nowrap; min-width: 60px;
 }
-#send-button:disabled { background-color: var(--disabled-button-bg); cursor: not-allowed; opacity: 0.6; } /* Added opacity for disabled state */
+#send-button:disabled { background-color: var(--disabled-button-bg); cursor: not-allowed; opacity: 0.6; }
 
 .cta-button {
   display: inline-block; background-color: var(--cta-btn-bg); color: var(--cta-btn-text);
@@ -923,8 +896,7 @@
 :global(.add-to-cart) {
   background-color: var(--cta-btn-bg); color: var(--cta-btn-text);
   border: none; border-radius: 20px; padding: 8px 12px; cursor: pointer;
-  display: inline-block; /* Changed from flex to inline-block for simpler button */
-  /* align-items: center; gap: 8px; */ /* Removed flex properties */
+  display: inline-block;
   transition: background-color 0.3s, color 0.3s; margin: 10px auto 0;
   text-decoration: none; font-size: 14px; text-align: center; width: 100%;
   box-sizing: border-box;

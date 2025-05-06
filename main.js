@@ -9,11 +9,10 @@ import AIChatWidget from "./AIChatWidget.svelte";
     const app = new AIChatWidget({
       target: document.body,
       props: {
-        // Props remain the same, but remove defaults for translatable text
-        // title: "AI Sales Assistant", // Let component handle default via i18n
+        title: "AI Sales Assistant", // Let component handle default via i18n
         apiUrl: "http://assistant.tractiontools.local",
-        // initialMessage: "Ciao, come posso aiutarti?", // Let component handle default via i18n
-        // ctaText: "Chiedi informazioni", // Let component handle default via i18n
+        initialMessage: "Ciao, come posso aiutarti?", // Let component handle default via i18n
+        ctaText: "Chiedi informazioni", // Let component handle default via i18n
         buttonIcon: "💬",
         theme: "light", // 'light' or 'dark'
         userMessageBgColor: "#d1eaff", // Light blue
@@ -24,17 +23,19 @@ import AIChatWidget from "./AIChatWidget.svelte";
         chatButtonTextColor: "#ffffff",
         ctaButtonBgColor: "#d00", // Example override
         ctaButtonTextColor: "#fff", // Example override
-        openInNewTab: false,
+        openInNewTab: true,
         enableUTM: true,
         position: "bottom-right",
+        persistentSession: true,
+        sessionExpiration: 24, // in hours
         showPoweredBy: true,
         agentId: "b06dc179-fa7b-429d-a99e-4e05017abf16", // Add your development Agent ID here
-        cms: "prestashop", // Set to 'prestashop' or other CMS for local testing
+        cms: "", // Set to 'prestashop' or other CMS for local testing
         startOpen: false,
         fullScreen: false,
         isDemo: false,
         closable: true, // Add closable prop for development
-        // footerText: "",
+        footerText: "",
       },
     });
 
