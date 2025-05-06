@@ -148,7 +148,7 @@
   }
 
   function saveSessionIdToCookie(sessionIdValue) {
-    let cookieString = `aisa_agent_${agentId};=${sessionIdValue};path=/;SameSite=Lax`;
+    let cookieString = `aisa_agent_${agentId}=${sessionIdValue};path=/;SameSite=Lax`;
     if (persistentSession && !isDemo) {
       const maxAgeSeconds = 30 * 24 * 60 * 60; // 30 days
       cookieString += `;Max-Age=${maxAgeSeconds}`;
