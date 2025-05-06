@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.9](https://github.com/Autocust/ai-chat-widget/compare/v2.1.8...v2.1.9) (2025-05-06)
+
+### Features
+
+* per agent cookie ([95007f4](https://github.com/Autocust/ai-chat-widget/commit/95007f415ba30a37038cb7afba448799a25fe981))
+
 ## [2.1.8](https://github.com/Autocust/ai-chat-widget/compare/v2.1.7...v2.1.8) (2025-05-06)
 
 ### Documentation
