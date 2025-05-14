@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.3](https://github.com/Autocust/ai-chat-widget/compare/v2.2.2...v2.2.3) (2025-05-14)
+
+### Features
+
+* host style ([f4268a3](https://github.com/Autocust/ai-chat-widget/commit/f4268a323f30a4402d479454449e9be9c6390da4))
+
 ## [2.2.2](https://github.com/Autocust/ai-chat-widget/compare/v2.2.1...v2.2.2) (2025-05-14)
 
 ### Chores
