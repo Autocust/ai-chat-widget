@@ -15,6 +15,7 @@ export default {
     svelte({
       compilerOptions: {
         dev: false,
+        customElement: true,
       },
       emitCss: false,
     }),
