@@ -680,8 +680,24 @@
 </div>
 
 <style>
-/* Styles remain unchanged */
-/* Theme Variables */
+:host {
+  font-family: system-ui, Arial, sans-serif;
+  font-size: 16px;
+  color: var(--primary-text-color, #222);
+  background: none;
+}
+
+/* Ensure all text and links inherit the main color unless overridden */
+#chat-widget,
+#chat-widget * {
+  color: inherit;
+}
+#chat-widget a,
+#chat-widget .cta-button,
+#chat-widget .add-to-cart {
+  color: inherit;
+}
+
 .theme-light {
   --container-bg: #e0e0e0;
   --header-bg: #e8e8e8;
@@ -697,8 +713,8 @@
   --link-color: #000000;
   --cta-hover-bg: #000000;
   --cta-hover-text: #ffffff;
-  --product-card-bg: #ffffff; /* Background for product cards */
-  --product-card-shadow: rgba(0, 0, 0, 0.1); /* Shadow for product cards */
+  --product-card-bg: #ffffff;
+  --product-card-shadow: rgba(0, 0, 0, 0.1);
   --product-border-color: #f8f8f8;
   --add-to-cart-border-color: #000000;
   --add-to-cart-hover-bg: rgba(0, 0, 0, 0.05);
@@ -724,8 +740,8 @@
   --link-color: #eeeeee;
   --cta-hover-bg: #ffffff;
   --cta-hover-text: #000000;
-  --product-card-bg: #3a3a3a; /* Background for product cards */
-  --product-card-shadow: rgba(255, 255, 255, 0.1); /* Shadow for product cards */
+  --product-card-bg: #3a3a3a;
+  --product-card-shadow: rgba(255, 255, 255, 0.1);
   --product-border-color: #444444;
   --add-to-cart-border-color: #ffffff;
   --add-to-cart-hover-bg: rgba(255, 255, 255, 0.1);
@@ -735,6 +751,7 @@
   --disabled-input-bg: #555555;
   --disabled-button-bg: #777777;
 }
+
 
 #chat-widget {
   position: fixed;
