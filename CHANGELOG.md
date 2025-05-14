@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.2.2](https://github.com/Autocust/ai-chat-widget/compare/v2.2.1...v2.2.2) (2025-05-14)
+
+### Chores
+
+* compile as custom element ([ffdf8bd](https://github.com/Autocust/ai-chat-widget/commit/ffdf8bdcc9808b2473aed9db5a5c66d30f6fe4fb))
+
 ## [2.2.1](https://github.com/Autocust/ai-chat-widget/compare/v2.2.0...v2.2.1) (2025-05-06)
 
 ### Code Refactoring
