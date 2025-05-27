@@ -187,7 +187,7 @@
     if (isDemo) return;
     if (!apiUrl) {
         console.error("API URL is not defined. WebSocket connection cannot be established.");
-        addMessageToUI($_('status.configErrorApi'), 'bot');
+        addMessageToUI($_('status.configErrorApi'), 'bot', { persist: false });
         return;
     }
     const wsUrl = apiUrl.replace(/^http/, 'ws');
@@ -267,7 +267,7 @@
       wsConnected = false;
       loadingState = null;
       if (!isReconnecting) {
-        addMessageToUI($_('status.connectionError'), 'bot');
+        addMessageToUI($_('status.connectionError'), 'bot', { persist: false });
       }
     };
 
@@ -303,7 +303,7 @@
       reconnectAttempt++;
       if (reconnectAttempt > maxReconnectAttempts) {
         loadingState = null;
-        addMessageToUI($_('status.reconnectFailed'), 'bot');
+        addMessageToUI($_('status.reconnectFailed'), 'bot', { persist: false });
         isReconnecting = false;
         console.log('Max reconnect attempts reached.');
         return;
@@ -377,6 +377,7 @@
   function addMessageToUI(content, sender, additionalData = {}) {
     let processedContent = content; // This is the content that will be stored/displayed
     let links = [];
+    const shouldPersistMessage = additionalData.hasOwnProperty('persist') ? additionalData.persist : true;
 
     if (sender === 'bot') {
       const rawMarkdown = content || '';
@@ -396,7 +397,7 @@
       ctaText: additionalData.ctaText || displayCtaText
     }];
 
-    if (persistentSession && !isDemo) {
+    if (persistentSession && !isDemo && shouldPersistMessage) {
       saveSessionToLocalStorage(sessionId, messages);
     }
 
