@@ -39,7 +39,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         fullScreen: false,
         isDemo: false,
         closable: true, // Add closable prop for development
-        footerText: "",
+        footerText: "Controlla le info importanti",
       },
     });
 

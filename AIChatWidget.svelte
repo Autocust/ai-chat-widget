@@ -599,15 +599,19 @@
 ">
   {#if !isChatVisible}
     {#if buttonImageUrl}
-      <img
-        src={buttonImageUrl}
-        alt={$_('widget.title')}
-        class="custom-chat-button-image"
+      <button
+        class="custom-chat-button-wrapper"
         on:click={toggleChat}
         on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleChat()}
-        role="button"
+        aria-label={$_('widget.title')}
         tabindex="0"
-      />
+      >
+        <img
+          src={buttonImageUrl}
+          alt=""
+          class="custom-chat-button-image"
+        />
+      </button>
     {:else}
       <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}>
         {#if isImageUrl}
@@ -810,11 +814,20 @@
 }
 #chat-button img { max-width: 100%; max-height: 100%; object-fit: cover; }
 
+.custom-chat-button-wrapper {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-block; /* Adjust if needed, e.g., to match #chat-button's display */
+  line-height: 0; /* Helps remove extra space if image is inline-block */
+}
+
 .custom-chat-button-image {
   width: 60px; /* Default width, similar to original button */
   height: 60px; /* Default height, similar to original button */
-  cursor: pointer;
-  display: block; /* Or inline-block if preferred */
+  /* cursor: pointer; /* Moved to wrapper button */
+  display: block;
   object-fit: cover; /* To maintain aspect ratio if image is not square */
   border-radius: 0; /* Default, can be overridden by user's image or further CSS */
 }
