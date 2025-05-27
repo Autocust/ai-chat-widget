@@ -707,18 +707,29 @@
   {/if}
 </div>
 
-<style>
+<style scoped>
 :host {
   font-family: system-ui, Arial, sans-serif;
   font-size: 16px;
   color: var(--primary-text-color, #222);
   background: none;
+  line-height: 1.5rem; /* Base line-height for the widget */
 }
 
-/* Ensure all text and links inherit the main color unless overridden */
+/* Reset and establish baseline for widget elements */
 #chat-widget,
 #chat-widget * {
-  color: inherit;
+  font-family: inherit; /* Inherit from :host */
+  font-size: inherit;   /* Inherit from :host, allow specific overrides */
+  line-height: inherit; /* Inherit from :host or parent, allow specific overrides */
+  color: inherit;       /* Inherit color */
+  font-weight: normal;
+  font-style: normal;
+  text-transform: none; /* Prevent unwanted global text transformations */
+  letter-spacing: normal;
+  text-shadow: none;
+  text-align: left;     /* Default alignment, can be overridden */
+  box-sizing: border-box; /* Consistent box model */
 }
 #chat-widget a,
 #chat-widget .cta-button,
@@ -858,11 +869,11 @@
 }
 .message {
   margin-bottom: 10px; /* padding and border-radius removed */
-  line-height: 1.5rem; height: auto; width: auto; max-width: 80%;
+  height: auto; width: auto; max-width: 80%;
   display: flex; /* MODIFIED for icon layout */
   align-items: flex-start; /* Vertically align icon and text */
   gap: 8px; /* Space between icon and text */
-  text-transform: none;
+  /* text-transform: none; /* Removed, covered by #chat-widget * reset */
 }
 
 .message-icon {
