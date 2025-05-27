@@ -53,6 +53,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         apiUrl: getAttr("data-api-url", null), // Keep null or default URL if applicable
         initialMessage: getAttr("data-initial-message", null),
         buttonIcon: getAttr("data-button-icon", "💬"), // Keep non-translatable defaults
+        buttonImageUrl: getAttr("data-button-image-url", null),
         ctaText: getAttr("data-cta-text", null),
         openInNewTab: getAttr("data-open-in-new-tab", true),
         enableUTM: getAttr("data-enable-utm", true),

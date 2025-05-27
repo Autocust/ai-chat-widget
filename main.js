@@ -14,6 +14,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         initialMessage: "Ciao, come posso aiutarti?", // Let component handle default via i18n
         ctaText: "Chiedi informazioni", // Let component handle default via i18n
         buttonIcon: "💬",
+        buttonImageUrl: "https://i.ibb.co/wNfKVh30/Marconio-Risponde.png",
         theme: "light", // 'light' or 'dark'
         userMessageBgColor: "#d1eaff", // Light blue
         userMessageTextColor: "#000000",

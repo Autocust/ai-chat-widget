@@ -29,10 +29,11 @@
   export let showPoweredBy = true;
   export let agentId = 'xyz';
   export let cms = '';
-  export let persistentSession = false; // New prop
-  export let sessionExpiration = 24; // New prop (hours)
-  export let userMessageIcon = null; // New prop for user message icon URL
-  export let botMessageIcon = null; // New prop for bot message icon URL
+  export let persistentSession = false;
+  export let sessionExpiration = 24;
+  export let userMessageIcon = null; // user message icon URL
+  export let botMessageIcon = null; // bot message icon URL
+  export let buttonImageUrl = null; // custom button image URL
 
   // --- Reactive variables for props with translatable defaults ---
   $: displayTitle = title ?? $_('widget.title');
@@ -597,15 +598,27 @@
   --cta-btn-text: {ctaButtonTextColor};
 ">
   {#if !isChatVisible}
-    <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}>
-      {#if isImageUrl}
-        <img src={buttonIcon} alt={$_('widget.title')} />
-      {:else if isSvg}
-        {@html buttonIcon}
-      {:else}
-        {@html buttonIcon}
-      {/if}
-    </button>
+    {#if buttonImageUrl}
+      <img
+        src={buttonImageUrl}
+        alt={$_('widget.title')}
+        class="custom-chat-button-image"
+        on:click={toggleChat}
+        on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleChat()}
+        role="button"
+        tabindex="0"
+      />
+    {:else}
+      <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}>
+        {#if isImageUrl}
+          <img src={buttonIcon} alt="" /> <!-- Decorative icon, button has aria-label -->
+        {:else if isSvg}
+          {@html buttonIcon}
+        {:else}
+          {@html buttonIcon}
+        {/if}
+      </button>
+    {/if}
   {/if}
 
   {#if isChatVisible}
@@ -797,6 +810,15 @@
 }
 #chat-button img { max-width: 100%; max-height: 100%; object-fit: cover; }
 
+.custom-chat-button-image {
+  width: 60px; /* Default width, similar to original button */
+  height: 60px; /* Default height, similar to original button */
+  cursor: pointer;
+  display: block; /* Or inline-block if preferred */
+  object-fit: cover; /* To maintain aspect ratio if image is not square */
+  border-radius: 0; /* Default, can be overridden by user's image or further CSS */
+}
+
 #chat-container {
   width: 340px;
   height: 485px;
@@ -821,7 +843,7 @@
   background-color: var(--messages-bg); color: var(--primary-text-color);
 }
 .message {
-  margin-bottom: 10px; padding: 5px 10px; border-radius: 5px;
+  margin-bottom: 10px; /* padding and border-radius removed */
   line-height: 1.5rem; height: auto; width: auto; max-width: 80%;
   display: flex; /* MODIFIED for icon layout */
   align-items: flex-start; /* Vertically align icon and text */
@@ -830,8 +852,8 @@
 }
 
 .message-icon {
-  width: 24px; /* Adjust as needed */
-  height: 24px; /* Adjust as needed */
+  width: 32px; /* Adjust as needed */
+  height: 32px; /* Adjust as needed */
   flex-shrink: 0; /* Prevent icon from shrinking */
   /* border-radius: 50%; /* Uncomment for circular icons */
 }
@@ -839,17 +861,27 @@
 .message-content {
   flex-grow: 1; /* Allow content to take available space */
   word-wrap: break-word; /* Ensure long words break */
+  padding: 5px 10px; /* Added padding */
+  border-radius: 5px; /* Added border-radius */
 }
 
 .message a { color: var(--link-color); }
 :global(.message ul), :global(.message ol) { padding-inline-start: 20px; }
 .user-message {
-  background-color: var(--user-msg-bg); color: var(--user-msg-text);
+  /* background-color and color removed */
   margin-left: auto;
 }
+.user-message .message-content {
+  background-color: var(--user-msg-bg);
+  color: var(--user-msg-text);
+}
 .bot-message {
-  background-color: var(--assistant-msg-bg); color: var(--assistant-msg-text);
+  /* background-color and color removed */
   align-self: flex-start;
+}
+.bot-message .message-content {
+  background-color: var(--assistant-msg-bg);
+  color: var(--assistant-msg-text);
 }
 
 .loading-container {
