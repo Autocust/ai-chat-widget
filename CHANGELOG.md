@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.2.4](https://github.com/Autocust/ai-chat-widget/compare/v2.2.3...v2.2.4) (2025-05-27)
+
+### Features
+
+* button icon image ([b915f1d](https://github.com/Autocust/ai-chat-widget/commit/b915f1d1f9c78c09a082154fad81d984d2c54198))
+* ignore connection errors in history ([8f00870](https://github.com/Autocust/ai-chat-widget/commit/8f00870ddc89aa81f4b477de84fedf6f75a55fe3))
+* reset text styles ([d38fe63](https://github.com/Autocust/ai-chat-widget/commit/d38fe63712b4b6298daf733a856486cb3a2003fe))
+* support role icons ([a7e5c79](https://github.com/Autocust/ai-chat-widget/commit/a7e5c79c08d0e0c7162e8faffb4e8adc292771c1))
+
+### Bug Fixes
+
+* button img role ([5e24533](https://github.com/Autocust/ai-chat-widget/commit/5e245338c50eda1639b40dddf9b5e853364247e1))
+
 ## [2.2.3](https://github.com/Autocust/ai-chat-widget/compare/v2.2.2...v2.2.3) (2025-05-14)
 
 ### Features
