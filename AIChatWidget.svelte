@@ -31,6 +31,8 @@
   export let cms = '';
   export let persistentSession = false; // New prop
   export let sessionExpiration = 24; // New prop (hours)
+  export let userMessageIcon = null; // New prop for user message icon URL
+  export let botMessageIcon = null; // New prop for bot message icon URL
 
   // --- Reactive variables for props with translatable defaults ---
   $: displayTitle = title ?? $_('widget.title');
@@ -620,11 +622,19 @@
       <div id="chat-messages" bind:this={chatMessages} aria-live="polite">
         {#each messages as message (message.sender + message.content.substring(0, 30) + Math.random())} <!-- Consider more robust keying if issues arise -->
           <div class="message {message.sender}-message">
-            {#if message.sender === 'bot'}
-              {@html message.content}
-            {:else}
-              {message.content} <!-- Render user messages as text -->
+            {#if message.sender === 'user' && userMessageIcon}
+              <img src={userMessageIcon} alt="User Icon" class="message-icon user-icon" />
             {/if}
+            {#if message.sender === 'bot' && botMessageIcon}
+              <img src={botMessageIcon} alt="Bot Icon" class="message-icon bot-icon" />
+            {/if}
+            <div class="message-content">
+              {#if message.sender === 'bot'}
+                {@html message.content}
+              {:else}
+                {message.content} <!-- Render user messages as text -->
+              {/if}
+            </div>
           </div>
           {#if message.url}
             <a href={addUtmParams(message.url, 'chat', 'chatbot', 'chatbot')}
@@ -813,9 +823,24 @@
 .message {
   margin-bottom: 10px; padding: 5px 10px; border-radius: 5px;
   line-height: 1.5rem; height: auto; width: auto; max-width: 80%;
-  display: block; text-transform: none;
+  display: flex; /* MODIFIED for icon layout */
+  align-items: flex-start; /* Vertically align icon and text */
+  gap: 8px; /* Space between icon and text */
+  text-transform: none;
+}
+
+.message-icon {
+  width: 24px; /* Adjust as needed */
+  height: 24px; /* Adjust as needed */
+  flex-shrink: 0; /* Prevent icon from shrinking */
+  /* border-radius: 50%; /* Uncomment for circular icons */
+}
+
+.message-content {
+  flex-grow: 1; /* Allow content to take available space */
   word-wrap: break-word; /* Ensure long words break */
 }
+
 .message a { color: var(--link-color); }
 :global(.message ul), :global(.message ol) { padding-inline-start: 20px; }
 .user-message {

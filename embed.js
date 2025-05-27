@@ -60,10 +60,21 @@ import AIChatWidget from "./AIChatWidget.svelte";
         persistentSession: getAttr("data-persistent-session", false),
         sessionExpiration: getAttr("data-session-expiration", 24),
         theme: getAttr("data-theme", "light"),
+        userMessageIcon: getAttr("data-user-message-icon", null),
+        botMessageIcon: getAttr("data-bot-message-icon", null),
         userMessageBgColor: getAttr("data-user-message-bg-color", "#e0e0e0"),
-        userMessageTextColor: getAttr("data-user-message-text-color", "#000000"),
-        assistantMessageBgColor: getAttr("data-assistant-message-bg-color", "#f8f8f8"),
-        assistantMessageTextColor: getAttr("data-assistant-message-text-color", "#000000"),
+        userMessageTextColor: getAttr(
+          "data-user-message-text-color",
+          "#000000"
+        ),
+        assistantMessageBgColor: getAttr(
+          "data-assistant-message-bg-color",
+          "#f8f8f8"
+        ),
+        assistantMessageTextColor: getAttr(
+          "data-assistant-message-text-color",
+          "#000000"
+        ),
         chatButtonBgColor: getAttr("data-chat-button-bg-color", "#000000"),
         chatButtonTextColor: getAttr("data-chat-button-text-color", "#ffffff"),
         ctaButtonBgColor: getAttr("data-cta-button-bg-color", "#f8f8f8"),
