@@ -614,7 +614,7 @@
   style:--header-bg={headerBgColor}
   style:--header-text={headerTextColor}
 >
-  {#if !isChatVisible}
+  {#if !isChatVisible || isDemo}
     {#if buttonImageUrl}
       <button
         class="custom-chat-button-wrapper"
@@ -812,13 +812,15 @@
   position: fixed;
   z-index: 1000;
   font-family: Arial, sans-serif;
+  display: flex;
+  gap: 10px;
 }
 
 /* Default positioning classes */
-.top-left { top: 20px; left: 20px; }
-.top-right { top: 20px; right: 20px; }
-.bottom-left { bottom: 20px; left: 20px; }
-.bottom-right { bottom: 20px; right: 20px; }
+.top-left { top: 20px; left: 20px; flex-direction: column; align-items: flex-start; }
+.top-right { top: 20px; right: 20px; flex-direction: column; align-items: flex-end; }
+.bottom-left { bottom: 20px; left: 20px; flex-direction: column-reverse; align-items: flex-start; }
+.bottom-right { bottom: 20px; right: 20px; flex-direction: column-reverse; align-items: flex-end; }
 
 /* Fullscreen styles */
 #chat-widget.fullscreen {
@@ -838,7 +840,7 @@
   width: 60px !important; height: 60px !important;
   cursor: pointer; font-size: 24px;
   display: flex; align-items: center; justify-content: center;
-  overflow: hidden; margin: 0 auto;
+  overflow: hidden;
 }
 #chat-button img { max-width: 100%; max-height: 100%; object-fit: cover; }
 
