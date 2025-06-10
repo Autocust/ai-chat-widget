@@ -17,9 +17,9 @@ import AIChatWidget from "./AIChatWidget.svelte";
         buttonImageUrl: "https://i.ibb.co/wNfKVh30/Marconio-Risponde.png",
         theme: "light", // 'light' or 'dark'
         userMessageBgColor: "#d1eaff", // Light blue
-        userMessageTextColor: "#000000",
+        userMessageTextColor: "#fff",
         assistantMessageBgColor: "#f1f1f1", // Light grey
-        assistantMessageTextColor: "#000000",
+        assistantMessageTextColor: "#fff",
         userMessageIcon: "https://i.ibb.co/HDy5dkH5/Avatar-generico.png",
         botMessageIcon:
           "https://i.ibb.co/j9d8YgS9/Avatar-generico-Marconio.png",
@@ -39,8 +39,8 @@ import AIChatWidget from "./AIChatWidget.svelte";
         cms: "", // Set to 'prestashop' or other CMS for local testing
         startOpen: false,
         fullScreen: false,
-        width: "485px",
-        height: "340px",
+        width: "340px",
+        height: "485px",
         isDemo: true,
         closable: true, // Add closable prop for development
         footerText: "Controlla le info importanti",

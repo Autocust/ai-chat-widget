@@ -171,7 +171,11 @@
     if (isChatVisible) {
       await tick();
       if (chatMessages) {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        if (isDemo) {
+          chatMessages.scrollTop = 0;
+        } else {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
       }
       if (!isDemo && !wsConnected && !isReconnecting) {
         initWebSocket();
@@ -406,7 +410,9 @@
     }
 
     tick().then(() => {
-      if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+      if (chatMessages && !isDemo) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
     });
   }
 
@@ -477,7 +483,9 @@
           productCarousel: demoCarouselHtml
       });
       tick().then(() => {
-        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+        if (chatMessages) {
+          chatMessages.scrollTop = 0;
+        }
       });
   }
 
@@ -738,7 +746,6 @@
   font-family: inherit; /* Inherit from :host */
   font-size: inherit;   /* Inherit from :host, allow specific overrides */
   line-height: inherit; /* Inherit from :host or parent, allow specific overrides */
-  color: inherit;       /* Inherit color */
   font-weight: normal;
   font-style: normal;
   text-transform: none; /* Prevent unwanted global text transformations */
@@ -746,11 +753,6 @@
   text-shadow: none;
   text-align: left;     /* Default alignment, can be overridden */
   box-sizing: border-box; /* Consistent box model */
-}
-#chat-widget a,
-#chat-widget .cta-button,
-#chat-widget .add-to-cart {
-  color: inherit;
 }
 
 .theme-light {
@@ -983,12 +985,23 @@
 #send-button:disabled { background-color: var(--disabled-button-bg); cursor: not-allowed; opacity: 0.6; }
 
 .cta-button {
-  display: inline-block; background-color: var(--cta-btn-bg); color: var(--cta-btn-text);
-  padding: 8px 12px; border-radius: 20px; text-decoration: none;
-  margin-bottom: 10px; font-size: 14px; text-align: center; width: 100%;
-  box-sizing: border-box; transition: background-color 0.3s, color 0.3s;
+  display: inline-block;
+  background-color: var(--cta-btn-bg);
+  color: var(--cta-btn-text);
+  padding: 8px 12px;
+  border-radius: 20px;
+  text-decoration: none;
+  margin-bottom: 10px;
+  font-size: 14px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background-color 0.3s, color 0.3s;
 }
-.cta-button:hover { background-color: var(--cta-hover-bg); color: var(--cta-hover-text); }
+.cta-button:hover {
+  background-color: var(--cta-hover-bg);
+  color: var(--cta-hover-text);
+}
 
 :global(.product-carousel) { display: flex; overflow-x: auto; padding: 10px 0; margin-top: 10px; }
 :global(.carousel-product) {
