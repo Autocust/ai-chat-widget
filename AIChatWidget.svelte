@@ -34,6 +34,8 @@
   export let userMessageIcon = null; // user message icon URL
   export let botMessageIcon = null; // bot message icon URL
   export let buttonImageUrl = null; // custom button image URL
+  export let width = '340px';
+  export let height = '485px';
 
   // --- Reactive variables for props with translatable defaults ---
   $: displayTitle = title ?? $_('widget.title');
@@ -589,6 +591,8 @@
   class="{position} theme-{theme}"
   class:fullscreen="{isChatVisible && fullScreen}"
   style="
+  --widget-width: {width};
+  --widget-height: {height};
   --user-msg-bg: {userMessageBgColor};
   --user-msg-text: {userMessageTextColor};
   --assistant-msg-bg: {assistantMessageBgColor};
@@ -845,8 +849,8 @@
 }
 
 #chat-container {
-  width: 340px;
-  height: 485px;
+  width: var(--widget-width);
+  height: var(--widget-height);
   background-color: var(--container-bg);
   border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   overflow: hidden; display: flex; flex-direction: column;

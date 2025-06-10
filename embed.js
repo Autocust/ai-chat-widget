@@ -86,6 +86,8 @@ import AIChatWidget from "./AIChatWidget.svelte";
         cms: getAttr("data-cms", ""),
         startOpen: getAttr("data-start-open", false),
         fullScreen: getAttr("data-full-screen", false),
+        width: getAttr("data-width", "340px"),
+        height: getAttr("data-height", "485px"),
         isDemo: getAttr("data-is-demo", false),
         closable: getAttr("data-closable", true),
       },
