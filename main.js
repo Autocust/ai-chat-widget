@@ -15,6 +15,8 @@ import AIChatWidget from "./AIChatWidget.svelte";
         ctaText: "Chiedi informazioni", // Let component handle default via i18n
         buttonIcon: "💬",
         buttonImageUrl: "https://i.ibb.co/wNfKVh30/Marconio-Risponde.png",
+        buttonOverlayText: "Hai una domanda? Chiedi a me!",
+        buttonOverlayDelay: 5000,
         theme: "light", // 'light' or 'dark'
         userMessageBgColor: "#d1eaff", // Light blue
         userMessageTextColor: "#fff",

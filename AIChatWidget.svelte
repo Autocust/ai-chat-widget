@@ -1,6 +1,7 @@
 <script>
   import { onMount, tick } from 'svelte';
   import { marked } from 'marked';
+  import { fade } from 'svelte/transition';
   import { _ } from './i18n'; // Import the translation function
 
   // --- Props ---
@@ -38,6 +39,8 @@
   export let userMessageIcon = null; // user message icon URL
   export let botMessageIcon = null; // bot message icon URL
   export let buttonImageUrl = null; // custom button image URL
+  export let buttonOverlayText = null;
+  export let buttonOverlayDelay = 5000;
   export let width = '340px';
   export let height = '485px';
 
@@ -60,6 +63,8 @@
   let maxReconnectAttempts = 5;
   let reconnectInterval = null;
   let isReconnecting = false;
+  let isOverlayVisible = false;
+  let overlayTimeout;
 
   let sessionId = getSessionIdFromCookie() || generateUUID();
 
@@ -72,9 +77,9 @@
   $: demoBotReplyText = $_('demo.botReply');
   $: demoCta = { text: $_('demo.ctaText'), url: "#product-xyz" };
   const demoProducts = [
-    { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://fakeimg.pl/600x400", url: "#product-1", brand: "Brand A" },
-    { id: 2, name: "Lightweight Pro Shoe", price: 120.00, regular_price: 120.00, image: "https://fakeimg.pl/600x400", url: "#product-2", brand: "Brand B" },
-    { id: 3, name: "Trail Max Shoe", price: 99.50, regular_price: 130.00, image: "https://fakeimg.pl/600x400", url: "#product-3", brand: "Brand A" },
+    { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://placehold.co/600x400", url: "#product-1", brand: "Brand A" },
+    { id: 2, name: "Lightweight Pro Shoe", price: 120.00, regular_price: 120.00, image: "https://placehold.co/600x400", url: "#product-2", brand: "Brand B" },
+    { id: 3, name: "Trail Max Shoe", price: 99.50, regular_price: 130.00, image: "https://placehold.co/600x400", url: "#product-3", brand: "Brand A" },
   ];
   // --- End Demo Content ---
 
@@ -166,6 +171,10 @@
   }
 
   async function toggleChat() {
+    if (isOverlayVisible) {
+      isOverlayVisible = false;
+      clearTimeout(overlayTimeout);
+    }
     if (!closable && isChatVisible) {
         return;
     }
@@ -543,6 +552,13 @@
   }
 
   onMount(() => {
+    if (buttonOverlayText && !startOpen && !isChatVisible) {
+      isOverlayVisible = true;
+      overlayTimeout = setTimeout(() => {
+        isOverlayVisible = false;
+      }, parseInt(buttonOverlayDelay, 10) || 5000);
+    }
+
     if (isDemo) {
         setupDemoMessages();
     } else {
@@ -576,6 +592,7 @@
     }
 
     return () => {
+      clearTimeout(overlayTimeout);
       if (!isDemo) {
           if (ws) {
               ws.close(1000, 'Component unmounted');
@@ -627,31 +644,40 @@
   style:--header-text={headerTextColor}
 >
   {#if !isChatVisible || isDemo}
-    {#if buttonImageUrl}
-      <button
-        class="custom-chat-button-wrapper"
-        on:click={toggleChat}
-        on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleChat()}
-        aria-label={$_('widget.title')}
-        tabindex="0"
-      >
-        <img
-          src={buttonImageUrl}
-          alt=""
-          class="custom-chat-button-image"
-        />
-      </button>
-    {:else}
-      <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}>
-        {#if isImageUrl}
-          <img src={buttonIcon} alt="" /> <!-- Decorative icon, button has aria-label -->
-        {:else if isSvg}
-          {@html buttonIcon}
-        {:else}
-          {@html buttonIcon}
-        {/if}
-      </button>
-    {/if}
+    <div class="button-wrapper">
+      {#if isOverlayVisible && buttonOverlayText && !isChatVisible}
+        <div class="button-overlay" transition:fade={{ duration: 300 }}>
+          {buttonOverlayText}
+          <div class="button-overlay-tail"></div>
+        </div>
+      {/if}
+
+      {#if buttonImageUrl}
+        <button
+          class="custom-chat-button-wrapper"
+          on:click={toggleChat}
+          on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleChat()}
+          aria-label={$_('widget.title')}
+          tabindex="0"
+        >
+          <img
+            src={buttonImageUrl}
+            alt=""
+            class="custom-chat-button-image"
+          />
+        </button>
+      {:else}
+        <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}>
+          {#if isImageUrl}
+            <img src={buttonIcon} alt="" /> <!-- Decorative icon, button has aria-label -->
+          {:else if isSvg}
+            {@html buttonIcon}
+          {:else}
+            {@html buttonIcon}
+          {/if}
+        </button>
+      {/if}
+    </div>
   {/if}
 
   {#if isChatVisible}
@@ -837,6 +863,55 @@
   width: 100%; height: 100%;
   border-radius: 0; box-shadow: none;
 }
+
+.button-wrapper {
+  position: relative;
+}
+
+.button-overlay {
+  position: absolute;
+  background-color: var(--messages-bg);
+  color: var(--primary-text-color);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  width: max-content;
+  max-width: 220px;
+  font-size: 14px;
+  line-height: 1.4;
+  z-index: 1;
+  bottom: 50%;
+  transform: translateY(50%);
+}
+
+.button-overlay-tail {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Positioning for overlay and tail based on widget position */
+.bottom-right .button-overlay, .top-right .button-overlay {
+  right: calc(100% + 15px);
+}
+.bottom-right .button-overlay-tail, .top-right .button-overlay-tail {
+  left: 100%;
+  border-width: 8px 0 8px 8px;
+  border-color: transparent transparent transparent var(--messages-bg);
+}
+
+.bottom-left .button-overlay, .top-left .button-overlay {
+  left: calc(100% + 15px);
+}
+.bottom-left .button-overlay-tail, .top-left .button-overlay-tail {
+  right: 100%;
+  border-width: 8px 8px 8px 0;
+  border-color: transparent var(--messages-bg) transparent transparent;
+}
+
 
 #chat-button {
   background-color: var(--chat-btn-bg) !important;

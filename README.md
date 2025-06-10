@@ -24,6 +24,8 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
     data-chat-button-bg-color="#5a5a5a"
     data-initial-message="How can I help you today?"
     data-button-icon="🤖"
+    data-button-overlay-text="Have a question? Ask me!"
+    data-button-overlay-delay="5000"
     data-position="bottom-right"
     data-cta-text="Chiedi informazioni"
     data-cta-button-hover-bg-color="#ff0000"
@@ -46,6 +48,8 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-api-url`: The URL of the API that will power the chat widget. Ignored if `data-is-demo` is `true`. Default is `null`.
 - `data-initial-message`: The initial message displayed by the chat widget. Used in normal mode and as the first message in demo mode. If not set, a default localized message is used (e.g., "Hello! How can I help you today?" in English).
 - `data-button-icon`: The icon for the chat toggle button (can be text, emoji, URL to image, or SVG markup). Default is `💬`.
+- `data-button-overlay-text`: Text for a notification bubble that appears next to the chat button on page load to attract attention. It disappears after a delay. If not set, no overlay is shown.
+- `data-button-overlay-delay`: The time in milliseconds for the button overlay to be visible before fading out. Default is `5000` (5 seconds).
 - `data-cta-text`: The default text for the call-to-action button in the chat widget (can be overridden by bot messages or demo content). If not set, a default localized text is used (e.g., "Ask for information" in English).
 - `data-open-in-new-tab`: A boolean value to determine if URLs should open in a new tab. Default is `true`.
 - `data-enable-utm`: Set to `true` to include UTM parameters in product URLs. Set to `false` to disable UTM parameters. Default is `true`.
