@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.3](https://github.com/Autocust/ai-chat-widget/compare/v2.3.2...v2.3.3) (2025-06-10)
+
+### Features
+
+* button overlay ([2ad4f2b](https://github.com/Autocust/ai-chat-widget/commit/2ad4f2bd3995be2ecabe2b0f4b8b3aff7514c805))
+
 ## [2.3.2](https://github.com/Autocust/ai-chat-widget/compare/v2.3.1...v2.3.2) (2025-06-10)
 
 ### Features
