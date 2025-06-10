@@ -173,7 +173,7 @@
   }
 
   async function toggleChat() {
-    if (isOverlayVisible) {
+    if (isOverlayVisible && !isDemo) {
       isOverlayVisible = false;
       clearTimeout(overlayTimeout);
     }
@@ -560,11 +560,13 @@
   }
 
   onMount(() => {
-    if (buttonOverlayText && !startOpen && !isChatVisible) {
+    if (buttonOverlayText && (!isChatVisible || isDemo)) {
       isOverlayVisible = true;
-      overlayTimeout = setTimeout(() => {
-        isOverlayVisible = false;
-      }, parseInt(buttonOverlayDelay, 10) || 5000);
+      if (!isDemo) {
+        overlayTimeout = setTimeout(() => {
+          isOverlayVisible = false;
+        }, parseInt(buttonOverlayDelay, 10) || 5000);
+      }
     }
 
     if (isDemo) {
@@ -653,7 +655,7 @@
 >
   {#if !isChatVisible || isDemo}
     <div class="button-wrapper">
-      {#if isOverlayVisible && buttonOverlayText && !isChatVisible}
+      {#if isOverlayVisible && buttonOverlayText && (!isChatVisible || isDemo)}
         <div class="button-overlay" transition:fade={{ duration: 300 }}>
           {buttonOverlayText}
           <div class="button-overlay-tail"></div>
