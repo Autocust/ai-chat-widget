@@ -41,6 +41,7 @@
   export let buttonImageUrl = null; // custom button image URL
   export let buttonOverlayText = null;
   export let buttonOverlayDelay = 5000;
+  export let quickMessages = [];
   export let width = '340px';
   export let height = '485px';
 
@@ -70,6 +71,7 @@
 
   $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
   $: isSvg = buttonIcon.trim().startsWith('<svg');
+  $: hasUserSentMessage = messages.some(m => m.sender === 'user');
 
   // --- Demo Content ---
   $: demoInitialMessage = $_('demo.initialMessage');
@@ -476,6 +478,12 @@
     }
   }
 
+  function sendQuickMessage(message) {
+    if (isDemo || !!loadingState) return;
+    userInput = message;
+    sendMessage();
+  }
+
   function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -692,7 +700,7 @@
         </div>
       </div>
       <div id="chat-messages" bind:this={chatMessages} aria-live="polite">
-        {#each messages as message (message.sender + message.content.substring(0, 30) + Math.random())} <!-- Consider more robust keying if issues arise -->
+        {#each messages as message, i (message.sender + message.content.substring(0, 30) + Math.random())} <!-- Consider more robust keying if issues arise -->
           <div class="message {message.sender}-message">
             {#if message.sender === 'user' && userMessageIcon}
               <img src={userMessageIcon} alt="User Icon" class="message-icon user-icon" />
@@ -725,6 +733,16 @@
           {#if message.productCarousel}
             {@html message.productCarousel}
           {/if}
+
+          {#if i === 0 && message.sender === 'bot' && quickMessages.length > 0 && (isDemo || !hasUserSentMessage)}
+            <div class="quick-messages-flow" class:with-icon={botMessageIcon}>
+              {#each quickMessages as question (question)}
+                <button class="quick-message-btn" on:click={() => sendQuickMessage(question)} disabled={isDemo}>
+                  {question}
+                </button>
+              {/each}
+            </div>
+          {/if}
         {/each}
         {#if !isDemo && loadingState?.message}
           <div class="loading-container" aria-live="assertive">
@@ -735,6 +753,7 @@
           </div>
         {/if}
       </div>
+
       <div id="chat-input">
         <input
           type="text"
@@ -1030,6 +1049,40 @@
   #chat-widget:not(.fullscreen) #chat-container {
     width: 90vw; height: calc(90vh - 20px);
   }
+}
+
+.quick-messages-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  max-width: 80%;
+}
+
+.quick-messages-flow.with-icon {
+  margin-left: 40px; /* 32px icon + 8px gap */
+}
+
+.quick-message-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--disclaimer-text);
+  background-color: transparent;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.quick-message-btn:hover:not(:disabled) {
+  background-color: var(--container-bg);
+}
+
+.quick-message-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 #chat-input {

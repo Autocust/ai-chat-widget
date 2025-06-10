@@ -56,6 +56,16 @@ import AIChatWidget from "./AIChatWidget.svelte";
         buttonImageUrl: getAttr("data-button-image-url", null),
         buttonOverlayText: getAttr("data-button-overlay-text", null),
         buttonOverlayDelay: getAttr("data-button-overlay-delay", 5000),
+        quickMessages: (() => {
+            const attr = getAttr("data-quick-messages", "[]");
+            try {
+                const parsed = JSON.parse(attr);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                console.warn("Could not parse data-quick-messages. It should be a valid JSON array string.", e);
+                return [];
+            }
+        })(),
         ctaText: getAttr("data-cta-text", null),
         openInNewTab: getAttr("data-open-in-new-tab", true),
         enableUTM: getAttr("data-enable-utm", true),
