@@ -751,7 +751,6 @@
   text-transform: none; /* Prevent unwanted global text transformations */
   letter-spacing: normal;
   text-shadow: none;
-  text-align: left;     /* Default alignment, can be overridden */
   box-sizing: border-box; /* Consistent box model */
 }
 
@@ -1005,10 +1004,17 @@
 
 :global(.product-carousel) { display: flex; overflow-x: auto; padding: 10px 0; margin-top: 10px; }
 :global(.carousel-product) {
-  flex: 0 0 auto; width: 150px; margin-right: 10px;
-  background-color: var(--product-card-bg); border: 1px solid var(--product-border-color);
-  border-radius: 5px; padding: 10px; text-align: center; color: inherit;
-  display: block; transition: transform 0.2s, box-shadow 0.2s;
+  flex: 0 0 auto;
+  width: 150px;
+  margin-right: 10px;
+  background-color: var(--product-card-bg);
+  border: 1px solid var(--product-border-color);
+  border-radius: 5px;
+  padding: 10px;
+  text-align: center;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 :global(.carousel-product:hover) { transform: translateY(-2px); box-shadow: 0 4px 8px var(--product-card-shadow); }
 :global(.product-link) { text-decoration: none; color: inherit; display: block; position: relative; }
