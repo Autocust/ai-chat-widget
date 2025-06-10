@@ -33,6 +33,8 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
     data-height="500px"
     data-is-demo="false"
     data-closable="true"
+    data-header-bg-color="#00529b"
+    data-header-text-color="#ffffff"
 ></script>
 ```
 
@@ -57,6 +59,8 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-chat-button-text-color`: Text/icon color for the chat toggle button (e.g., '#ffffff'). Default is `#ffffff`.
 - `data-cta-button-bg-color`: Background color for Call-To-Action buttons below messages (e.g., '#f8f8f8'). Default is `#f8f8f8`.
 - `data-cta-button-text-color`: Text color for Call-To-Action buttons below messages (e.g., '#000000'). Default is `#000000`.
+- `data-header-bg-color`: Background color for the chat header. Overrides the theme's default header background.
+- `data-header-text-color`: Text color for the chat header title and buttons. Overrides the theme's default header text color.
 - `data-footer-text`: Custom text displayed in the footer area below the input field. If not set, a default localized message is used (e.g., "AI-generated. Please verify important information." in English).
 - `data-show-powered-by`: Set to `false` to hide the "Powered by Autocust" text at the bottom. Default is `true`.
 - `data-agent-id`: The Agent ID used for backend identification and API calls. Default is `xyz`. Ignored if `data-is-demo` is `true`.

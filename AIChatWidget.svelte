@@ -25,6 +25,8 @@
   export let chatButtonTextColor = '#ffffff';
   export let ctaButtonBgColor = '#f8f8f8';
   export let ctaButtonTextColor = '#000000';
+  export let headerBgColor = null;
+  export let headerTextColor = null;
   export let footerText = null;
   export let showPoweredBy = true;
   export let agentId = 'xyz';
@@ -599,18 +601,19 @@
   id="chat-widget"
   class="{position} theme-{theme}"
   class:fullscreen="{isChatVisible && fullScreen}"
-  style="
-  --widget-width: {width};
-  --widget-height: {height};
-  --user-msg-bg: {userMessageBgColor};
-  --user-msg-text: {userMessageTextColor};
-  --assistant-msg-bg: {assistantMessageBgColor};
-  --assistant-msg-text: {assistantMessageTextColor};
-  --chat-btn-bg: {chatButtonBgColor};
-  --chat-btn-text: {chatButtonTextColor};
-  --cta-btn-bg: {ctaButtonBgColor};
-  --cta-btn-text: {ctaButtonTextColor};
-">
+  style:--widget-width={width}
+  style:--widget-height={height}
+  style:--user-msg-bg={userMessageBgColor}
+  style:--user-msg-text={userMessageTextColor}
+  style:--assistant-msg-bg={assistantMessageBgColor}
+  style:--assistant-msg-text={assistantMessageTextColor}
+  style:--chat-btn-bg={chatButtonBgColor}
+  style:--chat-btn-text={chatButtonTextColor}
+  style:--cta-btn-bg={ctaButtonBgColor}
+  style:--cta-btn-text={ctaButtonTextColor}
+  style:--header-bg={headerBgColor}
+  style:--header-text={headerTextColor}
+>
   {#if !isChatVisible}
     {#if buttonImageUrl}
       <button

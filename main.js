@@ -27,6 +27,8 @@ import AIChatWidget from "./AIChatWidget.svelte";
         chatButtonTextColor: "#ffffff",
         ctaButtonBgColor: "#d00", // Example override
         ctaButtonTextColor: "#fff", // Example override
+        headerBgColor: "#00529b", // Example custom header bg
+        headerTextColor: "#ffffff", // Example custom header text
         openInNewTab: true,
         enableUTM: true,
         position: "bottom-right",
@@ -37,8 +39,8 @@ import AIChatWidget from "./AIChatWidget.svelte";
         cms: "", // Set to 'prestashop' or other CMS for local testing
         startOpen: false,
         fullScreen: false,
-        width: '400px',
-        height: '600px',
+        width: "485px",
+        height: "340px",
         isDemo: false,
         closable: true, // Add closable prop for development
         footerText: "Controlla le info importanti",
