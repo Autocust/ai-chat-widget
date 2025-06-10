@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.4](https://github.com/Autocust/ai-chat-widget/compare/v2.3.3...v2.3.4) (2025-06-10)
+
+### Features
+
+* quick messages ([4c61d4e](https://github.com/Autocust/ai-chat-widget/commit/4c61d4e0d6c9ee2f3c9cb3a9c78f4e8c17727fe3))
+
 ## [2.3.3](https://github.com/Autocust/ai-chat-widget/compare/v2.3.2...v2.3.3) (2025-06-10)
 
 ### Features
