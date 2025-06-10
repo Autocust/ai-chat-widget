@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/Autocust/ai-chat-widget/compare/v2.2.4...v2.3.0) (2025-06-10)
+
+### Features
+
+* customisable width and height ([5b53009](https://github.com/Autocust/ai-chat-widget/commit/5b53009160d4e9793e9f1baadd569aefd913a3da))
+* header customisable color ([7086f35](https://github.com/Autocust/ai-chat-widget/commit/7086f358e97245049504a732861f2995757364a5))
+* reset session id after reset ([ca08381](https://github.com/Autocust/ai-chat-widget/commit/ca083819ca7ddc98e750c13f3a1e6b075fa3f8a3))
+
+### Chores
+
+* new build ([287a3c5](https://github.com/Autocust/ai-chat-widget/commit/287a3c57d962619b60768157555d183685f6f52a))
+
 ## [2.2.4](https://github.com/Autocust/ai-chat-widget/compare/v2.2.3...v2.2.4) (2025-05-27)
 
 ### Features
