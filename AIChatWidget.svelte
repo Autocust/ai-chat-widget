@@ -57,7 +57,7 @@
   let reconnectInterval = null;
   let isReconnecting = false;
 
-  const sessionId = getSessionIdFromCookie() || generateUUID();
+  let sessionId = getSessionIdFromCookie() || generateUUID();
 
   $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
   $: isSvg = buttonIcon.trim().startsWith('<svg');
@@ -485,14 +485,21 @@
         return;
     }
 
+    const oldSessionId = sessionId; // Store the old ID for cleanup
+
     if (persistentSession && !isDemo) {
-      clearSessionFromLocalStorage(sessionId);
+      clearSessionFromLocalStorage(oldSessionId);
     }
+
+    // Generate a new session ID and save it
+    sessionId = generateUUID();
+    saveSessionIdToCookie(sessionId);
 
     messages = [];
     currentBotMessage = '';
     loadingState = null;
-    addMessageToUI(displayInitialMessage, 'bot'); // This will also save the new session if persistent
+    // Add initial message to the new session (this will save it to local storage with the new ID)
+    addMessageToUI(displayInitialMessage, 'bot');
     tick().then(() => {
         if (chatMessages) chatMessages.scrollTop = 0;
     });
@@ -506,16 +513,18 @@
     reconnectAttempt = 0;
 
     try {
-      const response = await fetch(`${apiUrl}/reset-session?sessionId=${sessionId}`, {
+      // Tell the backend to reset/clean up the OLD session
+      const response = await fetch(`${apiUrl}/reset-session?sessionId=${oldSessionId}`, {
         method: 'DELETE',
         headers: { 'X-Agent-ID': agentId }
       });
       if (!response.ok) console.error('Reset chat failed on backend:', await response.text());
-      else console.log('Session reset successfully on backend.');
+      else console.log(`Session ${oldSessionId} reset successfully on backend.`);
     } catch (err) {
       console.error('Error sending reset chat request:', err);
     }
 
+    // If the chat is visible, start a new WebSocket connection with the new session ID
     if (isChatVisible) {
       initWebSocket();
     }
