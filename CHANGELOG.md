@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.5](https://github.com/Autocust/ai-chat-widget/compare/v2.3.4...v2.3.5) (2025-06-10)
+
+### Features
+
+* overlay in demo mode ([ffe00e0](https://github.com/Autocust/ai-chat-widget/commit/ffe00e0547386739e8944210112196874949498d))
+
 ## [2.3.4](https://github.com/Autocust/ai-chat-widget/compare/v2.3.3...v2.3.4) (2025-06-10)
 
 ### Features
