@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.1](https://github.com/Autocust/ai-chat-widget/compare/v2.3.0...v2.3.1) (2025-06-10)
+
+### Features
+
+* show both button and widget in demo mode ([efa28f4](https://github.com/Autocust/ai-chat-widget/commit/efa28f40935c63f33632f654d05ac9f4d0e8890f))
+
 ## [2.3.0](https://github.com/Autocust/ai-chat-widget/compare/v2.2.4...v2.3.0) (2025-06-10)
 
 ### Features
