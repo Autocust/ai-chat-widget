@@ -25,6 +25,8 @@
   export let chatButtonTextColor = '#ffffff';
   export let ctaButtonBgColor = '#f8f8f8';
   export let ctaButtonTextColor = '#000000';
+  export let ctaButtonHoverBgColor = null;
+  export let ctaButtonHoverTextColor = null;
   export let headerBgColor = null;
   export let headerTextColor = null;
   export let footerText = null;
@@ -619,6 +621,8 @@
   style:--chat-btn-text={chatButtonTextColor}
   style:--cta-btn-bg={ctaButtonBgColor}
   style:--cta-btn-text={ctaButtonTextColor}
+  style:--cta-btn-hover-bg={ctaButtonHoverBgColor}
+  style:--cta-btn-hover-text={ctaButtonHoverTextColor}
   style:--header-bg={headerBgColor}
   style:--header-text={headerTextColor}
 >
@@ -998,8 +1002,8 @@
   transition: background-color 0.3s, color 0.3s;
 }
 .cta-button:hover {
-  background-color: var(--cta-hover-bg);
-  color: var(--cta-hover-text);
+  background-color: var(--cta-btn-hover-bg, var(--cta-hover-bg));
+  color: var(--cta-btn-hover-text, var(--cta-hover-text));
 }
 
 :global(.product-carousel) { display: flex; overflow-x: auto; padding: 10px 0; margin-top: 10px; }
@@ -1037,5 +1041,8 @@
   text-decoration: none; font-size: 14px; text-align: center; width: 100%;
   box-sizing: border-box;
 }
-:global(.add-to-cart:hover) { background-color: var(--cta-hover-bg); color: var(--cta-hover-text); }
+:global(.add-to-cart:hover) {
+  background-color: var(--cta-btn-hover-bg, var(--cta-hover-bg));
+  color: var(--cta-btn-hover-text, var(--cta-hover-text));
+}
 </style>

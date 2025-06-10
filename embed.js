@@ -80,6 +80,8 @@ import AIChatWidget from "./AIChatWidget.svelte";
         chatButtonTextColor: getAttr("data-chat-button-text-color", "#ffffff"),
         ctaButtonBgColor: getAttr("data-cta-button-bg-color", "#f8f8f8"),
         ctaButtonTextColor: getAttr("data-cta-button-text-color", "#000000"),
+        ctaButtonHoverBgColor: getAttr("data-cta-button-hover-bg-color", null),
+        ctaButtonHoverTextColor: getAttr("data-cta-button-hover-text-color", null),
         headerBgColor: getAttr("data-header-bg-color", null),
         headerTextColor: getAttr("data-header-text-color", null),
         footerText: getAttr("data-footer-text", null),

@@ -27,6 +27,8 @@ import AIChatWidget from "./AIChatWidget.svelte";
         chatButtonTextColor: "#ffffff",
         ctaButtonBgColor: "#d00", // Example override
         ctaButtonTextColor: "#fff", // Example override
+        ctaButtonHoverBgColor: "#ff4d4d", // Example hover override
+        ctaButtonHoverTextColor: "#000", // Example hover override
         headerBgColor: "#00529b", // Example custom header bg
         headerTextColor: "#ffffff", // Example custom header text
         openInNewTab: true,
