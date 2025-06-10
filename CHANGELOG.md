@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.3.2](https://github.com/Autocust/ai-chat-widget/compare/v2.3.1...v2.3.2) (2025-06-10)
+
+### Features
+
+* button hover colors ([7f684ef](https://github.com/Autocust/ai-chat-widget/commit/7f684ef615ad98aea17a8a949a357f96a00ac946))
+
+### Bug Fixes
+
+* avoid css scoping too much ([2ac711d](https://github.com/Autocust/ai-chat-widget/commit/2ac711df0675fb2dcaac9b9154093a93c438d08c))
+* button alignement ([c05683c](https://github.com/Autocust/ai-chat-widget/commit/c05683ca59c518ccaf8bff590790f56db2dbd823))
+
 ## [2.3.1](https://github.com/Autocust/ai-chat-widget/compare/v2.3.0...v2.3.1) (2025-06-10)
 
 ### Features
