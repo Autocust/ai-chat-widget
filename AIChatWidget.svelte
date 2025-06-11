@@ -66,6 +66,9 @@
   let isReconnecting = false;
   let isOverlayVisible = false;
   let overlayTimeout;
+  let userInputElement;
+  let inactivityTimeout;
+  let showQuickMessages = false;
 
   let sessionId = getSessionIdFromCookie() || generateUUID();
 
@@ -172,6 +175,27 @@
     document.cookie = cookieString;
   }
 
+  function resetInactivityTimer() {
+    clearTimeout(inactivityTimeout);
+    // Don't run timer in demo mode or if chat is not visible
+    if (isDemo || !isChatVisible) return;
+
+    inactivityTimeout = setTimeout(() => {
+      // Show suggestions if user is idle, input is empty, and we are not waiting for a response
+      if (userInput.trim() === '' && !loadingState) {
+        showQuickMessages = true;
+      }
+    }, 30000); // 30 seconds
+  }
+
+  function handleInput() {
+    // Hide suggestions as soon as user starts typing
+    if (showQuickMessages) {
+      showQuickMessages = false;
+    }
+    // The timer is no longer reset on input.
+  }
+
   async function toggleChat() {
     if (isOverlayVisible && !isDemo) {
       isOverlayVisible = false;
@@ -193,8 +217,15 @@
       if (!isDemo && !wsConnected && !isReconnecting) {
         initWebSocket();
       }
+      if (!isDemo) {
+        if (!hasUserSentMessage) {
+          showQuickMessages = true;
+        }
+        resetInactivityTimer();
+      }
     } else if (!isDemo) {
-      clearTimeout(reconnectInterval);
+      clearTimeout(inactivityTimeout);
+      showQuickMessages = false;
       isReconnecting = false;
       reconnectAttempt = 0;
       if (ws) {
@@ -271,11 +302,14 @@
                 saveSessionToLocalStorage(sessionId, messages);
             }
             currentBotMessage = ''; // Reset after potential save
+            userInputElement?.focus();
+            resetInactivityTimer();
             break;
           case 'error':
             loadingState = null;
             console.error('WebSocket error:', data.content);
             addMessageToUI($_('status.error'), 'bot'); // This will save
+            resetInactivityTimer();
             break;
         }
       } catch (err) {
@@ -464,6 +498,9 @@
     const message = userInput.trim();
     if (!message || !wsConnected || loadingState) return;
 
+    showQuickMessages = false;
+    clearTimeout(inactivityTimeout);
+
     addMessageToUI(message, 'user'); // This will save if persistentSession is true
     userInput = '';
     loadingState = { type: 'thinking', message: $_('status.thinking') };
@@ -475,6 +512,7 @@
       console.error("Error sending message:", err);
       addMessageToUI($_('status.sendError'), 'bot'); // This will save
       loadingState = null;
+      resetInactivityTimer();
     }
   }
 
@@ -571,6 +609,7 @@
 
     if (isDemo) {
         setupDemoMessages();
+        showQuickMessages = !hasUserSentMessage;
     } else {
         saveSessionIdToCookie(sessionId); // Save/update cookie, respecting persistentSession for Max-Age
 
@@ -594,15 +633,18 @@
             addMessageToUI(displayInitialMessage, 'bot'); // This will also save if persistentSession is true
         }
 
+        showQuickMessages = !hasUserSentMessage;
         if (startOpen) {
             if (!wsConnected && !isReconnecting) {
                 initWebSocket();
             }
+            resetInactivityTimer();
         }
     }
 
     return () => {
       clearTimeout(overlayTimeout);
+      clearTimeout(inactivityTimeout);
       if (!isDemo) {
           if (ws) {
               ws.close(1000, 'Component unmounted');
@@ -735,16 +777,6 @@
           {#if message.productCarousel}
             {@html message.productCarousel}
           {/if}
-
-          {#if i === 0 && message.sender === 'bot' && quickMessages.length > 0 && (isDemo || !hasUserSentMessage)}
-            <div class="quick-messages-flow" class:with-icon={botMessageIcon}>
-              {#each quickMessages as question (question)}
-                <button class="quick-message-btn" on:click={() => sendQuickMessage(question)} disabled={isDemo}>
-                  {question}
-                </button>
-              {/each}
-            </div>
-          {/if}
         {/each}
         {#if !isDemo && loadingState?.message}
           <div class="loading-container" aria-live="assertive">
@@ -756,14 +788,26 @@
         {/if}
       </div>
 
+      {#if showQuickMessages && quickMessages.length > 0}
+        <div class="quick-messages-flow" transition:fade={{ duration: 300 }}>
+          {#each quickMessages as question (question)}
+            <button class="quick-message-btn" on:click={() => sendQuickMessage(question)} disabled={isDemo}>
+              {question}
+            </button>
+          {/each}
+        </div>
+      {/if}
+
       <div id="chat-input">
         <input
           type="text"
           id="user-input"
+          bind:this={userInputElement}
           bind:value={userInput}
           on:keydown={(e) => e.key === 'Enter' && sendMessage()}
+          on:input={handleInput}
           placeholder={isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
-          disabled={isDemo || !!loadingState}
+          disabled={isDemo}
           aria-label={$_('widget.placeholder')}
         >
         <button
@@ -1051,14 +1095,28 @@
 
 .quick-messages-flow {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
-  margin-bottom: 10px;
-  max-width: 80%;
+  overflow-x: auto;
+  padding: 0 10px 10px;
+  background-color: var(--messages-bg);
+  flex-shrink: 0;
+  /* Custom scrollbar for better aesthetics */
+  scrollbar-width: thin;
+  scrollbar-color: var(--disclaimer-text) transparent;
 }
 
-.quick-messages-flow.with-icon {
-  margin-left: 40px; /* 32px icon + 8px gap */
+.quick-messages-flow::-webkit-scrollbar {
+  height: 5px;
+}
+
+.quick-messages-flow::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quick-messages-flow::-webkit-scrollbar-thumb {
+  background-color: var(--disclaimer-text);
+  border-radius: 10px;
 }
 
 .quick-message-btn {
