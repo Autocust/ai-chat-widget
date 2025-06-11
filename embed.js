@@ -104,6 +104,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         fullScreen: getAttr("data-full-screen", false),
         width: getAttr("data-width", "340px"),
         height: getAttr("data-height", "485px"),
+        fontSize: getAttr("data-font-size", "16px"),
         isDemo: getAttr("data-is-demo", false),
         closable: getAttr("data-closable", true),
       },

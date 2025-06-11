@@ -44,6 +44,7 @@
   export let quickMessages = [];
   export let width = '340px';
   export let height = '485px';
+  export let fontSize = '16px';
 
   // --- Reactive variables for props with translatable defaults ---
   $: displayTitle = title ?? $_('widget.title');
@@ -75,6 +76,15 @@
   $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
   $: isSvg = buttonIcon.trim().startsWith('<svg');
   $: hasUserSentMessage = messages.some(m => m.sender === 'user');
+  $: mobileFontSize = (() => {
+    const value = parseInt(fontSize, 10);
+    const unit = fontSize.match(/[a-zA-Z%]+$/)?.[0] || 'px';
+    if (isNaN(value)) {
+      return '12px'; // Fallback for mobile
+    }
+    // Use Math.round to avoid excessive decimals, apply 70% ratio
+    return `${Math.round(value * 0.7)}${unit}`;
+  })();
 
   // --- Demo Content ---
   $: demoInitialMessage = $_('demo.initialMessage');
@@ -680,6 +690,8 @@
   id="chat-widget"
   class="{position} theme-{theme}"
   class:fullscreen="{isChatVisible && fullScreen}"
+  style:--widget-font-size={fontSize}
+  style:--widget-mobile-font-size={mobileFontSize}
   style:--widget-width={width}
   style:--widget-height={height}
   style:--user-msg-bg={userMessageBgColor}
@@ -829,10 +841,9 @@
 <style scoped>
 :host {
   font-family: system-ui, Arial, sans-serif;
-  font-size: 16px;
   color: var(--primary-text-color, #222);
   background: none;
-  line-height: 1.5rem; /* Base line-height for the widget */
+  line-height: 1.5; /* Base line-height for the widget */
 }
 
 /* Reset and establish baseline for widget elements */
@@ -906,6 +917,7 @@
   font-family: Arial, sans-serif;
   display: flex;
   gap: 10px;
+  font-size: var(--widget-font-size, 16px);
 }
 
 /* Default positioning classes */
@@ -1088,6 +1100,9 @@
 @keyframes customBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
 @media (max-width: 480px) {
+  #chat-widget:not(.fullscreen) {
+    font-size: var(--widget-mobile-font-size, 12px);
+  }
   #chat-widget:not(.fullscreen) #chat-container {
     width: 90vw; height: calc(90vh - 20px);
   }
@@ -1160,7 +1175,7 @@
 
 #user-input {
   flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 3px;
-  background-color: var(--input-bg); color: var(--input-text); font-size: 16px;
+  background-color: var(--input-bg); color: var(--input-text); font-size: 1em;
 }
 #user-input:disabled { background-color: var(--disabled-input-bg); cursor: not-allowed; }
 

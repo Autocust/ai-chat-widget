@@ -51,6 +51,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         fullScreen: false,
         width: "340px",
         height: "485px",
+        fontSize: "20px",
         isDemo: false,
         closable: true, // Add closable prop for development
         footerText: "Controlla le info importanti",
