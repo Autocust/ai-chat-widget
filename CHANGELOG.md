@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.3.6](https://github.com/Autocust/ai-chat-widget/compare/v2.3.5...v2.3.6) (2025-06-11)
+
+### Styles
+
+* use same colors of cta for send, header for footer too ([a4d0800](https://github.com/Autocust/ai-chat-widget/commit/a4d080004f95aa349740cfc0a332a536edeef5df))
+
+### Code Refactoring
+
+* quick messages to the bottom ([2ffe92e](https://github.com/Autocust/ai-chat-widget/commit/2ffe92eff4fde0ca0bc15f2eaf389b1128a69344))
+
 ## [2.3.5](https://github.com/Autocust/ai-chat-widget/compare/v2.3.4...v2.3.5) (2025-06-10)
 
 ### Features
