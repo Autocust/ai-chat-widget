@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.7](https://github.com/Autocust/ai-chat-widget/compare/v2.3.6...v2.3.7) (2025-06-11)
+
+### Features
+
+* customisable font size ([6b3ec8d](https://github.com/Autocust/ai-chat-widget/commit/6b3ec8da53472c8a6d0656d21df2237875e0fb59))
+
 ## [2.3.6](https://github.com/Autocust/ai-chat-widget/compare/v2.3.5...v2.3.6) (2025-06-11)
 
 ### Styles
