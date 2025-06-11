@@ -493,7 +493,7 @@
 
   function setupDemoMessages() {
       messages = [];
-      addMessageToUI(demoInitialMessage, 'bot');
+      addMessageToUI(initialMessage ?? demoInitialMessage, 'bot');
       addMessageToUI(demoUserMessage, 'user');
       const demoCarouselHtml = createProductCarousel(demoProducts);
       addMessageToUI(demoBotReplyText, 'bot', {
@@ -813,8 +813,6 @@
   --input-area-bg: #e8e8e8;
   --input-bg: #ffffff;
   --input-text: #000000;
-  --send-button-bg: #000000;
-  --send-button-text: #ffffff;
   --disclaimer-text: #656565;
   --primary-text-color: #000000;
   --link-color: #000000;
@@ -840,8 +838,6 @@
   --input-area-bg: #1e1e1e;
   --input-bg: #4a4a4a;
   --input-text: #ffffff;
-  --send-button-bg: #5a5a5a;
-  --send-button-text: #ffffff;
   --disclaimer-text: #aaaaaa;
   --primary-text-color: #ffffff;
   --link-color: #eeeeee;
@@ -1089,19 +1085,19 @@
 
 #chat-input {
   display: flex; padding: 10px 10px 0 10px;
-  background-color: var(--input-area-bg); flex-shrink: 0;
+  background-color: var(--header-bg); flex-shrink: 0;
 }
 #chat-footer {
   text-align: center; font-size: 0.8rem; padding: 10px;
-  background-color: var(--input-area-bg); color: var(--disclaimer-text);
+  background-color: var(--header-bg); color: var(--header-text);
   flex-shrink: 0;
 }
 #powered-by {
   text-align: center; font-size: 0.7rem; padding: 5px 10px 10px;
-  background-color: var(--input-area-bg); color: var(--disclaimer-text);
+  background-color: var(--header-bg); color: var(--header-text);
   flex-shrink: 0;
 }
-#powered-by a { color: var(--disclaimer-text); text-decoration: none; }
+#powered-by a { color: var(--header-text); text-decoration: none; }
 #powered-by a:hover { text-decoration: underline; }
 
 #user-input {
@@ -1111,11 +1107,26 @@
 #user-input:disabled { background-color: var(--disabled-input-bg); cursor: not-allowed; }
 
 #send-button {
-  background-color: var(--send-button-bg); color: var(--send-button-text);
-  border: none; padding: 10px 15px; margin-left: 5px; cursor: pointer;
-  border-radius: 3px; text-wrap: nowrap; min-width: 60px;
+  background-color: var(--cta-btn-bg);
+  color: var(--cta-btn-text);
+  border: none;
+  padding: 10px 15px;
+  margin-left: 5px;
+  cursor: pointer;
+  border-radius: 3px;
+  text-wrap: nowrap;
+  min-width: 60px;
+  transition: background-color 0.3s, color 0.3s;
 }
-#send-button:disabled { background-color: var(--disabled-button-bg); cursor: not-allowed; opacity: 0.6; }
+#send-button:hover:not(:disabled) {
+  background-color: var(--cta-btn-hover-bg, var(--cta-hover-bg));
+  color: var(--cta-btn-hover-text, var(--cta-hover-text));
+}
+#send-button:disabled {
+  background-color: var(--disabled-button-bg);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
 .cta-button {
   display: inline-block;
