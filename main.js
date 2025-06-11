@@ -25,9 +25,9 @@ import AIChatWidget from "./AIChatWidget.svelte";
         ],
         theme: "light", // 'light' or 'dark'
         userMessageBgColor: "#d1eaff", // Light blue
-        userMessageTextColor: "#fff",
+        userMessageTextColor: "#000",
         assistantMessageBgColor: "#f1f1f1", // Light grey
-        assistantMessageTextColor: "#fff",
+        assistantMessageTextColor: "#000",
         userMessageIcon: "https://i.ibb.co/HDy5dkH5/Avatar-generico.png",
         botMessageIcon:
           "https://i.ibb.co/j9d8YgS9/Avatar-generico-Marconio.png",
@@ -51,7 +51,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         fullScreen: false,
         width: "340px",
         height: "485px",
-        fontSize: "20px",
+        fontSize: "16px",
         isDemo: false,
         closable: true, // Add closable prop for development
         footerText: "Controlla le info importanti",

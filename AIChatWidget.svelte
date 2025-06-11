@@ -440,21 +440,21 @@
   }
 
   function addMessageToUI(content, sender, additionalData = {}) {
-    let processedContent = content; // This is the content that will be stored/displayed
+    let processedContent;
     let links = [];
     const shouldPersistMessage = additionalData.hasOwnProperty('persist') ? additionalData.persist : true;
+    const rawMarkdown = content || '';
 
     if (sender === 'bot') {
-      const rawMarkdown = content || '';
-      links = extractLinks(rawMarkdown); // Extract links from original markdown
-      // Process markdown: first remove unwanted patterns, then parse
+      links = extractLinks(rawMarkdown);
       const cleanedMarkdown = rawMarkdown.replace(/\【.*?】/g, '');
       processedContent = marked.parse(cleanedMarkdown);
+    } else { // This will apply to 'user'
+      processedContent = marked.parse(rawMarkdown);
     }
-    // For user messages, processedContent remains plain text (original content).
 
     messages = [...messages, {
-      content: processedContent, // HTML for bot, plain text for user
+      content: processedContent, // Now always HTML
       sender,
       links,
       productCarousel: additionalData.productCarousel || '',
@@ -765,11 +765,7 @@
               <img src={botMessageIcon} alt="Bot Icon" class="message-icon bot-icon" />
             {/if}
             <div class="message-content">
-              {#if message.sender === 'bot'}
-                {@html message.content}
-              {:else}
-                {message.content} <!-- Render user messages as text -->
-              {/if}
+              {@html message.content}
             </div>
           </div>
           {#if message.url}
