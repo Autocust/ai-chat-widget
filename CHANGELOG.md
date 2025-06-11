@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.8](https://github.com/Autocust/ai-chat-widget/compare/v2.3.7...v2.3.8) (2025-06-11)
+
+### Features
+
+* parse user messages as markdown ([db34350](https://github.com/Autocust/ai-chat-widget/commit/db343504ff5fdbf44ac343b55a82d12a12de9e52))
+
 ## [2.3.7](https://github.com/Autocust/ai-chat-widget/compare/v2.3.6...v2.3.7) (2025-06-11)
 
 ### Features
