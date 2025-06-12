@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.9](https://github.com/Autocust/ai-chat-widget/compare/v2.3.8...v2.3.9) (2025-06-12)
+
+### Features
+
+* fetch remote settings ([e0c440a](https://github.com/Autocust/ai-chat-widget/commit/e0c440ab50710d80eef4e3930e1633732c1e6260))
+
 ## [2.3.8](https://github.com/Autocust/ai-chat-widget/compare/v2.3.7...v2.3.8) (2025-06-11)
 
 ### Features
