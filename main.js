@@ -17,7 +17,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         buttonImageUrl: "https://i.ibb.co/wNfKVh30/Marconio-Risponde.png",
         buttonOverlayText: "Hai una domanda? Chiedi a me!",
         buttonOverlayDelay: 5000,
-        quickMessages: [
+        predefinedQuestions: [
             "What are your shipping times?",
             "Do you have any discounts?",
             "Tell me about your return policy",

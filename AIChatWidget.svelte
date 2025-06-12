@@ -41,7 +41,7 @@
   export let buttonImageUrl = null; // custom button image URL
   export let buttonOverlayText = null;
   export let buttonOverlayDelay = 5000;
-  export let quickMessages = [];
+  export let predefinedQuestions = [];
   export let width = '340px';
   export let height = '485px';
   export let fontSize = '16px';
@@ -69,7 +69,7 @@
   let overlayTimeout;
   let userInputElement;
   let inactivityTimeout;
-  let showQuickMessages = false;
+  let showPredefinedQuestions = false;
 
   let sessionId = getSessionIdFromCookie() || generateUUID();
 
@@ -193,15 +193,15 @@
     inactivityTimeout = setTimeout(() => {
       // Show suggestions if user is idle, input is empty, and we are not waiting for a response
       if (userInput.trim() === '' && !loadingState) {
-        showQuickMessages = true;
+        showPredefinedQuestions = true;
       }
     }, 30000); // 30 seconds
   }
 
   function handleInput() {
     // Hide suggestions as soon as user starts typing
-    if (showQuickMessages) {
-      showQuickMessages = false;
+    if (showPredefinedQuestions) {
+      showPredefinedQuestions = false;
     }
     // The timer is no longer reset on input.
   }
@@ -229,13 +229,13 @@
       }
       if (!isDemo) {
         if (!hasUserSentMessage) {
-          showQuickMessages = true;
+          showPredefinedQuestions = true;
         }
         resetInactivityTimer();
       }
     } else if (!isDemo) {
       clearTimeout(inactivityTimeout);
-      showQuickMessages = false;
+      showPredefinedQuestions = false;
       isReconnecting = false;
       reconnectAttempt = 0;
       if (ws) {
@@ -508,7 +508,7 @@
     const message = userInput.trim();
     if (!message || !wsConnected || loadingState) return;
 
-    showQuickMessages = false;
+    showPredefinedQuestions = false;
     clearTimeout(inactivityTimeout);
 
     addMessageToUI(message, 'user'); // This will save if persistentSession is true
@@ -619,7 +619,7 @@
 
     if (isDemo) {
         setupDemoMessages();
-        showQuickMessages = !hasUserSentMessage;
+        showPredefinedQuestions = !hasUserSentMessage;
     } else {
         saveSessionIdToCookie(sessionId); // Save/update cookie, respecting persistentSession for Max-Age
 
@@ -643,7 +643,7 @@
             addMessageToUI(displayInitialMessage, 'bot'); // This will also save if persistentSession is true
         }
 
-        showQuickMessages = !hasUserSentMessage;
+        showPredefinedQuestions = !hasUserSentMessage;
         if (startOpen) {
             if (!wsConnected && !isReconnecting) {
                 initWebSocket();
@@ -796,9 +796,9 @@
         {/if}
       </div>
 
-      {#if showQuickMessages && quickMessages.length > 0}
+      {#if showPredefinedQuestions && predefinedQuestions.length > 0}
         <div class="quick-messages-flow" transition:fade={{ duration: 300 }}>
-          {#each quickMessages as question (question)}
+          {#each predefinedQuestions as question (question)}
             <button class="quick-message-btn" on:click={() => sendQuickMessage(question)} disabled={isDemo}>
               {question}
             </button>

@@ -21,92 +21,157 @@ import AIChatWidget from "./AIChatWidget.svelte";
         document.body.appendChild(targetDiv);
     }
 
+    // --- Fetch remote configuration ---
+    const apiUrl = currentScript ? currentScript.getAttribute("data-api-url") : null;
+    const agentId = currentScript ? currentScript.getAttribute("data-agent-id") : "xyz";
+    const isDemo = currentScript ? currentScript.getAttribute("data-is-demo") === 'true' : false;
 
-    // Function to get attribute value with a default
+    let apiConfig = {};
+    if (!isDemo && apiUrl) {
+        try {
+            const response = await fetch(`${apiUrl}/preview/${agentId}`);
+            if (response.ok) {
+                const rawConfig = await response.json();
+                // Convert snake_case keys from API to camelCase for component props
+                apiConfig = Object.keys(rawConfig).reduce((acc, key) => {
+                    const newKey = key.replace(/_(\w)/g, (_, c) => c.toUpperCase());
+                    let value = rawConfig[key];
+
+                    if (['fontSize', 'width', 'height'].includes(newKey) && typeof value === 'number') {
+                        value = `${value}px`;
+                    }
+                    
+                    acc[newKey] = value;
+                    return acc;
+                }, {});
+            } else {
+                console.warn(`Failed to fetch remote config: ${response.status}`);
+            }
+        } catch (error) {
+            console.warn("Error fetching remote config:", error);
+        }
+    }
+
+    // --- Define defaults and merge with API config ---
+    const baseDefaults = {
+        title: null,
+        apiUrl: null,
+        initialMessage: null,
+        buttonIcon: "💬",
+        buttonImageUrl: null,
+        buttonOverlayText: null,
+        buttonOverlayDelay: 5000,
+        predefinedQuestions: [],
+        ctaText: null,
+        openInNewTab: true,
+        enableUTM: true,
+        position: "bottom-right",
+        persistentSession: false,
+        sessionExpiration: 24,
+        theme: "light",
+        userMessageIcon: null,
+        botMessageIcon: null,
+        userMessageBgColor: "#e0e0e0",
+        userMessageTextColor: "#000000",
+        assistantMessageBgColor: "#f8f8f8",
+        assistantMessageTextColor: "#000000",
+        chatButtonBgColor: "#000000",
+        chatButtonTextColor: "#ffffff",
+        ctaButtonBgColor: "#f8f8f8",
+        ctaButtonTextColor: "#000000",
+        ctaButtonHoverBgColor: null,
+        ctaButtonHoverTextColor: null,
+        headerBgColor: null,
+        headerTextColor: null,
+        footerText: null,
+        showPoweredBy: true,
+        agentId: "xyz",
+        cms: "",
+        startOpen: false,
+        fullScreen: false,
+        width: "340px",
+        height: "485px",
+        fontSize: "16px",
+        isDemo: false,
+        closable: true,
+    };
+
+    // API config overrides base defaults
+    const finalDefaults = { ...baseDefaults, ...apiConfig };
+
+    // --- Helper functions to read attributes ---
     function getAttr(name, defaultValue) {
-        // Ensure currentScript exists before trying to access attributes
         const value = currentScript ? currentScript.getAttribute(name) : null;
         if (value === null) {
             return defaultValue;
         }
-        // Convert "true" and "false" strings to boolean
-        if (value.toLowerCase() === 'true') {
-            return true;
-        } else if (value.toLowerCase() === 'false') {
-            return false;
-        }
-        return value; // Return the value as is if it's not a boolean string or null
+        if (value.toLowerCase() === 'true') return true;
+        if (value.toLowerCase() === 'false') return false;
+        return value;
     }
 
-    // Function to get position with a default
     function getPosition(defaultValue) {
         const position = currentScript ? currentScript.getAttribute('data-position') : null;
         return ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(position) ? position : defaultValue;
     }
 
-    // Instantiate the Svelte component
+    // --- Instantiate the Svelte component ---
     const chatWidget = new AIChatWidget({
       target: targetDiv,
       props: {
-        // Remove default values for translatable strings - let the component handle them via i18n
-        title: getAttr("data-title", null),
-        apiUrl: getAttr("data-api-url", null), // Keep null or default URL if applicable
-        initialMessage: getAttr("data-initial-message", null),
-        buttonIcon: getAttr("data-button-icon", "💬"), // Keep non-translatable defaults
-        buttonImageUrl: getAttr("data-button-image-url", null),
-        buttonOverlayText: getAttr("data-button-overlay-text", null),
-        buttonOverlayDelay: getAttr("data-button-overlay-delay", 5000),
-        quickMessages: (() => {
-            const attr = getAttr("data-quick-messages", "[]");
-            try {
-                const parsed = JSON.parse(attr);
-                return Array.isArray(parsed) ? parsed : [];
-            } catch (e) {
-                console.warn("Could not parse data-quick-messages. It should be a valid JSON array string.", e);
-                return [];
+        // Read data-attributes, falling back to the merged defaults (API > base)
+        title: getAttr("data-title", finalDefaults.title),
+        apiUrl: getAttr("data-api-url", finalDefaults.apiUrl),
+        initialMessage: getAttr("data-initial-message", finalDefaults.initialMessage),
+        buttonIcon: getAttr("data-button-icon", finalDefaults.buttonIcon),
+        buttonImageUrl: getAttr("data-button-image-url", finalDefaults.buttonImageUrl),
+        buttonOverlayText: getAttr("data-button-overlay-text", finalDefaults.buttonOverlayText),
+        buttonOverlayDelay: getAttr("data-button-overlay-delay", finalDefaults.buttonOverlayDelay),
+        predefinedQuestions: (() => {
+            const attr = getAttr("data-predefined-questions", finalDefaults.predefinedQuestions);
+            if (typeof attr === 'string') {
+                try {
+                    const parsed = JSON.parse(attr);
+                    return Array.isArray(parsed) ? parsed : finalDefaults.predefinedQuestions;
+                } catch (e) {
+                    console.warn("Could not parse data-predefined-questions. It should be a valid JSON array string.", e);
+                    return finalDefaults.predefinedQuestions;
+                }
             }
+            return Array.isArray(attr) ? attr : [];
         })(),
-        ctaText: getAttr("data-cta-text", null),
-        openInNewTab: getAttr("data-open-in-new-tab", true),
-        enableUTM: getAttr("data-enable-utm", true),
-        position: getPosition("bottom-right"),
-        persistentSession: getAttr("data-persistent-session", false),
-        sessionExpiration: getAttr("data-session-expiration", 24),
-        theme: getAttr("data-theme", "light"),
-        userMessageIcon: getAttr("data-user-message-icon", null),
-        botMessageIcon: getAttr("data-bot-message-icon", null),
-        userMessageBgColor: getAttr("data-user-message-bg-color", "#e0e0e0"),
-        userMessageTextColor: getAttr(
-          "data-user-message-text-color",
-          "#000000"
-        ),
-        assistantMessageBgColor: getAttr(
-          "data-assistant-message-bg-color",
-          "#f8f8f8"
-        ),
-        assistantMessageTextColor: getAttr(
-          "data-assistant-message-text-color",
-          "#000000"
-        ),
-        chatButtonBgColor: getAttr("data-chat-button-bg-color", "#000000"),
-        chatButtonTextColor: getAttr("data-chat-button-text-color", "#ffffff"),
-        ctaButtonBgColor: getAttr("data-cta-button-bg-color", "#f8f8f8"),
-        ctaButtonTextColor: getAttr("data-cta-button-text-color", "#000000"),
-        ctaButtonHoverBgColor: getAttr("data-cta-button-hover-bg-color", null),
-        ctaButtonHoverTextColor: getAttr("data-cta-button-hover-text-color", null),
-        headerBgColor: getAttr("data-header-bg-color", null),
-        headerTextColor: getAttr("data-header-text-color", null),
-        footerText: getAttr("data-footer-text", null),
-        showPoweredBy: getAttr("data-show-powered-by", true),
-        agentId: getAttr("data-agent-id", "xyz"),
-        cms: getAttr("data-cms", ""),
-        startOpen: getAttr("data-start-open", false),
-        fullScreen: getAttr("data-full-screen", false),
-        width: getAttr("data-width", "340px"),
-        height: getAttr("data-height", "485px"),
-        fontSize: getAttr("data-font-size", "16px"),
-        isDemo: getAttr("data-is-demo", false),
-        closable: getAttr("data-closable", true),
+        ctaText: getAttr("data-cta-text", finalDefaults.ctaText),
+        openInNewTab: getAttr("data-open-in-new-tab", finalDefaults.openInNewTab),
+        enableUTM: getAttr("data-enable-utm", finalDefaults.enableUTM),
+        position: getPosition(finalDefaults.position),
+        persistentSession: getAttr("data-persistent-session", finalDefaults.persistentSession),
+        sessionExpiration: getAttr("data-session-expiration", finalDefaults.sessionExpiration),
+        theme: getAttr("data-theme", finalDefaults.theme),
+        userMessageIcon: getAttr("data-user-message-icon", finalDefaults.userMessageIcon),
+        botMessageIcon: getAttr("data-bot-message-icon", finalDefaults.botMessageIcon),
+        userMessageBgColor: getAttr("data-user-message-bg-color", finalDefaults.userMessageBgColor),
+        userMessageTextColor: getAttr("data-user-message-text-color", finalDefaults.userMessageTextColor),
+        assistantMessageBgColor: getAttr("data-assistant-message-bg-color", finalDefaults.assistantMessageBgColor),
+        assistantMessageTextColor: getAttr("data-assistant-message-text-color", finalDefaults.assistantMessageTextColor),
+        chatButtonBgColor: getAttr("data-chat-button-bg-color", finalDefaults.chatButtonBgColor),
+        chatButtonTextColor: getAttr("data-chat-button-text-color", finalDefaults.chatButtonTextColor),
+        ctaButtonBgColor: getAttr("data-cta-button-bg-color", finalDefaults.ctaButtonBgColor),
+        ctaButtonTextColor: getAttr("data-cta-button-text-color", finalDefaults.ctaButtonTextColor),
+        ctaButtonHoverBgColor: getAttr("data-cta-button-hover-bg-color", finalDefaults.ctaButtonHoverBgColor),
+        ctaButtonHoverTextColor: getAttr("data-cta-button-hover-text-color", finalDefaults.ctaButtonHoverTextColor),
+        headerBgColor: getAttr("data-header-bg-color", finalDefaults.headerBgColor),
+        headerTextColor: getAttr("data-header-text-color", finalDefaults.headerTextColor),
+        footerText: getAttr("data-footer-text", finalDefaults.footerText),
+        showPoweredBy: getAttr("data-show-powered-by", finalDefaults.showPoweredBy),
+        agentId: getAttr("data-agent-id", finalDefaults.agentId),
+        cms: getAttr("data-cms", finalDefaults.cms),
+        startOpen: getAttr("data-start-open", finalDefaults.startOpen),
+        fullScreen: getAttr("data-full-screen", finalDefaults.fullScreen),
+        width: getAttr("data-width", finalDefaults.width),
+        height: getAttr("data-height", finalDefaults.height),
+        fontSize: getAttr("data-font-size", finalDefaults.fontSize),
+        isDemo: getAttr("data-is-demo", finalDefaults.isDemo),
+        closable: getAttr("data-closable", finalDefaults.closable),
       },
     });
   } catch (error) {
