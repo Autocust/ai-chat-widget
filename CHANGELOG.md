@@ -1,5 +1,25 @@
 # Changelog
 
+## [3.0.0-0](https://github.com/Autocust/ai-chat-widget/compare/v2.3.9...v3.0.0-0) (2025-07-25)
+
+### Features
+
+* accept new data-context type message so that page can send assistant contxt about user alongside messages ([94c646a](https://github.com/Autocust/ai-chat-widget/commit/94c646abc6cd930b7818eb386c23a3d9e24b88f9))
+* bubble size ([ab866c3](https://github.com/Autocust/ai-chat-widget/commit/ab866c38190ecd92c34b0765a22ea559581da292))
+
+### Bug Fixes
+
+* automatic scroll on assistant response ([357b9df](https://github.com/Autocust/ai-chat-widget/commit/357b9dfbf6ce1e633ad7ce7a9244d271840cb7ee))
+
+### Code Refactoring
+
+* decoupling in components ([1f0f7aa](https://github.com/Autocust/ai-chat-widget/commit/1f0f7aad9775e9abae6c6d9758a0ec09da845b65))
+
+### Chores
+
+* build ([9628790](https://github.com/Autocust/ai-chat-widget/commit/962879020db59f2c5cb785b04683bec94c141975))
+* build static script for client embedding ([a633fc1](https://github.com/Autocust/ai-chat-widget/commit/a633fc10e9fd7ee408ecc01d03768ab910e45e50))
+
 ## [2.3.10](https://github.com/Autocust/ai-chat-widget/compare/v2.3.9...v2.3.10) (2025-07-25)
 
 ### Features
