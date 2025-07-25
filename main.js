@@ -18,10 +18,10 @@ import AIChatWidget from "./AIChatWidget.svelte";
         buttonOverlayText: "Hai una domanda? Chiedi a me!",
         buttonOverlayDelay: 5000,
         predefinedQuestions: [
-            "What are your shipping times?",
-            "Do you have any discounts?",
-            "Tell me about your return policy",
-            "Where are you located?",
+          "What are your shipping times?",
+          "Do you have any discounts?",
+          "Tell me about your return policy",
+          "Where are you located?",
         ],
         theme: "light", // 'light' or 'dark'
         userMessageBgColor: "#d1eaff", // Light blue
@@ -45,7 +45,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         persistentSession: true,
         sessionExpiration: 24, // in hours
         showPoweredBy: true,
-        agentId: "6845ed3f-9dcd-466e-8f81-a430a86f5d88", // Add your development Agent ID here
+        agentId: "f828107f-0983-4e6c-a8db-255a9f68a429", // Add your development Agent ID here
         cms: "", // Set to 'prestashop' or other CMS for local testing
         startOpen: false,
         fullScreen: false,

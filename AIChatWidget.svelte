@@ -1,8 +1,14 @@
 <script>
   import { onMount, tick } from 'svelte';
   import { marked } from 'marked';
-  import { fade } from 'svelte/transition';
   import { _ } from './i18n'; // Import the translation function
+
+  import ChatButton from './components/ChatButton.svelte';
+  import ChatHeader from './components/ChatHeader.svelte';
+  import Messages from './components/Messages.svelte';
+  import QuickReplies from './components/QuickReplies.svelte';
+  import ChatInput from './components/ChatInput.svelte';
+  import ChatFooter from './components/ChatFooter.svelte';
 
   // --- Props ---
   export let title = null;
@@ -65,16 +71,11 @@
   let maxReconnectAttempts = 5;
   let reconnectInterval = null;
   let isReconnecting = false;
-  let isOverlayVisible = false;
-  let overlayTimeout;
-  let userInputElement;
   let inactivityTimeout;
   let showPredefinedQuestions = false;
 
   let sessionId = getSessionIdFromCookie() || generateUUID();
 
-  $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
-  $: isSvg = buttonIcon.trim().startsWith('<svg');
   $: hasUserSentMessage = messages.some(m => m.sender === 'user');
   $: mobileFontSize = (() => {
     const value = parseInt(fontSize, 10);
@@ -207,10 +208,6 @@
   }
 
   async function toggleChat() {
-    if (isOverlayVisible && !isDemo) {
-      isOverlayVisible = false;
-      clearTimeout(overlayTimeout);
-    }
     if (!closable && isChatVisible) {
         return;
     }
@@ -312,7 +309,6 @@
                 saveSessionToLocalStorage(sessionId, messages);
             }
             currentBotMessage = ''; // Reset after potential save
-            userInputElement?.focus();
             resetInactivityTimer();
             break;
           case 'error':
@@ -608,15 +604,6 @@
   }
 
   onMount(() => {
-    if (buttonOverlayText && (!isChatVisible || isDemo)) {
-      isOverlayVisible = true;
-      if (!isDemo) {
-        overlayTimeout = setTimeout(() => {
-          isOverlayVisible = false;
-        }, parseInt(buttonOverlayDelay, 10) || 5000);
-      }
-    }
-
     if (isDemo) {
         setupDemoMessages();
         showPredefinedQuestions = !hasUserSentMessage;
@@ -653,7 +640,6 @@
     }
 
     return () => {
-      clearTimeout(overlayTimeout);
       clearTimeout(inactivityTimeout);
       if (!isDemo) {
           if (ws) {
@@ -708,128 +694,52 @@
   style:--header-text={headerTextColor}
 >
   {#if !isChatVisible || isDemo}
-    <div class="button-wrapper">
-      {#if isOverlayVisible && buttonOverlayText && (!isChatVisible || isDemo)}
-        <div class="button-overlay" transition:fade={{ duration: 300 }}>
-          {buttonOverlayText}
-          <div class="button-overlay-tail"></div>
-        </div>
-      {/if}
-
-      {#if buttonImageUrl}
-        <button
-          class="custom-chat-button-wrapper"
-          on:click={toggleChat}
-          on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleChat()}
-          aria-label={$_('widget.title')}
-          tabindex="0"
-        >
-          <img
-            src={buttonImageUrl}
-            alt=""
-            class="custom-chat-button-image"
-          />
-        </button>
-      {:else}
-        <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}>
-          {#if isImageUrl}
-            <img src={buttonIcon} alt="" /> <!-- Decorative icon, button has aria-label -->
-          {:else if isSvg}
-            {@html buttonIcon}
-          {:else}
-            {@html buttonIcon}
-          {/if}
-        </button>
-      {/if}
-    </div>
+    <ChatButton
+      {isChatVisible}
+      {isDemo}
+      {buttonIcon}
+      {buttonImageUrl}
+      {buttonOverlayText}
+      {buttonOverlayDelay}
+      on:toggleChat={toggleChat}
+    />
   {/if}
 
   {#if isChatVisible}
     <div id="chat-container">
-      <div id="chat-header">
-        <div>{displayTitle}{isDemo ? ` ${$_('widget.demoSuffix')}` : ''}</div>
-        <div class="header-buttons">
-          <button id="reset-chat" on:click={resetChat} title={$_('widget.resetTitle')} aria-label={$_('widget.resetTitle')}>↺</button>
-          {#if closable}
-            <button id="close-chat" on:click={toggleChat} title={$_('widget.closeTitle')} aria-label={$_('widget.closeTitle')}>×</button>
-          {/if}
-        </div>
-      </div>
-      <div id="chat-messages" bind:this={chatMessages} aria-live="polite">
-        {#each messages as message, i (message.sender + message.content.substring(0, 30) + Math.random())} <!-- Consider more robust keying if issues arise -->
-          <div class="message {message.sender}-message">
-            {#if message.sender === 'user' && userMessageIcon}
-              <img src={userMessageIcon} alt="User Icon" class="message-icon user-icon" />
-            {/if}
-            {#if message.sender === 'bot' && botMessageIcon}
-              <img src={botMessageIcon} alt="Bot Icon" class="message-icon bot-icon" />
-            {/if}
-            <div class="message-content">
-              {@html message.content}
-            </div>
-          </div>
-          {#if message.url}
-            <a href={addUtmParams(message.url, 'chat', 'chatbot', 'chatbot')}
-               target={openInNewTab ? '_blank' : '_self'}
-               class="cta-button">{message.ctaText}</a>
-          {/if}
-          {#if message.links && message.links.length > 0}
-            <div class="message-links">
-              {#each message.links as link}
-                <a href={addUtmParams(link.url, 'chat', 'chatbot', 'chatbot')}
-                  target="_blank"
-                  class="cta-button">{link.text}</a>
-              {/each}
-            </div>
-          {/if}
-          {#if message.productCarousel}
-            {@html message.productCarousel}
-          {/if}
-        {/each}
-        {#if !isDemo && loadingState?.message}
-          <div class="loading-container" aria-live="assertive">
-            <div class="loading-indicator">
-              <span class="loading-text">{loadingState.message}</span>
-              <div class="typing-dots"><span></span><span></span><span></span></div>
-            </div>
-          </div>
-        {/if}
-      </div>
+      <ChatHeader
+        {displayTitle}
+        {isDemo}
+        {closable}
+        on:resetChat={resetChat}
+        on:toggleChat={toggleChat}
+      />
+      <Messages
+        bind:this={chatMessages}
+        {messages}
+        {isDemo}
+        {loadingState}
+        {userMessageIcon}
+        {botMessageIcon}
+        {openInNewTab}
+      />
 
       {#if showPredefinedQuestions && predefinedQuestions.length > 0}
-        <div class="quick-messages-flow" transition:fade={{ duration: 300 }}>
-          {#each predefinedQuestions as question (question)}
-            <button class="quick-message-btn" on:click={() => sendQuickMessage(question)} disabled={isDemo}>
-              {question}
-            </button>
-          {/each}
-        </div>
+        <QuickReplies
+          {predefinedQuestions}
+          {isDemo}
+          on:sendQuickMessage={(e) => sendQuickMessage(e.detail)}
+        />
       {/if}
 
-      <div id="chat-input">
-        <input
-          type="text"
-          id="user-input"
-          bind:this={userInputElement}
-          bind:value={userInput}
-          on:keydown={(e) => e.key === 'Enter' && sendMessage()}
-          on:input={handleInput}
-          placeholder={isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
-          disabled={isDemo}
-          aria-label={$_('widget.placeholder')}
-        >
-        <button
-          id="send-button"
-          disabled={isDemo || !!loadingState || !userInput.trim()}
-          on:click={sendMessage}
-        >{$_('widget.sendButton')}</button>
-      </div>
-      <div id="chat-footer">{displayFooterText}</div>
-      {#if showPoweredBy}
-        <div id="powered-by">
-          {$_('widget.poweredBy')} <a href="https://www.autocust.it" target="_blank" rel="noopener noreferrer">Autocust</a>
-        </div>
-      {/if}
+      <ChatInput
+        bind:userInput
+        {isDemo}
+        {loadingState}
+        on:sendMessage={sendMessage}
+        on:handleInput={handleInput}
+      />
+      <ChatFooter {displayFooterText} {showPoweredBy} />
     </div>
   {/if}
 </div>
@@ -884,7 +794,6 @@
 .theme-dark {
   --container-bg: #2a2a2a;
   --header-bg: #1e1e1e;
-  --header-text: #ffffff;
   --messages-bg: #333333;
   --input-area-bg: #1e1e1e;
   --input-bg: #4a4a4a;
@@ -933,84 +842,6 @@
   border-radius: 0; box-shadow: none;
 }
 
-.button-wrapper {
-  position: relative;
-}
-
-.button-overlay {
-  position: absolute;
-  background-color: var(--messages-bg);
-  color: var(--primary-text-color);
-  padding: 8px 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  width: max-content;
-  max-width: 220px;
-  font-size: 14px;
-  line-height: 1.4;
-  z-index: 1;
-  bottom: 50%;
-  transform: translateY(50%);
-}
-
-.button-overlay-tail {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-/* Positioning for overlay and tail based on widget position */
-.bottom-right .button-overlay, .top-right .button-overlay {
-  right: calc(100% + 15px);
-}
-.bottom-right .button-overlay-tail, .top-right .button-overlay-tail {
-  left: 100%;
-  border-width: 8px 0 8px 8px;
-  border-color: transparent transparent transparent var(--messages-bg);
-}
-
-.bottom-left .button-overlay, .top-left .button-overlay {
-  left: calc(100% + 15px);
-}
-.bottom-left .button-overlay-tail, .top-left .button-overlay-tail {
-  right: 100%;
-  border-width: 8px 8px 8px 0;
-  border-color: transparent var(--messages-bg) transparent transparent;
-}
-
-
-#chat-button {
-  background-color: var(--chat-btn-bg) !important;
-  color: var(--chat-btn-text) !important;
-  border: none; border-radius: 50%;
-  width: 60px !important; height: 60px !important;
-  cursor: pointer; font-size: 24px;
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
-}
-#chat-button img { max-width: 100%; max-height: 100%; object-fit: cover; }
-
-.custom-chat-button-wrapper {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  display: inline-block; /* Adjust if needed, e.g., to match #chat-button's display */
-  line-height: 0; /* Helps remove extra space if image is inline-block */
-}
-
-.custom-chat-button-image {
-  width: 60px; /* Default width, similar to original button */
-  height: 60px; /* Default height, similar to original button */
-  /* cursor: pointer; /* Moved to wrapper button */
-  display: block;
-  object-fit: cover; /* To maintain aspect ratio if image is not square */
-  border-radius: 0; /* Default, can be overridden by user's image or further CSS */
-}
-
 #chat-container {
   width: var(--widget-width);
   height: var(--widget-height);
@@ -1019,82 +850,6 @@
   overflow: hidden; display: flex; flex-direction: column;
 }
 
-#chat-header {
-  display: flex; justify-content: space-between; align-items: center;
-  background-color: var(--header-bg); color: var(--header-text);
-  padding: 10px 10px 10px 14px; flex-shrink: 0;
-}
-.header-buttons { display: flex; gap: 5px; }
-#reset-chat, #close-chat {
-  background: none; border: none; color: var(--header-text);
-  font-size: 20px; line-height: 20px; padding: 10px; cursor: pointer;
-}
-
-#chat-messages {
-  flex-grow: 1; overflow-y: auto; padding: 10px;
-  background-color: var(--messages-bg); color: var(--primary-text-color);
-}
-.message {
-  margin-bottom: 10px; /* padding and border-radius removed */
-  height: auto; width: auto; max-width: 80%;
-  display: flex; /* MODIFIED for icon layout */
-  align-items: flex-start; /* Vertically align icon and text */
-  gap: 8px; /* Space between icon and text */
-  /* text-transform: none; /* Removed, covered by #chat-widget * reset */
-}
-
-.message-icon {
-  width: 32px; /* Adjust as needed */
-  height: 32px; /* Adjust as needed */
-  flex-shrink: 0; /* Prevent icon from shrinking */
-  /* border-radius: 50%; /* Uncomment for circular icons */
-}
-
-.message-content {
-  flex-grow: 1; /* Allow content to take available space */
-  word-wrap: break-word; /* Ensure long words break */
-  padding: 5px 10px; /* Added padding */
-  border-radius: 5px; /* Added border-radius */
-}
-
-.message a { color: var(--link-color); }
-:global(.message ul), :global(.message ol) { padding-inline-start: 20px; }
-.user-message {
-  /* background-color and color removed */
-  margin-left: auto;
-}
-.user-message .message-content {
-  background-color: var(--user-msg-bg);
-  color: var(--user-msg-text);
-}
-.bot-message {
-  /* background-color and color removed */
-  align-self: flex-start;
-}
-.bot-message .message-content {
-  background-color: var(--assistant-msg-bg);
-  color: var(--assistant-msg-text);
-}
-
-.loading-container {
-  display: flex; align-items: center; padding: 8px 12px;
-  background-color: var(--loading-bg); border-radius: 16px;
-  max-width: fit-content;
-  margin: 5px 0;
-}
-.loading-indicator { display: flex; align-items: baseline; gap: 4px; }
-.loading-text { color: var(--loading-text-color); font-size: 14px; }
-.typing-dots { display: flex; gap: 2px; padding-bottom: 2px; padding-left: 2px; }
-.typing-dots span {
-  width: 2px; height: 2px; background-color: var(--loading-dot-color);
-  border-radius: 50%; display: inline-block; animation: customBounce 1s infinite;
-}
-.typing-dots span:nth-child(1) { animation-delay: 0ms; }
-.typing-dots span:nth-child(2) { animation-delay: 200ms; }
-.typing-dots span:nth-child(3) { animation-delay: 400ms; }
-
-@keyframes customBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-
 @media (max-width: 480px) {
   #chat-widget:not(.fullscreen) {
     font-size: var(--widget-mobile-font-size, 12px);
@@ -1102,118 +857,6 @@
   #chat-widget:not(.fullscreen) #chat-container {
     width: 90vw; height: calc(90vh - 20px);
   }
-}
-
-.quick-messages-flow {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 0 10px 10px;
-  background-color: var(--messages-bg);
-  flex-shrink: 0;
-  /* Custom scrollbar for better aesthetics */
-  scrollbar-width: thin;
-  scrollbar-color: var(--disclaimer-text) transparent;
-}
-
-.quick-messages-flow::-webkit-scrollbar {
-  height: 5px;
-}
-
-.quick-messages-flow::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.quick-messages-flow::-webkit-scrollbar-thumb {
-  background-color: var(--disclaimer-text);
-  border-radius: 10px;
-}
-
-.quick-message-btn {
-  flex-shrink: 0;
-  padding: 6px 12px;
-  border-radius: 16px;
-  border: 1px solid var(--disclaimer-text);
-  background-color: transparent;
-  color: var(--primary-text-color);
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-}
-
-.quick-message-btn:hover:not(:disabled) {
-  background-color: var(--container-bg);
-}
-
-.quick-message-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-#chat-input {
-  display: flex; padding: 10px 10px 0 10px;
-  background-color: var(--header-bg); flex-shrink: 0;
-}
-#chat-footer {
-  text-align: center; font-size: 0.8rem; padding: 10px;
-  background-color: var(--header-bg); color: var(--header-text);
-  flex-shrink: 0;
-}
-#powered-by {
-  text-align: center; font-size: 0.7rem; padding: 5px 10px 10px;
-  background-color: var(--header-bg); color: var(--header-text);
-  flex-shrink: 0;
-}
-#powered-by a { color: var(--header-text); text-decoration: none; }
-#powered-by a:hover { text-decoration: underline; }
-
-#user-input {
-  flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 3px;
-  background-color: var(--input-bg); color: var(--input-text); font-size: 1em;
-}
-#user-input:disabled { background-color: var(--disabled-input-bg); cursor: not-allowed; }
-
-#send-button {
-  background-color: var(--cta-btn-bg);
-  color: var(--cta-btn-text);
-  border: none;
-  padding: 10px 15px;
-  margin-left: 5px;
-  cursor: pointer;
-  border-radius: 3px;
-  text-wrap: nowrap;
-  min-width: 60px;
-  transition: background-color 0.3s, color 0.3s;
-}
-#send-button:hover:not(:disabled) {
-  background-color: var(--cta-btn-hover-bg, var(--cta-hover-bg));
-  color: var(--cta-btn-hover-text, var(--cta-hover-text));
-}
-#send-button:disabled {
-  background-color: var(--disabled-button-bg);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.cta-button {
-  display: inline-block;
-  background-color: var(--cta-btn-bg);
-  color: var(--cta-btn-text);
-  padding: 8px 12px;
-  border-radius: 20px;
-  text-decoration: none;
-  margin-bottom: 10px;
-  font-size: 14px;
-  text-align: center;
-  width: 100%;
-  box-sizing: border-box;
-  transition: background-color 0.3s, color 0.3s;
-}
-.cta-button:hover {
-  background-color: var(--cta-btn-hover-bg, var(--cta-hover-bg));
-  color: var(--cta-btn-hover-text, var(--cta-hover-text));
 }
 
 :global(.product-carousel) { display: flex; overflow-x: auto; padding: 10px 0; margin-top: 10px; }

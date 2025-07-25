@@ -1,0 +1,158 @@
+<script>
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import { _ } from '../i18n';
+
+  export let isChatVisible = false;
+  export let isDemo = false;
+  export let buttonIcon = '💬';
+  export let buttonImageUrl = null;
+  export let buttonOverlayText = null;
+  export let buttonOverlayDelay = 5000;
+
+  let isOverlayVisible = false;
+  let overlayTimeout;
+
+  $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
+  $: isSvg = buttonIcon.trim().startsWith('<svg');
+
+  const dispatch = createEventDispatcher();
+
+  function toggleChat() {
+    if (isOverlayVisible && !isDemo) {
+      isOverlayVisible = false;
+      clearTimeout(overlayTimeout);
+    }
+    dispatch('toggleChat');
+  }
+
+  onMount(() => {
+    if (buttonOverlayText && (!isChatVisible || isDemo)) {
+      isOverlayVisible = true;
+      if (!isDemo) {
+        overlayTimeout = setTimeout(() => {
+          isOverlayVisible = false;
+        }, parseInt(buttonOverlayDelay, 10) || 5000);
+      }
+    }
+
+    return () => {
+      clearTimeout(overlayTimeout);
+    };
+  });
+</script>
+
+<div class="button-wrapper">
+  {#if isOverlayVisible && buttonOverlayText && (!isChatVisible || isDemo)}
+    <div class="button-overlay" transition:fade={{ duration: 300 }}>
+      {buttonOverlayText}
+      <div class="button-overlay-tail"></div>
+    </div>
+  {/if}
+
+  {#if buttonImageUrl}
+    <button
+      class="custom-chat-button-wrapper"
+      on:click={toggleChat}
+      on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleChat()}
+      aria-label={$_('widget.title')}
+      tabindex="0"
+    >
+      <img
+        src={buttonImageUrl}
+        alt=""
+        class="custom-chat-button-image"
+      />
+    </button>
+  {:else}
+    <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}>
+      {#if isImageUrl}
+        <img src={buttonIcon} alt="" /> <!-- Decorative icon, button has aria-label -->
+      {:else if isSvg}
+        {@html buttonIcon}
+      {:else}
+        {@html buttonIcon}
+      {/if}
+    </button>
+  {/if}
+</div>
+
+<style>
+.button-wrapper {
+  position: relative;
+}
+
+.button-overlay {
+  position: absolute;
+  background-color: var(--messages-bg);
+  color: var(--primary-text-color);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  width: max-content;
+  max-width: 220px;
+  font-size: 14px;
+  line-height: 1.4;
+  z-index: 1;
+  bottom: 50%;
+  transform: translateY(50%);
+}
+
+.button-overlay-tail {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Positioning for overlay and tail based on widget position */
+.bottom-right .button-overlay, .top-right .button-overlay {
+  right: calc(100% + 15px);
+}
+.bottom-right .button-overlay-tail, .top-right .button-overlay-tail {
+  left: 100%;
+  border-width: 8px 0 8px 8px;
+  border-color: transparent transparent transparent var(--messages-bg);
+}
+
+.bottom-left .button-overlay, .top-left .button-overlay {
+  left: calc(100% + 15px);
+}
+.bottom-left .button-overlay-tail, .top-left .button-overlay-tail {
+  right: 100%;
+  border-width: 8px 8px 8px 0;
+  border-color: transparent var(--messages-bg) transparent transparent;
+}
+
+
+#chat-button {
+  background-color: var(--chat-btn-bg) !important;
+  color: var(--chat-btn-text) !important;
+  border: none; border-radius: 50%;
+  width: 60px !important; height: 60px !important;
+  cursor: pointer; font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+#chat-button img { max-width: 100%; max-height: 100%; object-fit: cover; }
+
+.custom-chat-button-wrapper {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-block; /* Adjust if needed, e.g., to match #chat-button's display */
+  line-height: 0; /* Helps remove extra space if image is inline-block */
+}
+
+.custom-chat-button-image {
+  width: 60px; /* Default width, similar to original button */
+  height: 60px; /* Default height, similar to original button */
+  /* cursor: pointer; /* Moved to wrapper button */
+  display: block;
+  object-fit: cover; /* To maintain aspect ratio if image is not square */
+  border-radius: 0; /* Default, can be overridden by user's image or further CSS */
+}
+</style>
