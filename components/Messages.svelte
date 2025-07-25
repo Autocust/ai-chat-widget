@@ -1,3 +1,4 @@
+<svelte:options accessors={true} />
 <script>
   import Message from './Message.svelte';
 
@@ -7,9 +8,12 @@
   export let userMessageIcon = null;
   export let botMessageIcon = null;
   export let openInNewTab = true;
+
+  let messagesContainer;
+  export { messagesContainer as element };
 </script>
 
-<div id="chat-messages" aria-live="polite">
+<div id="chat-messages" aria-live="polite" bind:this={messagesContainer}>
   {#each messages as message, i (message.sender + message.content.substring(0, 30) + Math.random())}
     <Message {message} {userMessageIcon} {botMessageIcon} {openInNewTab} />
   {/each}

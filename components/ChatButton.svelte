@@ -108,19 +108,19 @@
 }
 
 /* Positioning for overlay and tail based on widget position */
-.bottom-right .button-overlay, .top-right .button-overlay {
+:global(.bottom-right) .button-overlay, :global(.top-right) .button-overlay {
   right: calc(100% + 15px);
 }
-.bottom-right .button-overlay-tail, .top-right .button-overlay-tail {
+:global(.bottom-right) .button-overlay-tail, :global(.top-right) .button-overlay-tail {
   left: 100%;
   border-width: 8px 0 8px 8px;
   border-color: transparent transparent transparent var(--messages-bg);
 }
 
-.bottom-left .button-overlay, .top-left .button-overlay {
+:global(.bottom-left) .button-overlay, :global(.top-left) .button-overlay {
   left: calc(100% + 15px);
 }
-.bottom-left .button-overlay-tail, .top-left .button-overlay-tail {
+:global(.bottom-left) .button-overlay-tail, :global(.top-left) .button-overlay-tail {
   right: 100%;
   border-width: 8px 8px 8px 0;
   border-color: transparent var(--messages-bg) transparent transparent;

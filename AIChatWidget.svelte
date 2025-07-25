@@ -63,7 +63,7 @@
   let messages = [];
   let userInput = '';
   let loadingState = null;
-  let chatMessages;
+  let messagesComponent;
   let currentBotMessage = '';
   let ws;
   let wsConnected = false;
@@ -71,8 +71,6 @@
   let maxReconnectAttempts = 5;
   let reconnectInterval = null;
   let isReconnecting = false;
-  let inactivityTimeout;
-  let showPredefinedQuestions = false;
 
   let sessionId = getSessionIdFromCookie() || generateUUID();
 
@@ -186,27 +184,6 @@
     document.cookie = cookieString;
   }
 
-  function resetInactivityTimer() {
-    clearTimeout(inactivityTimeout);
-    // Don't run timer in demo mode or if chat is not visible
-    if (isDemo || !isChatVisible) return;
-
-    inactivityTimeout = setTimeout(() => {
-      // Show suggestions if user is idle, input is empty, and we are not waiting for a response
-      if (userInput.trim() === '' && !loadingState) {
-        showPredefinedQuestions = true;
-      }
-    }, 30000); // 30 seconds
-  }
-
-  function handleInput() {
-    // Hide suggestions as soon as user starts typing
-    if (showPredefinedQuestions) {
-      showPredefinedQuestions = false;
-    }
-    // The timer is no longer reset on input.
-  }
-
   async function toggleChat() {
     if (!closable && isChatVisible) {
         return;
@@ -214,25 +191,17 @@
     isChatVisible = !isChatVisible;
     if (isChatVisible) {
       await tick();
-      if (chatMessages) {
+      if (messagesComponent?.element) {
         if (isDemo) {
-          chatMessages.scrollTop = 0;
+          messagesComponent.element.scrollTop = 0;
         } else {
-          chatMessages.scrollTop = chatMessages.scrollHeight;
+          messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
         }
       }
       if (!isDemo && !wsConnected && !isReconnecting) {
         initWebSocket();
       }
-      if (!isDemo) {
-        if (!hasUserSentMessage) {
-          showPredefinedQuestions = true;
-        }
-        resetInactivityTimer();
-      }
     } else if (!isDemo) {
-      clearTimeout(inactivityTimeout);
-      showPredefinedQuestions = false;
       isReconnecting = false;
       reconnectAttempt = 0;
       if (ws) {
@@ -285,7 +254,7 @@
                addMessageToUI(currentBotMessage, 'bot'); // This already calls saveSessionToLocalStorage
             }
             tick().then(() => {
-              if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+              if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
             });
             break;
           case 'products_search':
@@ -309,13 +278,11 @@
                 saveSessionToLocalStorage(sessionId, messages);
             }
             currentBotMessage = ''; // Reset after potential save
-            resetInactivityTimer();
             break;
           case 'error':
             loadingState = null;
             console.error('WebSocket error:', data.content);
             addMessageToUI($_('status.error'), 'bot'); // This will save
-            resetInactivityTimer();
             break;
         }
       } catch (err) {
@@ -411,7 +378,7 @@
 
   function extractLinks(markdownText) {
     if (!markdownText) return [];
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const linkRegex = /\([^[]+\]\(([^)]+)\)/g;
     const links = [];
     let match;
     while ((match = linkRegex.exec(markdownText)) !== null) {
@@ -463,8 +430,8 @@
     }
 
     tick().then(() => {
-      if (chatMessages && !isDemo) {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+      if (messagesComponent?.element && !isDemo) {
+        messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
       }
     });
   }
@@ -504,9 +471,6 @@
     const message = userInput.trim();
     if (!message || !wsConnected || loadingState) return;
 
-    showPredefinedQuestions = false;
-    clearTimeout(inactivityTimeout);
-
     addMessageToUI(message, 'user'); // This will save if persistentSession is true
     userInput = '';
     loadingState = { type: 'thinking', message: $_('status.thinking') };
@@ -518,7 +482,6 @@
       console.error("Error sending message:", err);
       addMessageToUI($_('status.sendError'), 'bot'); // This will save
       loadingState = null;
-      resetInactivityTimer();
     }
   }
 
@@ -546,8 +509,8 @@
           productCarousel: demoCarouselHtml
       });
       tick().then(() => {
-        if (chatMessages) {
-          chatMessages.scrollTop = 0;
+        if (messagesComponent?.element) {
+          messagesComponent.element.scrollTop = 0;
         }
       });
   }
@@ -574,7 +537,7 @@
     // Add initial message to the new session (this will save it to local storage with the new ID)
     addMessageToUI(displayInitialMessage, 'bot');
     tick().then(() => {
-        if (chatMessages) chatMessages.scrollTop = 0;
+        if (messagesComponent?.element) messagesComponent.element.scrollTop = 0;
     });
 
     if (ws) {
@@ -606,7 +569,6 @@
   onMount(() => {
     if (isDemo) {
         setupDemoMessages();
-        showPredefinedQuestions = !hasUserSentMessage;
     } else {
         saveSessionIdToCookie(sessionId); // Save/update cookie, respecting persistentSession for Max-Age
 
@@ -619,7 +581,7 @@
                 // Update last activity timestamp as session is now active
                 saveSessionToLocalStorage(sessionId, messages);
                 tick().then(() => {
-                    if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+                    if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
                 });
             } else {
                  // Session expired or not found, ensure it's cleared (loadSession handles this)
@@ -630,17 +592,14 @@
             addMessageToUI(displayInitialMessage, 'bot'); // This will also save if persistentSession is true
         }
 
-        showPredefinedQuestions = !hasUserSentMessage;
         if (startOpen) {
             if (!wsConnected && !isReconnecting) {
                 initWebSocket();
             }
-            resetInactivityTimer();
         }
     }
 
     return () => {
-      clearTimeout(inactivityTimeout);
       if (!isDemo) {
           if (ws) {
               ws.close(1000, 'Component unmounted');
@@ -669,6 +628,27 @@
         </form>`;
     }
     return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="${openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
+  }
+
+  $: if (isChatVisible && messages.length > 0 && messagesComponent?.element) {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage.sender === 'bot') {
+      const messageElements = messagesComponent.element.querySelectorAll('.message-container');
+      const lastMessageElement = messageElements[messageElements.length - 1];
+      if (lastMessageElement) {
+        const offset = 50; // 50px offset from the top
+        const topPos = lastMessageElement.offsetTop;
+        messagesComponent.element.scrollTo({
+          top: topPos - offset,
+          behavior: 'smooth'
+        });
+      }
+    } else {
+      messagesComponent.element.scrollTo({
+        top: messagesComponent.element.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }
 </script>
 
@@ -715,7 +695,7 @@
         on:toggleChat={toggleChat}
       />
       <Messages
-        bind:this={chatMessages}
+        bind:this={messagesComponent}
         {messages}
         {isDemo}
         {loadingState}
@@ -724,7 +704,7 @@
         {openInNewTab}
       />
 
-      {#if showPredefinedQuestions && predefinedQuestions.length > 0}
+      {#if predefinedQuestions.length > 0}
         <QuickReplies
           {predefinedQuestions}
           {isDemo}
@@ -737,7 +717,6 @@
         {isDemo}
         {loadingState}
         on:sendMessage={sendMessage}
-        on:handleInput={handleInput}
       />
       <ChatFooter {displayFooterText} {showPoweredBy} />
     </div>
@@ -794,6 +773,7 @@
 .theme-dark {
   --container-bg: #2a2a2a;
   --header-bg: #1e1e1e;
+  --header-text: #ffffff;
   --messages-bg: #333333;
   --input-area-bg: #1e1e1e;
   --input-bg: #4a4a4a;
