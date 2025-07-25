@@ -39,6 +39,7 @@
   export let footerText = null;
   export let showPoweredBy = true;
   export let agentId = 'xyz';
+  export let context = null;
   export let cms = '';
   export let persistentSession = false;
   export let sessionExpiration = 24;
@@ -227,6 +228,10 @@
       isReconnecting = false;
       reconnectAttempt = 0;
       loadingState = null;
+
+      if (context) {
+        ws.send(JSON.stringify({ type: 'context', value: context }));
+      }
     };
 
     ws.onmessage = async (event) => {

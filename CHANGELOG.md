@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.3.10](https://github.com/Autocust/ai-chat-widget/compare/v2.3.9...v2.3.10) (2025-07-25)
+
+### Features
+
+* bubble size ([ab866c3](https://github.com/Autocust/ai-chat-widget/commit/ab866c38190ecd92c34b0765a22ea559581da292))
+
+### Bug Fixes
+
+* automatic scroll on assistant response ([357b9df](https://github.com/Autocust/ai-chat-widget/commit/357b9dfbf6ce1e633ad7ce7a9244d271840cb7ee))
+
+### Code Refactoring
+
+* decoupling in components ([1f0f7aa](https://github.com/Autocust/ai-chat-widget/commit/1f0f7aad9775e9abae6c6d9758a0ec09da845b65))
+
+### Chores
+
+* build ([9628790](https://github.com/Autocust/ai-chat-widget/commit/962879020db59f2c5cb785b04683bec94c141975))
+
 ## [2.3.9](https://github.com/Autocust/ai-chat-widget/compare/v2.3.8...v2.3.9) (2025-06-12)
 
 ### Features

@@ -74,6 +74,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-footer-text`: Custom text displayed in the footer area below the input field. If not set, a default localized message is used (e.g., "AI-generated. Please verify important information." in English).
 - `data-show-powered-by`: Set to `false` to hide the "Powered by Autocust" text at the bottom. Default is `true`.
 - `data-agent-id`: The Agent ID used for backend identification and API calls. Default is `xyz`. Ignored if `data-is-demo` is `true`.
+- `data-context`: A string that provides additional context to the assistant. The value will be Base64 encoded and sent to the backend. Default is `null`.
 - `data-cms`: The type of Content Management System the website uses (e.g., 'prestashop', 'woocommerce'). This can affect features like "Add to Cart" buttons in product carousels. Default is `''` (empty string).
 - `data-start-open`: Set to `true` to make the chat widget open by default when the page loads. Default is `false`.
 - `data-full-screen`: Set to `true` to make the chat widget open in fullscreen mode, covering the entire viewport. Default is `false`.
