@@ -29,6 +29,8 @@
 
 <style>
 #chat-messages {
+  display: flex;
+  flex-direction: column;
   flex-grow: 1; overflow-y: auto; padding: 10px;
   background-color: var(--messages-bg); color: var(--primary-text-color);
 }

@@ -54,14 +54,15 @@
   .message-container {
     display: flex;
     flex-direction: column;
-    max-width: 80%;
     margin-bottom: 10px;
+    max-width: 80%;
+    min-width: 50%;
   }
   .user-message {
-    align-self: flex-end;
+    margin-left: auto;
   }
   .bot-message {
-    align-self: flex-start;
+    margin-right: auto;
   }
   .message {
     display: flex;
@@ -94,7 +95,7 @@
     padding-inline-start: 20px;
   }
   .cta-button {
-    display: inline-block;
+    display: block;
     background-color: var(--cta-btn-bg);
     color: var(--cta-btn-text);
     padding: 8px 12px;

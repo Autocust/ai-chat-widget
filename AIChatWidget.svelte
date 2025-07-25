@@ -378,7 +378,7 @@
 
   function extractLinks(markdownText) {
     if (!markdownText) return [];
-    const linkRegex = /\([^[]+\]\(([^)]+)\)/g;
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const links = [];
     let match;
     while ((match = linkRegex.exec(markdownText)) !== null) {
