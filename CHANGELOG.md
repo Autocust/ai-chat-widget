@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0-2](https://github.com/Autocust/ai-chat-widget/compare/v3.0.0-1...v3.0.0-2) (2025-07-28)
+
+### Chores
+
+* build ([9865fa0](https://github.com/Autocust/ai-chat-widget/commit/9865fa083f24dea1b2ced0ae75a4c8dc1313afd6))
+
 ## [3.0.0-1](https://github.com/Autocust/ai-chat-widget/compare/v3.0.0-0...v3.0.0-1) (2025-07-28)
 
 ### Features
