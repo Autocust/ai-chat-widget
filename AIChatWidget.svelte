@@ -2,6 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { marked } from 'marked';
   import { _ } from './i18n'; // Import the translation function
+  import { addUtmParams } from './utils/url.js';
 
   import ChatButton from './components/ChatButton.svelte';
   import ChatHeader from './components/ChatHeader.svelte';
@@ -65,6 +66,7 @@
   let userInput = '';
   let loadingState = null;
   let messagesComponent;
+  let chatInputComponent;
   let currentBotMessage = '';
   let ws;
   let wsConnected = false;
@@ -202,6 +204,10 @@
       if (!isDemo && !wsConnected && !isReconnecting) {
         initWebSocket();
       }
+      await tick();
+      setTimeout(() => {
+        chatInputComponent?.focusInput();
+      }, 0);
     } else if (!isDemo) {
       isReconnecting = false;
       reconnectAttempt = 0;
@@ -361,7 +367,7 @@
     if (!products || products.length === 0) return '';
     const productCards = products.map(product => `
       <div class="carousel-product">
-        <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot')}"
+        <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot', enableUTM)}"
            target="${openInNewTab ? '_blank' : '_self'}"
            class="product-link">
           ${product.regular_price && product.regular_price > product.price ?
@@ -457,20 +463,6 @@
     return `-${Math.round(discount)}%`;
   }
 
-  function addUtmParams(url, source, medium, campaign) {
-    if (!enableUTM || !url || url.startsWith('#')) return url;
-    try {
-        const urlObj = new URL(url, window.location.origin);
-        urlObj.searchParams.set('utm_source', source);
-        urlObj.searchParams.set('utm_medium', medium);
-        urlObj.searchParams.set('utm_campaign', campaign);
-        return urlObj.toString();
-    } catch (e) {
-        console.warn("Could not add UTM params to invalid URL:", url, e);
-        return url;
-    }
-  }
-
   async function sendMessage() {
     if (isDemo) return;
     const message = userInput.trim();
@@ -488,6 +480,7 @@
       addMessageToUI($_('status.sendError'), 'bot'); // This will save
       loadingState = null;
     }
+    chatInputComponent?.focusInput();
   }
 
   function sendQuickMessage(message) {
@@ -619,7 +612,7 @@
   function renderAddToCartButton(product) {
     const buttonText = $_('product.buyButton');
     if (isDemo || !cms) {
-      return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="_blank" class="add-to-cart"><span>${buttonText}</span></a>`;
+      return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="_blank" class="add-to-cart"><span>${buttonText}</span></a>`;
     }
     if (cms === 'prestashop') {
       return `
@@ -632,7 +625,7 @@
           <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit"><span>${buttonText}</span></button>
         </form>`;
     }
-    return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart')}" target="${openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
+    return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="${openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
   }
 
   $: if (isChatVisible && messages.length > 0 && messagesComponent?.element) {
@@ -707,6 +700,7 @@
         {userMessageIcon}
         {botMessageIcon}
         {openInNewTab}
+        {enableUTM}
       />
 
       {#if predefinedQuestions.length > 0}
@@ -718,6 +712,7 @@
       {/if}
 
       <ChatInput
+        bind:this={chatInputComponent}
         bind:userInput
         {isDemo}
         {loadingState}
@@ -874,7 +869,7 @@
 :global(.add-to-cart) {
   background-color: var(--cta-btn-bg); color: var(--cta-btn-text);
   border: none; border-radius: 20px; padding: 8px 12px; cursor: pointer;
-  display: inline-block;
+  display: block;
   transition: background-color 0.3s, color 0.3s; margin: 10px auto 0;
   text-decoration: none; font-size: 14px; text-align: center; width: 100%;
   box-sizing: border-box;

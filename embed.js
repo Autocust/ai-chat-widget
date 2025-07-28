@@ -118,7 +118,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
 
     // --- Instantiate the Svelte component ---
     const chatWidget = new AIChatWidget({
-      target: targetDiv,
+      target: shadowRoot,
       props: {
         // Read data-attributes, falling back to the merged defaults (API > base)
         title: getAttr("data-title", finalDefaults.title),

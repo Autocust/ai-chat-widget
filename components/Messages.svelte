@@ -8,6 +8,7 @@
   export let userMessageIcon = null;
   export let botMessageIcon = null;
   export let openInNewTab = true;
+  export let enableUTM = true;
 
   let messagesContainer;
   export { messagesContainer as element };
@@ -15,7 +16,7 @@
 
 <div id="chat-messages" aria-live="polite" bind:this={messagesContainer}>
   {#each messages as message, i (message.sender + message.content.substring(0, 30) + Math.random())}
-    <Message {message} {userMessageIcon} {botMessageIcon} {openInNewTab} />
+    <Message {message} {userMessageIcon} {botMessageIcon} {openInNewTab} {enableUTM} />
   {/each}
   {#if !isDemo && loadingState?.message}
     <div class="loading-container" aria-live="assertive">

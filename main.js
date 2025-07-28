@@ -14,7 +14,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         initialMessage: "Ciao, come posso aiutarti?", // Let component handle default via i18n
         ctaText: "Chiedi informazioni", // Let component handle default via i18n
         buttonIcon: "💬",
-        buttonImageUrl: "https://i.ibb.co/wNfKVh30/Marconio-Risponde.png",
+        // buttonImageUrl: "https://i.ibb.co/wNfKVh30/Marconio-Risponde.png",
         buttonOverlayText: "Hai una domanda? Chiedi a me!",
         buttonOverlayDelay: 5000,
         predefinedQuestions: [

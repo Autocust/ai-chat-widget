@@ -6,6 +6,8 @@
   export let isDemo = false;
   export let loadingState = null;
 
+  let inputElement;
+
   const dispatch = createEventDispatcher();
 
   function sendMessage() {
@@ -15,6 +17,10 @@
   function handleInput() {
     dispatch('handleInput');
   }
+
+  export function focusInput() {
+    inputElement.focus();
+  }
 </script>
 
 <div id="chat-input">
@@ -22,6 +28,7 @@
     type="text"
     id="user-input"
     bind:value={userInput}
+    bind:this={inputElement}
     on:keydown={(e) => e.key === 'Enter' && sendMessage()}
     on:input={handleInput}
     placeholder={isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
