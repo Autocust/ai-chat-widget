@@ -117,6 +117,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
     }
 
     // --- Instantiate the Svelte component ---
+    const shadowRoot = targetDiv.attachShadow({ mode: 'open' });
     const chatWidget = new AIChatWidget({
       target: shadowRoot,
       props: {
