@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.0-1](https://github.com/Autocust/ai-chat-widget/compare/v3.0.0-0...v3.0.0-1) (2025-07-28)
+
+### Features
+
+* **websocket:** Enhance connection robustness with heartbeat and improved reconnection ([ec25f25](https://github.com/Autocust/ai-chat-widget/commit/ec25f25afcb27cb91ee78a4dda67ffcab3b500c6))
+* **widget:** Implement auto-focus for chat input with delayed execution ([09b4f86](https://github.com/Autocust/ai-chat-widget/commit/09b4f867e2346453db4500ee43c48327c21929ed))
+
 ## [3.0.0-0](https://github.com/Autocust/ai-chat-widget/compare/v2.3.9...v3.0.0-0) (2025-07-25)
 
 ### Features
