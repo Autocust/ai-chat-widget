@@ -363,6 +363,21 @@
     }, delay);
   }
 
+  function heartbeat() {
+    clearTimeout(pingTimeout);
+    clearTimeout(pongTimeout);
+
+    pingTimeout = setTimeout(() => {
+      if (wsConnected) {
+        ws.send('ping');
+        pongTimeout = setTimeout(() => {
+          // If pong not received in time, terminate connection
+          ws.close(1000, 'Pong timeout');
+        }, 5000); // Wait 5 seconds for pong
+      }
+    }, 30000); // Send ping every 30 seconds
+  }
+
   function createProductCarousel(products) {
     if (!products || products.length === 0) return '';
     const productCards = products.map(product => `
@@ -604,6 +619,8 @@
               wsConnected = false;
           }
           clearTimeout(reconnectInterval);
+          clearTimeout(pingTimeout);
+          clearTimeout(pongTimeout);
           isReconnecting = false;
       }
     };
