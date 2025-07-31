@@ -1,6 +1,7 @@
 <script>
   import { onMount, tick } from 'svelte';
   import { marked } from 'marked';
+  import { io } from 'socket.io-client';
   import { _ } from './i18n'; // Import the translation function
   import { addUtmParams } from './utils/url.js';
 
@@ -68,7 +69,7 @@
   let messagesComponent;
   let chatInputComponent;
   let currentBotMessage = '';
-  let ws;
+  let socket;
   let wsConnected = false;
   let reconnectAttempt = 0;
   let maxReconnectAttempts = 5;
@@ -211,8 +212,8 @@
     } else if (!isDemo) {
       isReconnecting = false;
       reconnectAttempt = 0;
-      if (ws) {
-        ws.close(1000, 'Chat closed by user');
+      if (socket) {
+        socket.disconnect();
         wsConnected = false;
       }
     }
@@ -225,134 +226,148 @@
         addMessageToUI($_('status.configErrorApi'), 'bot', { persist: false });
         return;
     }
-    const wsUrl = apiUrl.replace(/^http/, 'ws');
-    ws = new WebSocket(`${wsUrl}/ws-chat?sessionId=${sessionId}&agentId=${encodeURIComponent(agentId)}`);
+    
+    socket = io(apiUrl + '/ws-chat', {
+      path: '/ws',
+      query: {
+        sessionId: sessionId,
+        agentId: agentId
+      },
+      transports: ['websocket'],
+      reconnection: false
+    });
 
-    ws.onopen = () => {
-      console.log('WebSocket connected');
+    socket.on('connect', () => {
+      console.log('Socket.IO connected');
       wsConnected = true;
       isReconnecting = false;
       reconnectAttempt = 0;
       loadingState = null;
 
       if (context) {
-        ws.send(JSON.stringify({ type: 'context', value: context }));
+        socket.emit('context', context);
       }
-    };
+    });
 
-    ws.onmessage = async (event) => {
+    socket.on('thinking', () => {
+      loadingState = { type: 'thinking', message: $_('status.thinking') };
+    });
+
+    socket.on('searching', () => {
+      loadingState = { type: 'searching', message: $_('status.searching') };
+    });
+
+    socket.on('token', async (content) => {
       try {
-        const data = JSON.parse(event.data);
-        switch(data.type) {
-          case 'thinking':
-            loadingState = { type: 'thinking', message: $_('status.thinking') };
-            break;
-          case 'searching':
-            loadingState = { type: 'searching', message: $_('status.searching') };
-            break;
-          case 'token':
-            loadingState = { type: 'writing' };
-            currentBotMessage += data.content;
-            if (messages.length > 0 && messages[messages.length - 1].sender === 'bot') {
-              const last = messages.at(-1);
-              last.content = marked.parse(currentBotMessage.replace(/\【.*?】/g,''));
-              last.links = extractLinks(currentBotMessage);
-              messages = [...messages];
-              if (persistentSession && !isDemo) { // Save after updating streamed message
-                saveSessionToLocalStorage(sessionId, messages);
-              }
-            } else {
-               addMessageToUI(currentBotMessage, 'bot'); // This already calls saveSessionToLocalStorage
-            }
-            tick().then(() => {
-              if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
-            });
-            break;
-          case 'products_search':
-            const products = await fetchProducts();
-            if (products && products.length > 0) {
-              const carousel = createProductCarousel(products);
-              const lastMessage = messages[messages.length - 1];
-              if (lastMessage && lastMessage.sender === 'bot') {
-                messages[messages.length - 1] = { ...lastMessage, productCarousel: carousel };
-                messages = [...messages];
-                if (persistentSession && !isDemo) { // Save after adding carousel
-                    saveSessionToLocalStorage(sessionId, messages);
-                }
-              }
-            }
-            break;
-          case 'done':
-            loadingState = null;
-            // Ensure final state of messages is saved
-            if (persistentSession && !isDemo && messages.length > 0) {
+        loadingState = { type: 'writing' };
+        currentBotMessage += content;
+        if (messages.length > 0 && messages[messages.length - 1].sender === 'bot') {
+          const last = messages.at(-1);
+          last.content = marked.parse(currentBotMessage.replace(/\【.*?】/g,''));
+          last.links = extractLinks(currentBotMessage);
+          messages = [...messages];
+          if (persistentSession && !isDemo) { // Save after updating streamed message
+            saveSessionToLocalStorage(sessionId, messages);
+          }
+        } else {
+            addMessageToUI(currentBotMessage, 'bot'); // This already calls saveSessionToLocalStorage
+        }
+        await tick();
+        if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
+      } catch (err) {
+        console.error('Error processing token:', err);
+      }
+    });
+
+    socket.on('products_search', async () => {
+      try {
+        const products = await fetchProducts();
+        if (products && products.length > 0) {
+          const carousel = createProductCarousel(products);
+          const lastMessage = messages[messages.length - 1];
+          if (lastMessage && lastMessage.sender === 'bot') {
+            messages[messages.length - 1] = { ...lastMessage, productCarousel: carousel };
+            messages = [...messages];
+            if (persistentSession && !isDemo) { // Save after adding carousel
                 saveSessionToLocalStorage(sessionId, messages);
             }
-            currentBotMessage = ''; // Reset after potential save
-            break;
-          case 'error':
-            loadingState = null;
-            console.error('WebSocket error:', data.content);
-            addMessageToUI($_('status.error'), 'bot'); // This will save
-            break;
+          }
         }
       } catch (err) {
-        console.error('Error processing message:', err);
+        console.error('Error processing products_search:', err);
       }
-    };
+    });
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      wsConnected = false;
+    socket.on('done', () => {
       loadingState = null;
-      if (!isReconnecting) {
-        addMessageToUI($_('status.connectionError'), 'bot', { persist: false });
+      // Ensure final state of messages is saved
+      if (persistentSession && !isDemo && messages.length > 0) {
+          saveSessionToLocalStorage(sessionId, messages);
       }
-    };
+      currentBotMessage = ''; // Reset after potential save
+    });
 
-    ws.onclose = (event) => {
-      console.log('WebSocket connection closed:', event.code, event.reason);
+    socket.on('error', (content) => {
+      loadingState = null;
+      console.error('Socket.IO error:', content);
+      addMessageToUI($_('status.error'), 'bot'); // This will save
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket.IO connection error:', error);
       wsConnected = false;
-      if (isChatVisible && event.code !== 1000 && !isReconnecting) {
+      attemptReconnect();
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('Socket.IO disconnected:', reason);
+      wsConnected = false;
+      if (isChatVisible && reason !== 'io client disconnect') {
+        reconnectAttempt = 0;
+        isReconnecting = false;
+        addMessageToUI($_('status.connectionError'), 'bot', { persist: false });
         attemptReconnect();
       } else {
           isReconnecting = false;
           loadingState = null;
       }
-    };
+    });
   }
 
   function attemptReconnect() {
-    if (isDemo || isReconnecting || reconnectAttempt >= maxReconnectAttempts) return;
+    clearTimeout(reconnectInterval);
+
+    if (isDemo || reconnectAttempt >= maxReconnectAttempts) {
+      if (isReconnecting) { // Only if we were in a cycle
+        loadingState = null;
+        addMessageToUI($_('status.reconnectFailed'), 'bot', { persist: false });
+        console.log('Max reconnect attempts reached.');
+        isReconnecting = false;
+      }
+      return;
+    }
+
     isReconnecting = true;
     const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 16000);
+
     loadingState = {
       type: 'reconnecting',
       message: $_('status.reconnecting', { values: { current: reconnectAttempt + 1, max: maxReconnectAttempts } })
     };
     console.log(`Attempting reconnect ${reconnectAttempt + 1}/${maxReconnectAttempts} in ${delay}ms`);
-    clearTimeout(reconnectInterval);
+
     reconnectInterval = setTimeout(() => {
       if (!isChatVisible || wsConnected) {
-          isReconnecting = false;
-          loadingState = null;
-          console.log(`Reconnect aborted: Chat closed or already connected.`);
-          return;
-      }
-      reconnectAttempt++;
-      if (reconnectAttempt > maxReconnectAttempts) {
-        loadingState = null;
-        addMessageToUI($_('status.reconnectFailed'), 'bot', { persist: false });
         isReconnecting = false;
-        console.log('Max reconnect attempts reached.');
+        reconnectAttempt = 0;
+        loadingState = null;
+        console.log('Reconnect aborted: Chat closed or already connected.');
         return;
       }
+
+      reconnectAttempt++;
       try {
         console.log(`Executing reconnect attempt ${reconnectAttempt}`);
-        loadingState = {
-            type: 'reconnecting',
-            message: $_('status.reconnecting', { values: { current: reconnectAttempt, max: maxReconnectAttempts } })
-        };
         initWebSocket();
       } catch (err) {
         console.error('Reconnection failed immediately during initWebSocket:', err);
@@ -363,20 +378,7 @@
     }, delay);
   }
 
-  function heartbeat() {
-    clearTimeout(pingTimeout);
-    clearTimeout(pongTimeout);
-
-    pingTimeout = setTimeout(() => {
-      if (wsConnected) {
-        ws.send('ping');
-        pongTimeout = setTimeout(() => {
-          // If pong not received in time, terminate connection
-          ws.close(1000, 'Pong timeout');
-        }, 5000); // Wait 5 seconds for pong
-      }
-    }, 30000); // Send ping every 30 seconds
-  }
+  
 
   function createProductCarousel(products) {
     if (!products || products.length === 0) return '';
@@ -489,7 +491,7 @@
     currentBotMessage = ''; // Reset for the new bot message stream
 
     try {
-      ws.send(JSON.stringify({ chatInput: message }));
+      socket.emit('message', { chatInput: message });
     } catch (err) {
       console.error("Error sending message:", err);
       addMessageToUI($_('status.sendError'), 'bot'); // This will save
@@ -553,8 +555,8 @@
         if (messagesComponent?.element) messagesComponent.element.scrollTop = 0;
     });
 
-    if (ws) {
-      ws.close(1000, 'Session reset');
+    if (socket) {
+      socket.disconnect();
       wsConnected = false;
     }
     clearTimeout(reconnectInterval);
@@ -614,13 +616,11 @@
 
     return () => {
       if (!isDemo) {
-          if (ws) {
-              ws.close(1000, 'Component unmounted');
+          if (socket) {
+              socket.disconnect();
               wsConnected = false;
           }
           clearTimeout(reconnectInterval);
-          clearTimeout(pingTimeout);
-          clearTimeout(pongTimeout);
           isReconnecting = false;
       }
     };
