@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "marked": "^14.1.2",
+    "socket.io-client": "^4.8.1",
     "svelte-i18n": "^4.0.1"
   },
   "files": [
