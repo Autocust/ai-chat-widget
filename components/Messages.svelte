@@ -1,6 +1,7 @@
 <svelte:options accessors={true} />
 <script>
   import Message from './Message.svelte';
+  import DateSeparator from './DateSeparator.svelte';
 
   export let messages = [];
   export let isDemo = false;
@@ -15,8 +16,12 @@
 </script>
 
 <div id="chat-messages" aria-live="polite" bind:this={messagesContainer}>
-  {#each messages as message, i (message.sender + message.content.substring(0, 30) + Math.random())}
-    <Message {message} {userMessageIcon} {botMessageIcon} {openInNewTab} {enableUTM} />
+  {#each messages as message, i (message.type === 'date' ? message.date : message.sender + message.content.substring(0, 30) + Math.random())}
+    {#if message.type === 'date'}
+      <DateSeparator date={message.date} />
+    {:else}
+      <Message {message} {userMessageIcon} {botMessageIcon} {openInNewTab} {enableUTM} />
+    {/if}
   {/each}
   {#if !isDemo && loadingState?.message}
     <div class="loading-container" aria-live="assertive">

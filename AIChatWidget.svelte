@@ -11,6 +11,7 @@
   import QuickReplies from './components/QuickReplies.svelte';
   import ChatInput from './components/ChatInput.svelte';
   import ChatFooter from './components/ChatFooter.svelte';
+  import DateSeparator from './components/DateSeparator.svelte';
 
   // --- Props ---
   export let title = null;
@@ -437,13 +438,20 @@
       processedContent = marked.parse(rawMarkdown);
     }
 
+    const lastMessage = messages.filter(m => m.type !== 'date').pop();
+    const now = new Date();
+    if (!lastMessage || new Date(lastMessage.date).toDateString() !== now.toDateString()) {
+        messages = [...messages, { type: 'date', date: now }];
+    }
+
     messages = [...messages, {
       content: processedContent, // Now always HTML
       sender,
       links,
       productCarousel: additionalData.productCarousel || '',
       url: additionalData.url || '',
-      ctaText: additionalData.ctaText || displayCtaText
+      ctaText: additionalData.ctaText || displayCtaText,
+      date: new Date()
     }];
 
     if (persistentSession && !isDemo && shouldPersistMessage) {
@@ -455,6 +463,27 @@
 
       }
     });
+  }
+
+  function processMessagesAndAddSeparators(messageList) {
+    if (!messageList || messageList.length === 0) {
+        return [];
+    }
+    const processed = [];
+    let lastDateString = null;
+    messageList.forEach(msg => {
+        if (msg.type === 'date') return; // Skip old separators
+
+        const msgDate = new Date(msg.date);
+        const msgDateString = msgDate.toDateString();
+
+        if (msgDateString !== lastDateString) {
+            processed.push({ type: 'date', date: msgDate });
+            lastDateString = msgDateString;
+        }
+        processed.push(msg);
+    });
+    return processed;
   }
 
   function formatPrice(price) {
@@ -581,13 +610,10 @@
         if (persistentSession) {
             const storedSession = loadSessionFromLocalStorage(sessionId);
             if (storedSession && storedSession.messages) {
-                messages = storedSession.messages;
+                messages = processMessagesAndAddSeparators(storedSession.messages);
                 loadedMessagesFromStorage = true;
                 // Update last activity timestamp as session is now active
                 saveSessionToLocalStorage(sessionId, messages);
-                tick().then(() => {
-                    if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
-                });
             } else {
                  // Session expired or not found, ensure it's cleared (loadSession handles this)
             }
