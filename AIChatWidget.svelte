@@ -47,7 +47,7 @@
   export let persistentSession = false;
   export let sessionExpiration = 24;
   export let userMessageIcon = null; // user message icon URL
-  export let botMessageIcon = null; // bot message icon URL
+  export let assistantMessageIcon = null; // assistant message icon URL
   export let buttonImageUrl = null; // custom button image URL
   export let buttonOverlayText = null;
   export let buttonOverlayDelay = 5000;
@@ -69,7 +69,7 @@
   let loadingState = null;
   let messagesComponent;
   let chatInputComponent;
-  let currentBotMessage = '';
+  let currentAssistantMessage = '';
   let socket;
   let wsConnected = false;
   let reconnectAttempt = 0;
@@ -93,7 +93,7 @@
   // --- Demo Content ---
   $: demoInitialMessage = $_('demo.initialMessage');
   $: demoUserMessage = $_('demo.userMessage');
-  $: demoBotReplyText = $_('demo.botReply');
+  $: demoAssistantReplyText = $_('demo.botReply');
   $: demoCta = { text: $_('demo.ctaText'), url: "#product-xyz" };
   const demoProducts = [
     { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://placehold.co/600x400", url: "#product-1", brand: "Brand A" },
@@ -217,7 +217,7 @@
     if (isDemo) return;
     if (!apiUrl) {
         console.error("API URL is not defined. WebSocket connection cannot be established.");
-        addMessageToUI($_('status.configErrorApi'), 'bot', { persist: false });
+        addMessageToUI($_('status.configErrorApi'), 'assistant', { persist: false });
         return;
     }
 
@@ -255,17 +255,17 @@
       try {
         const content = data.content;
         loadingState = { type: 'writing' };
-        currentBotMessage += content;
-        if (messages.length > 0 && messages[messages.length - 1].sender === 'bot') {
+        currentAssistantMessage += content;
+        if (messages.length > 0 && messages[messages.length - 1].sender === 'assistant') {
           const last = messages.at(-1);
-          last.content = marked.parse(currentBotMessage.replace(/\【.*?】/g,''));
-          last.links = extractLinks(currentBotMessage);
+          last.content = marked.parse(currentAssistantMessage.replace(/\【.*?】/g,''));
+          last.links = extractLinks(currentAssistantMessage);
           messages = messages;
           if (persistentSession && !isDemo) { // Save after updating streamed message
             saveSessionToLocalStorage(sessionId, messages);
           }
         } else {
-            addMessageToUI(currentBotMessage, 'bot'); // This already calls saveSessionToLocalStorage
+            addMessageToUI(currentAssistantMessage, 'assistant'); // This already calls saveSessionToLocalStorage
         }
         await tick();
       } catch (err) {
@@ -279,7 +279,7 @@
         if (products && products.length > 0) {
           const carousel = createProductCarousel(products);
           const lastMessage = messages[messages.length - 1];
-          if (lastMessage && lastMessage.sender === 'bot') {
+          if (lastMessage && lastMessage.sender === 'assistant') {
             messages[messages.length - 1] = { ...lastMessage, productCarousel: carousel };
             messages = [...messages];
             if (persistentSession && !isDemo) { // Save after adding carousel
@@ -298,13 +298,13 @@
       if (persistentSession && !isDemo && messages.length > 0) {
           saveSessionToLocalStorage(sessionId, messages);
       }
-      currentBotMessage = ''; // Reset after potential save
+      currentAssistantMessage = ''; // Reset after potential save
     });
 
     socket.on('error', (content) => {
       loadingState = null;
       console.error('Socket.IO error:', content);
-      addMessageToUI($_('status.error'), 'bot'); // This will save
+      addMessageToUI($_('status.error'), 'assistant'); // This will save
     });
 
     socket.on('connect_error', (error) => {
@@ -319,7 +319,7 @@
       if (isChatVisible && reason !== 'io client disconnect') {
         reconnectAttempt = 0;
         isReconnecting = false;
-        addMessageToUI($_('status.connectionError'), 'bot', { persist: false });
+        addMessageToUI($_('status.connectionError'), 'assistant', { persist: false });
         attemptReconnect();
       } else {
           isReconnecting = false;
@@ -334,7 +334,7 @@
     if (isDemo || reconnectAttempt >= maxReconnectAttempts) {
       if (isReconnecting) { // Only if we were in a cycle
         loadingState = null;
-        addMessageToUI($_('status.reconnectFailed'), 'bot', { persist: false });
+        addMessageToUI($_('status.reconnectFailed'), 'assistant', { persist: false });
         console.log('Max reconnect attempts reached.');
         isReconnecting = false;
       }
@@ -367,7 +367,7 @@
         console.error('Reconnection failed immediately during initWebSocket:', err);
         isReconnecting = false;
         loadingState = null;
-        addMessageToUI($_('status.reconnectFailed'), 'bot');
+        addMessageToUI($_('status.reconnectFailed'), 'assistant');
       }
     }, delay);
   }
@@ -430,7 +430,7 @@
     const shouldPersistMessage = additionalData.hasOwnProperty('persist') ? additionalData.persist : true;
     const rawMarkdown = content || '';
 
-    if (sender === 'bot') {
+    if (sender === 'assistant') {
       links = extractLinks(rawMarkdown);
       const cleanedMarkdown = rawMarkdown.replace(/\【.*?】/g, '');
       processedContent = marked.parse(cleanedMarkdown);
@@ -510,13 +510,13 @@
     addMessageToUI(message, 'user'); // This will save if persistentSession is true
     userInput = '';
     loadingState = { type: 'waiting' };
-    currentBotMessage = ''; // Reset for the new bot message stream
+    currentAssistantMessage = ''; // Reset for the new bot message stream
 
     try {
       socket.emit('message', { chatInput: message });
     } catch (err) {
       console.error("Error sending message:", err);
-      addMessageToUI($_('status.sendError'), 'bot'); // This will save
+      addMessageToUI($_('status.sendError'), 'assistant'); // This will save
       loadingState = null;
     }
     chatInputComponent?.focusInput();
@@ -537,10 +537,10 @@
 
   function setupDemoMessages() {
       messages = [];
-      addMessageToUI(initialMessage ?? demoInitialMessage, 'bot');
+      addMessageToUI(initialMessage ?? demoInitialMessage, 'assistant');
       addMessageToUI(demoUserMessage, 'user');
       const demoCarouselHtml = createProductCarousel(demoProducts);
-      addMessageToUI(demoBotReplyText, 'bot', {
+      addMessageToUI(demoAssistantReplyText, 'assistant', {
           url: demoCta.url,
           ctaText: demoCta.text,
           productCarousel: demoCarouselHtml
@@ -569,10 +569,10 @@
     saveSessionIdToCookie(sessionId);
 
     messages = [];
-    currentBotMessage = '';
+    currentAssistantMessage = '';
     loadingState = null;
     // Add initial message to the new session (this will save it to local storage with the new ID)
-    addMessageToUI(displayInitialMessage, 'bot');
+    addMessageToUI(displayInitialMessage, 'assistant');
 
     if (socket) {
       socket.disconnect();
@@ -620,7 +620,7 @@
         }
 
         if (!loadedMessagesFromStorage && messages.length === 0) {
-            addMessageToUI(displayInitialMessage, 'bot'); // This will also save if persistentSession is true
+            addMessageToUI(displayInitialMessage, 'assistant'); // This will also save if persistentSession is true
         }
 
         if (startOpen) {
@@ -712,7 +712,7 @@
         {isDemo}
         {loadingState}
         {userMessageIcon}
-        {botMessageIcon}
+        {assistantMessageIcon}
         {openInNewTab}
         {enableUTM}
       />
