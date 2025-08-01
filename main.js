@@ -28,6 +28,8 @@ import AIChatWidget from "./AIChatWidget.svelte";
         userMessageTextColor: "#000",
         assistantMessageBgColor: "#f1f1f1", // Light grey
         assistantMessageTextColor: "#000",
+        humanAgentMessageBgColor: "#d1eaff", // Light blue
+        humanAgentMessageTextColor: "#000",
         userMessageIcon: "https://i.ibb.co/HDy5dkH5/Avatar-generico.png",
         assistantMessageIcon:
           "https://i.ibb.co/j9d8YgS9/Avatar-generico-Marconio.png",

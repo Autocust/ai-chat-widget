@@ -90,6 +90,10 @@
     background-color: var(--assistant-msg-bg);
     color: var(--assistant-msg-text);
   }
+  .human-agent-message .message-content {
+    background-color: var(--human-agent-msg-bg);
+    color: var(--human-agent-msg-text);
+  }
   .message-content :global(a) {
     color: var(--link-color);
   }

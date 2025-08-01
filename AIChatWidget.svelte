@@ -31,6 +31,8 @@
   export let userMessageTextColor = '#000000';
   export let assistantMessageBgColor = '#f8f8f8';
   export let assistantMessageTextColor = '#000000';
+  export let humanAgentMessageBgColor = '#e0e0e0';
+  export let humanAgentMessageTextColor = '#000000';
   export let chatButtonBgColor = '#000000';
   export let chatButtonTextColor = '#ffffff';
   export let ctaButtonBgColor = '#f8f8f8';
@@ -714,6 +716,8 @@
   style:--user-msg-text={userMessageTextColor}
   style:--assistant-msg-bg={assistantMessageBgColor}
   style:--assistant-msg-text={assistantMessageTextColor}
+  style:--human-agent-msg-bg={humanAgentMessageBgColor}
+  style:--human-agent-msg-text={humanAgentMessageTextColor}
   style:--chat-btn-bg={chatButtonBgColor}
   style:--chat-btn-text={chatButtonTextColor}
   style:--cta-btn-bg={ctaButtonBgColor}
