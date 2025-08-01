@@ -4,6 +4,7 @@
   export let message;
   export let userMessageIcon = null;
   export let assistantMessageIcon = null;
+  export let humanAgentMessageIcon = null;
   export let openInNewTab = true;
   export let enableUTM = true;
 </script>
@@ -15,6 +16,9 @@
     {/if}
     {#if message.sender === 'assistant' && assistantMessageIcon}
       <img src={assistantMessageIcon} alt="Assistant Icon" class="message-icon assistant-icon" />
+    {/if}
+    {#if message.sender === 'human_agent' && humanAgentMessageIcon}
+      <img src={humanAgentMessageIcon} alt="Human Agent Icon" class="message-icon human-agent-icon" />
     {/if}
     <div class="message-content">
       {@html message.content}
@@ -51,8 +55,16 @@
   .user-message {
     margin-left: auto;
   }
-  .assistant-message {
+  .assistant-message,
+  .human-agent-message {
     margin-right: auto;
+  }
+  .system-message {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    font-style: italic;
+    color: #888;
   }
   .message {
     display: flex;

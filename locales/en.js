@@ -22,6 +22,8 @@ export default {
       'Could not re-establish connection. Please reload the page to try again.',
     configErrorApi: 'Configuration Error: Missing API URL.',
     sendError: 'An error occurred while sending the message.',
+    humanAgentJoined: 'An agent has joined the chat.',
+    humanAgentLeft: 'The agent has left the chat.',
   },
   product: {
     buyButton: 'Buy',

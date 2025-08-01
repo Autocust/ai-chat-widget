@@ -48,6 +48,7 @@
   export let sessionExpiration = 24;
   export let userMessageIcon = null; // user message icon URL
   export let assistantMessageIcon = null; // assistant message icon URL
+  export let humanAgentMessageIcon = null; // human agent message icon URL
   export let buttonImageUrl = null; // custom button image URL
   export let buttonOverlayText = null;
   export let buttonOverlayDelay = 5000;
@@ -70,6 +71,7 @@
   let messagesComponent;
   let chatInputComponent;
   let currentAssistantMessage = '';
+  let isHumanAgentActive = false;
   let socket;
   let wsConnected = false;
   let reconnectAttempt = 0;
@@ -115,6 +117,16 @@
   // --- Local Storage Helper Functions ---
   const getLocalStorageKey = (type, id) => `chat_${type}_${id}`;
 
+  // Reactive statement to save isHumanAgentActive to local storage
+  $: if (persistentSession && !isDemo && typeof localStorage !== 'undefined') {
+    try {
+      const humanStatusKey = getLocalStorageKey('human_status', sessionId);
+      localStorage.setItem(humanStatusKey, JSON.stringify({ isHumanAgentActive }));
+    } catch (e) {
+      console.error("Error saving human agent status to local storage:", e);
+    }
+  }
+
   function loadSessionFromLocalStorage(currentSessionId) {
     if (typeof localStorage === 'undefined' || !persistentSession || isDemo) return null;
     try {
@@ -135,10 +147,16 @@
       }
 
       const messagesString = localStorage.getItem(messagesKey);
+      const humanStatusKey = getLocalStorageKey('human_status', currentSessionId);
+      const humanStatusString = localStorage.getItem(humanStatusKey);
+
       if (!messagesString) return null;
 
+      const loadedMessages = JSON.parse(messagesString);
+      const humanStatus = humanStatusString ? JSON.parse(humanStatusString) : { isHumanAgentActive: false };
+
       console.log(`Loading session ${currentSessionId} from local storage.`);
-      return { messages: JSON.parse(messagesString) };
+      return { messages: loadedMessages, ...humanStatus };
     } catch (e) {
       console.error("Error loading session from local storage:", e);
       clearSessionFromLocalStorage(currentSessionId); // Clear potentially corrupted data
@@ -166,8 +184,10 @@
     try {
       const metaKey = getLocalStorageKey('meta', currentSessionId);
       const messagesKey = getLocalStorageKey('messages', currentSessionId);
+      const humanStatusKey = getLocalStorageKey('human_status', currentSessionId);
       localStorage.removeItem(metaKey);
       localStorage.removeItem(messagesKey);
+      localStorage.removeItem(humanStatusKey);
       console.log(`Session ${currentSessionId} cleared from local storage.`);
     } catch (e) {
       console.error("Error clearing session from local storage:", e);
@@ -251,12 +271,23 @@
       loadingState = { type: 'searching', message: $_('status.searching') };
     });
 
+    socket.on('take_over', (data) => {
+      if (data.status === true) {
+        isHumanAgentActive = true;
+        addMessageToUI($_('status.humanAgentJoined'), 'system');
+      } else {
+        isHumanAgentActive = false;
+        addMessageToUI($_('status.humanAgentLeft'), 'system');
+      }
+    });
+
     socket.on('token', async (data) => {
       try {
         const content = data.content;
         loadingState = { type: 'writing' };
         currentAssistantMessage += content;
-        if (messages.length > 0 && messages[messages.length - 1].sender === 'assistant') {
+        const sender = isHumanAgentActive ? 'human_agent' : 'assistant';
+        if (messages.length > 0 && messages[messages.length - 1].sender === sender) {
           const last = messages.at(-1);
           last.content = marked.parse(currentAssistantMessage.replace(/\【.*?】/g,''));
           last.links = extractLinks(currentAssistantMessage);
@@ -265,7 +296,7 @@
             saveSessionToLocalStorage(sessionId, messages);
           }
         } else {
-            addMessageToUI(currentAssistantMessage, 'assistant'); // This already calls saveSessionToLocalStorage
+            addMessageToUI(currentAssistantMessage, sender); // This already calls saveSessionToLocalStorage
         }
         await tick();
       } catch (err) {
@@ -430,12 +461,14 @@
     const shouldPersistMessage = additionalData.hasOwnProperty('persist') ? additionalData.persist : true;
     const rawMarkdown = content || '';
 
-    if (sender === 'assistant') {
+    if (sender === 'assistant' || sender === 'human_agent') {
       links = extractLinks(rawMarkdown);
       const cleanedMarkdown = rawMarkdown.replace(/\【.*?】/g, '');
       processedContent = marked.parse(cleanedMarkdown);
-    } else { // This will apply to 'user'
+    } else if (sender === 'user') { // This will apply to 'user'
       processedContent = marked.parse(rawMarkdown);
+    } else if (sender === 'system') {
+        processedContent = rawMarkdown;
     }
 
     const lastMessage = messages.filter(m => m.type !== 'date').pop();
@@ -609,9 +642,14 @@
         let loadedMessagesFromStorage = false;
         if (persistentSession) {
             const storedSession = loadSessionFromLocalStorage(sessionId);
-            if (storedSession && storedSession.messages) {
-                messages = processMessagesAndAddSeparators(storedSession.messages);
-                loadedMessagesFromStorage = true;
+            if (storedSession) {
+                if (storedSession.messages) {
+                    messages = processMessagesAndAddSeparators(storedSession.messages);
+                    loadedMessagesFromStorage = true;
+                }
+                if (storedSession.hasOwnProperty('isHumanAgentActive')) {
+                    isHumanAgentActive = storedSession.isHumanAgentActive;
+                }
                 // Update last activity timestamp as session is now active
                 saveSessionToLocalStorage(sessionId, messages);
             } else {
@@ -713,6 +751,7 @@
         {loadingState}
         {userMessageIcon}
         {assistantMessageIcon}
+        {humanAgentMessageIcon}
         {openInNewTab}
         {enableUTM}
       />

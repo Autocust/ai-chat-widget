@@ -23,6 +23,8 @@ export default {
       "No se pudo restablecer la conexión. Por favor, recarga la página para intentarlo de nuevo.",
     configErrorApi: "Error de Configuración: Falta la URL de la API.",
     sendError: "Ocurrió un error al enviar el mensaje.",
+    humanAgentJoined: "Un agente se ha unido al chat.",
+    humanAgentLeft: "El agente ha abandonado el chat.",
   },
   product: {
     buyButton: "Comprar",

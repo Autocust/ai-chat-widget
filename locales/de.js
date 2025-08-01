@@ -23,6 +23,8 @@ export default {
       "Die Verbindung konnte nicht wiederhergestellt werden. Bitte laden Sie die Seite neu, um es erneut zu versuchen.",
     configErrorApi: "Konfigurationsfehler: Fehlende API-URL.",
     sendError: "Beim Senden der Nachricht ist ein Fehler aufgetreten.",
+    humanAgentJoined: "Ein Agent ist dem Chat beigetreten.",
+    humanAgentLeft: "Der Agent hat den Chat verlassen.",
   },
   product: {
     buyButton: "Kaufen",

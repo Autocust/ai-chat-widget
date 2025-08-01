@@ -21,7 +21,9 @@ export default {
     reconnectFailed:
       'Impossibile ristabilire la connessione. Ricarica la pagina per riprovare.',
     configErrorApi: 'Errore di configurazione: URL API mancante.',
-    sendError: 'Si è verificato un errore durante l\'invio del messaggio.',
+    sendError: "Si è verificato un errore durante l'invio del messaggio.",
+    humanAgentJoined: "Un agente si è unito alla chat.",
+    humanAgentLeft: "L'agente ha lasciato la chat.",
   },
   product: {
     buyButton: 'Acquista',

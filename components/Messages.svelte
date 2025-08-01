@@ -8,6 +8,7 @@
   export let loadingState = null;
   export let userMessageIcon = null;
   export let assistantMessageIcon = null;
+  export let humanAgentMessageIcon = null;
   export let openInNewTab = true;
   export let enableUTM = true;
 
@@ -20,7 +21,7 @@
     {#if message.type === 'date'}
       <DateSeparator date={message.date} />
     {:else}
-      <Message {message} {userMessageIcon} {assistantMessageIcon} {openInNewTab} {enableUTM} />
+      <Message {message} {userMessageIcon} {assistantMessageIcon} {humanAgentMessageIcon} {openInNewTab} {enableUTM} />
     {/if}
   {/each}
   {#if !isDemo && loadingState?.message}
