@@ -195,13 +195,6 @@
     isChatVisible = !isChatVisible;
     if (isChatVisible) {
       await tick();
-      if (messagesComponent?.element) {
-        if (isDemo) {
-          messagesComponent.element.scrollTop = 0;
-        } else {
-          messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
-        }
-      }
       if (!isDemo && !wsConnected && !isReconnecting) {
         initWebSocket();
       }
@@ -226,7 +219,7 @@
         addMessageToUI($_('status.configErrorApi'), 'bot', { persist: false });
         return;
     }
-    
+
     socket = io(apiUrl + '/ws-chat', {
       path: '/ws',
       query: {
@@ -249,16 +242,17 @@
       }
     });
 
-    socket.on('thinking', () => {
+    socket.on('thinking', (data) => {
       loadingState = { type: 'thinking', message: $_('status.thinking') };
     });
 
-    socket.on('searching', () => {
+    socket.on('searching', (data) => {
       loadingState = { type: 'searching', message: $_('status.searching') };
     });
 
-    socket.on('token', async (content) => {
+    socket.on('token', async (data) => {
       try {
+        const content = data.content;
         loadingState = { type: 'writing' };
         currentBotMessage += content;
         if (messages.length > 0 && messages[messages.length - 1].sender === 'bot') {
@@ -273,7 +267,6 @@
             addMessageToUI(currentBotMessage, 'bot'); // This already calls saveSessionToLocalStorage
         }
         await tick();
-        if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
       } catch (err) {
         console.error('Error processing token:', err);
       }
@@ -378,7 +371,7 @@
     }, delay);
   }
 
-  
+
 
   function createProductCarousel(products) {
     if (!products || products.length === 0) return '';
@@ -459,7 +452,7 @@
 
     tick().then(() => {
       if (messagesComponent?.element && !isDemo) {
-        messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
+
       }
     });
   }
@@ -525,7 +518,7 @@
       });
       tick().then(() => {
         if (messagesComponent?.element) {
-          messagesComponent.element.scrollTop = 0;
+
         }
       });
   }
@@ -551,9 +544,6 @@
     loadingState = null;
     // Add initial message to the new session (this will save it to local storage with the new ID)
     addMessageToUI(displayInitialMessage, 'bot');
-    tick().then(() => {
-        if (messagesComponent?.element) messagesComponent.element.scrollTop = 0;
-    });
 
     if (socket) {
       socket.disconnect();
@@ -645,26 +635,7 @@
     return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="${openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
   }
 
-  $: if (isChatVisible && messages.length > 0 && messagesComponent?.element) {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage.sender === 'bot') {
-      const messageElements = messagesComponent.element.querySelectorAll('.message-container');
-      const lastMessageElement = messageElements[messageElements.length - 1];
-      if (lastMessageElement) {
-        const offset = 50; // 50px offset from the top
-        const topPos = lastMessageElement.offsetTop;
-        messagesComponent.element.scrollTo({
-          top: topPos - offset,
-          behavior: 'smooth'
-        });
-      }
-    } else {
-      messagesComponent.element.scrollTo({
-        top: messagesComponent.element.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }
+
 </script>
 
 <div
