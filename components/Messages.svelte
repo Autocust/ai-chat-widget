@@ -91,7 +91,10 @@
 
 <div id="chat-messages-wrapper">
   <div id="chat-messages" aria-live="polite" bind:this={messagesContainer}>
-    {#each messages as message, i (message.type === 'date' ? message.date : message.sender + message.content.substring(0, 30) + Math.random())}
+    // Use a stable key to avoid remounting items during streaming (no Math.random here)
+    {#each messages as message, i (
+      message.type === 'date' ? 'date:' + message.date : i
+    )}
       {#if message.type === 'date'}
         <DateSeparator date={message.date} />
       {:else}
@@ -127,6 +130,7 @@
   flex-direction: column;
   flex-grow: 1; overflow-y: auto; padding: 10px;
   background-color: var(--messages-bg); color: var(--primary-text-color);
+  scrollbar-gutter: stable both-edges;
 }
 
 .scroll-to-bottom {
