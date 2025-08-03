@@ -33,6 +33,8 @@ import AIChatWidget from "./AIChatWidget.svelte";
         userMessageIcon: "https://i.ibb.co/HDy5dkH5/Avatar-generico.png",
         assistantMessageIcon:
           "https://i.ibb.co/j9d8YgS9/Avatar-generico-Marconio.png",
+        humanAgentMessageIcon:
+          "https://i.ibb.co/j9d8YgS9/Avatar-generico-Marconio.png",
         chatButtonBgColor: "#007bff", // Blue
         chatButtonTextColor: "#ffffff",
         ctaButtonBgColor: "#d00", // Example override

@@ -40,7 +40,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
                     if (['fontSize', 'width', 'height'].includes(newKey) && typeof value === 'number') {
                         value = `${value}px`;
                     }
-                    
+
                     acc[newKey] = value;
                     return acc;
                 }, {});
@@ -153,6 +153,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         theme: getAttr("data-theme", finalDefaults.theme),
         userMessageIcon: getAttr("data-user-message-icon", finalDefaults.userMessageIcon),
         assistantMessageIcon: getAttr("data-assistant-message-icon", finalDefaults.assistantMessageIcon),
+        humanAgentMessageIcon: getAttr("data-human-agent-message-icon", finalDefaults.humanAgentMessageIcon),
         userMessageBgColor: getAttr("data-user-message-bg-color", finalDefaults.userMessageBgColor),
         userMessageTextColor: getAttr("data-user-message-text-color", finalDefaults.userMessageTextColor),
         assistantMessageBgColor: getAttr("data-assistant-message-bg-color", finalDefaults.assistantMessageBgColor),
