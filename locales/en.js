@@ -23,7 +23,8 @@ export default {
     configErrorApi: 'Configuration Error: Missing API URL.',
     sendError: 'An error occurred while sending the message.',
     humanAgentJoined: 'An agent has joined the chat.',
-    humanAgentLeft: 'The agent has left the chat.',
+    humanAgentLeft: 'The human agent has left the conversation.',
+    assistantBack: 'The assistant is back online.'
   },
   product: {
     buyButton: 'Buy',

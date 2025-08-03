@@ -25,6 +25,7 @@ export default {
     sendError: "Une erreur est survenue lors de l'envoi du message.",
     humanAgentJoined: "Un agent a rejoint le chat.",
     humanAgentLeft: "L'agent a quitté le chat.",
+    assistantBack: "L'assistant est de retour en ligne."
   },
   product: {
     buyButton: "Acheter",

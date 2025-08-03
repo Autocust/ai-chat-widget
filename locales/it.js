@@ -22,8 +22,9 @@ export default {
       'Impossibile ristabilire la connessione. Ricarica la pagina per riprovare.',
     configErrorApi: 'Errore di configurazione: URL API mancante.',
     sendError: "Si è verificato un errore durante l'invio del messaggio.",
-    humanAgentJoined: "Un agente si è unito alla chat.",
-    humanAgentLeft: "L'agente ha lasciato la chat.",
+    humanAgentJoined: "Un agente si è unito alla conversazione.",
+    humanAgentLeft: "L'agente ha lasciato la conversazione.",
+    assistantBack: "L'assistente AI è di nuovo online."
   },
   product: {
     buyButton: 'Acquista',

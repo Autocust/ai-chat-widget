@@ -280,6 +280,11 @@
       } else {
         isHumanAgentActive = false;
         addMessageToUI($_('status.humanAgentLeft'), 'system');
+        if (socket) {
+          socket.disconnect();
+        }
+        initWebSocket();
+        addMessageToUI($_('status.assistantBack'), 'system');
       }
     });
 
