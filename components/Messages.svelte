@@ -27,7 +27,7 @@
       if (messageElements.length === 0) return;
 
       const lastUserMessageElement = messageElements[messageElements.length - 1];
-      
+
       if (lastUserMessageElement) {
         // 1. Scroll the user message to the top
         messagesContainer.scrollTo({ top: lastUserMessageElement.offsetTop, behavior: 'auto' });
@@ -65,7 +65,7 @@
     if (!messagesContainer) return;
     const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    
+
     showScrollButton = distanceFromBottom > 1000;
   }
 
@@ -91,7 +91,6 @@
 
 <div id="chat-messages-wrapper">
   <div id="chat-messages" aria-live="polite" bind:this={messagesContainer}>
-    // Use a stable key to avoid remounting items during streaming (no Math.random here)
     {#each messages as message, i (
       message.type === 'date' ? 'date:' + message.date : i
     )}
