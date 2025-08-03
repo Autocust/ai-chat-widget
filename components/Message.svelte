@@ -56,7 +56,7 @@
     margin-left: auto;
   }
   .assistant-message,
-  .human-agent-message {
+  .human_agent-message {
     margin-right: auto;
   }
   .system-message {
@@ -90,7 +90,7 @@
     background-color: var(--assistant-msg-bg);
     color: var(--assistant-msg-text);
   }
-  .human-agent-message .message-content {
+  .human_agent-message .message-content {
     background-color: var(--human-agent-msg-bg);
     color: var(--human-agent-msg-text);
   }
