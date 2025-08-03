@@ -16,20 +16,26 @@
   let messagesContainer;
   let showScrollButton = false;
   let lastMessageCount = 0;
+  let spacerElement;
 
   export { messagesContainer as element };
 
-  // This function scrolls to the very end of the chat.
-  function scrollToEnd(behavior = 'smooth') {
-    tick().then(() => {
-      if (messagesContainer) {
-        messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior });
-      }
-    });
+  export function addSpacer() {
+    if (!spacerElement) {
+      spacerElement = document.createElement('div');
+      spacerElement.className = 'scroll-spacer';
+      messagesContainer.appendChild(spacerElement);
+    }
   }
 
-  // This function implements the new smart scrolling.
-  function smartScroll() {
+  export function removeSpacer() {
+    if (spacerElement) {
+      spacerElement.remove();
+      spacerElement = null;
+    }
+  }
+
+  export function smartScroll() {
     tick().then(() => {
       if (!messagesContainer) return;
 
@@ -52,21 +58,26 @@
         if (lastUserMessageIndex !== -1) {
             const userMessageElement = messageElements[lastUserMessageIndex];
             if (userMessageElement) {
-                // Scroll to the top of the last user message element.
                 messagesContainer.scrollTo({ top: userMessageElement.offsetTop, behavior: 'smooth' });
             } else {
-                 scrollToEnd('smooth'); // Fallback
+                 scrollToEnd('smooth');
             }
         } else {
-            // No previous user message, so just scroll to the top of the current (assistant) message.
             const lastMessageElement = messageElements[messageElements.length - 1];
             if(lastMessageElement) {
               messagesContainer.scrollTo({ top: lastMessageElement.offsetTop, behavior: 'smooth' });
             }
         }
       } else {
-        // For user's own messages or the very first message, scroll to the absolute bottom.
         scrollToEnd('smooth');
+      }
+    });
+  }
+
+  function scrollToEnd(behavior = 'smooth') {
+    tick().then(() => {
+      if (messagesContainer) {
+        messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior });
       }
     });
   }
@@ -74,7 +85,6 @@
   function handleScroll() {
     if (!messagesContainer) return;
     const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
-    // Consider a threshold to be "at the bottom"
     const atBottom = scrollHeight - scrollTop - clientHeight < 50;
     if (atBottom) {
       showScrollButton = false;
@@ -93,11 +103,9 @@
     };
   });
 
-  // Watch for new messages and trigger smart scroll
   $: if (messages.length > lastMessageCount) {
     if (!isDemo) {
         const lastItem = messages[messages.length - 1];
-        // Only scroll for actual messages, not date separators
         if (lastItem && lastItem.type !== 'date') {
             const isUserAtBottom = messagesContainer 
                 ? (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight) < 150
@@ -113,7 +121,6 @@
     lastMessageCount = messages.length;
   }
 
-  // Watch for loading state message and scroll to end
   $: if (loadingState && loadingState.message) {
     if (!isDemo) {
       scrollToEnd('smooth');
@@ -205,4 +212,9 @@
 .typing-dots span:nth-child(3) { animation-delay: 400ms; }
 
 @keyframes customBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+:global(.scroll-spacer) {
+  height: 400px; /* A generous but fixed height */
+  flex-shrink: 0;
+}
 </style>
