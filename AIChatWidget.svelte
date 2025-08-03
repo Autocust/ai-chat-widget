@@ -291,7 +291,7 @@
     socket.on('token', async (data) => {
       try {
         if (currentAssistantMessage === '') { // First token
-          messagesComponent?.smartScroll();
+          messagesComponent?.prepareForStreaming();
         }
         const content = data.content;
         loadingState = { type: 'writing' };
@@ -335,6 +335,7 @@
 
     socket.on('done', () => {
       loadingState = null;
+      messagesComponent?.cleanupAfterStreaming();
       // Ensure final state of messages is saved
       if (persistentSession && !isDemo && messages.length > 0) {
           saveSessionToLocalStorage(sessionId, messages);

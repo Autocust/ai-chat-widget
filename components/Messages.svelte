@@ -15,49 +15,42 @@
 
   let messagesContainer;
   let showScrollButton = false;
-  let lastMessageCount = 0;
-  let shouldAutoScroll = true;
+  let spacerElement;
 
   export { messagesContainer as element };
 
-  export function smartScroll() {
+  export function prepareForStreaming() {
     tick().then(() => {
       if (!messagesContainer) return;
 
-      const messageElements = messagesContainer.querySelectorAll('.message-container');
-      const actualMessages = messages.filter(m => m.type !== 'date');
+      const messageElements = messagesContainer.querySelectorAll('.message-container.user-message');
+      if (messageElements.length === 0) return;
+
+      const lastUserMessageElement = messageElements[messageElements.length - 1];
       
-      if (messageElements.length === 0 || actualMessages.length === 0) return;
+      if (lastUserMessageElement) {
+        // 1. Scroll the user message to the top
+        messagesContainer.scrollTo({ top: lastUserMessageElement.offsetTop, behavior: 'auto' });
 
-      const lastMessage = actualMessages[actualMessages.length - 1];
-
-      if ((lastMessage.sender === 'assistant' || lastMessage.sender === 'human_agent') && actualMessages.length > 1) {
-        let lastUserMessageIndex = -1;
-        for (let i = actualMessages.length - 2; i >= 0; i--) {
-            if (actualMessages[i].sender === 'user') {
-                lastUserMessageIndex = i;
-                break;
-            }
-        }
-
-        if (lastUserMessageIndex !== -1) {
-            const userMessageElement = messageElements[lastUserMessageIndex];
-            if (userMessageElement) {
-                messagesContainer.scrollTo({ top: userMessageElement.offsetTop, behavior: 'smooth' });
-                shouldAutoScroll = false; // Disable auto-scrolling after this
-            } else {
-                 scrollToEnd('smooth');
-            }
-        } else {
-            const lastMessageElement = messageElements[messageElements.length - 1];
-            if(lastMessageElement) {
-              messagesContainer.scrollTo({ top: lastMessageElement.offsetTop, behavior: 'smooth' });
-            }
-        }
-      } else {
-        scrollToEnd('smooth');
+        // 2. Add a spacer the size of the viewport
+        tick().then(() => {
+          if (!spacerElement) {
+            spacerElement = document.createElement('div');
+            messagesContainer.appendChild(spacerElement);
+          }
+          // Make the spacer the height of the visible chat area, minus a bit for padding
+          const spacerHeight = messagesContainer.clientHeight - 20; // 20px buffer
+          spacerElement.style.height = `${spacerHeight > 0 ? spacerHeight : 0}px`;
+        });
       }
     });
+  }
+
+  export function cleanupAfterStreaming() {
+    if (spacerElement) {
+      spacerElement.remove();
+      spacerElement = null;
+    }
   }
 
   function scrollToEnd(behavior = 'smooth') {
@@ -71,11 +64,9 @@
   function handleScroll() {
     if (!messagesContainer) return;
     const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
-    const atBottom = scrollHeight - scrollTop - clientHeight < 50;
-    if (atBottom) {
-      showScrollButton = false;
-      shouldAutoScroll = true; // Re-enable auto-scrolling if user scrolls to bottom
-    }
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    
+    showScrollButton = distanceFromBottom > 1000;
   }
 
   onMount(() => {
@@ -90,24 +81,7 @@
     };
   });
 
-  $: if (messages.length > lastMessageCount) {
-    if (!isDemo && shouldAutoScroll) {
-        const lastItem = messages[messages.length - 1];
-        if (lastItem && lastItem.type !== 'date') {
-            const isUserAtBottom = messagesContainer 
-                ? (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight) < 150
-                : true;
-
-            if (isUserAtBottom) {
-                smartScroll();
-            } else {
-                showScrollButton = true;
-            }
-        }
-    }
-    lastMessageCount = messages.length;
-  }
-
+  // Scroll to end when loading state appears, so user sees "Thinking..."
   $: if (loadingState && loadingState.message) {
     if (!isDemo) {
       scrollToEnd('smooth');
@@ -153,7 +127,6 @@
   flex-direction: column;
   flex-grow: 1; overflow-y: auto; padding: 10px;
   background-color: var(--messages-bg); color: var(--primary-text-color);
-  scroll-behavior: smooth;
 }
 
 .scroll-to-bottom {
