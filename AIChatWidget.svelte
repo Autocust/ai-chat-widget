@@ -291,7 +291,6 @@
     socket.on('token', async (data) => {
       try {
         if (currentAssistantMessage === '') { // First token
-          messagesComponent?.addSpacer();
           messagesComponent?.smartScroll();
         }
         const content = data.content;
@@ -336,8 +335,6 @@
 
     socket.on('done', () => {
       loadingState = null;
-      messagesComponent?.removeSpacer();
-      messagesComponent?.smartScroll();
       // Ensure final state of messages is saved
       if (persistentSession && !isDemo && messages.length > 0) {
           saveSessionToLocalStorage(sessionId, messages);

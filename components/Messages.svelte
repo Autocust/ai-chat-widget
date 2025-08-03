@@ -16,24 +16,9 @@
   let messagesContainer;
   let showScrollButton = false;
   let lastMessageCount = 0;
-  let spacerElement;
+  let shouldAutoScroll = true;
 
   export { messagesContainer as element };
-
-  export function addSpacer() {
-    if (!spacerElement) {
-      spacerElement = document.createElement('div');
-      spacerElement.className = 'scroll-spacer';
-      messagesContainer.appendChild(spacerElement);
-    }
-  }
-
-  export function removeSpacer() {
-    if (spacerElement) {
-      spacerElement.remove();
-      spacerElement = null;
-    }
-  }
 
   export function smartScroll() {
     tick().then(() => {
@@ -59,6 +44,7 @@
             const userMessageElement = messageElements[lastUserMessageIndex];
             if (userMessageElement) {
                 messagesContainer.scrollTo({ top: userMessageElement.offsetTop, behavior: 'smooth' });
+                shouldAutoScroll = false; // Disable auto-scrolling after this
             } else {
                  scrollToEnd('smooth');
             }
@@ -88,6 +74,7 @@
     const atBottom = scrollHeight - scrollTop - clientHeight < 50;
     if (atBottom) {
       showScrollButton = false;
+      shouldAutoScroll = true; // Re-enable auto-scrolling if user scrolls to bottom
     }
   }
 
@@ -104,7 +91,7 @@
   });
 
   $: if (messages.length > lastMessageCount) {
-    if (!isDemo) {
+    if (!isDemo && shouldAutoScroll) {
         const lastItem = messages[messages.length - 1];
         if (lastItem && lastItem.type !== 'date') {
             const isUserAtBottom = messagesContainer 
@@ -212,9 +199,4 @@
 .typing-dots span:nth-child(3) { animation-delay: 400ms; }
 
 @keyframes customBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-
-:global(.scroll-spacer) {
-  height: 400px; /* A generous but fixed height */
-  flex-shrink: 0;
-}
 </style>
