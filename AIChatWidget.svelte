@@ -1,5 +1,6 @@
 <script>
   import { onMount, tick } from 'svelte';
+  import { quintOut } from 'svelte/easing';
   import { marked } from 'marked';
   import { io } from 'socket.io-client';
   import { _ } from './i18n'; // Import the translation function
@@ -67,6 +68,7 @@
 
   // --- Internal State ---
   let isChatVisible = startOpen;
+  let showChatButton = !startOpen;
   let messages = [];
   let userInput = '';
   let loadingState = null;
@@ -81,7 +83,23 @@
   let reconnectInterval = null;
   let isReconnecting = false;
 
+  function grow(node, { duration = 300, origin = 'center' }) {
+    return {
+      duration,
+      css: t => {
+        const eased = quintOut(t);
+        return `
+          transform-origin: ${origin};
+          transform: scale(${eased});
+          opacity: ${eased};
+        `;
+      }
+    };
+  }
+
   let sessionId = getSessionIdFromCookie() || generateUUID();
+
+  $: transitionOrigin = position.replace('-', ' ');
 
   $: hasUserSentMessage = messages.some(m => m.sender === 'user');
   $: mobileFontSize = fontSize;
@@ -209,6 +227,7 @@
     }
     isChatVisible = !isChatVisible;
     if (isChatVisible) {
+      showChatButton = false;
       await tick();
       if (!isDemo && !wsConnected && !isReconnecting) {
         initWebSocket();
@@ -749,7 +768,7 @@
   style:--header-bg={headerBgColor}
   style:--header-text={headerTextColor}
 >
-  {#if !isChatVisible || isDemo}
+  {#if showChatButton || isDemo}
     <ChatButton
       {isChatVisible}
       {isDemo}
@@ -762,7 +781,7 @@
   {/if}
 
   {#if isChatVisible}
-    <div id="chat-container">
+    <div id="chat-container" transition:grow={{ duration: 300, origin: transitionOrigin }} on:outroend={() => showChatButton = true}>
       <ChatHeader
         {displayTitle}
         {isDemo}
