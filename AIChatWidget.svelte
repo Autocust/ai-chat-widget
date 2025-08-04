@@ -636,6 +636,22 @@
     }
   }
 
+  function isMobileDevice() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    // Basic check for common mobile OS and devices
+    if (/android/i.test(userAgent)) {
+      return true;
+    }
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+      return true;
+    }
+    // Check for common mobile screen sizes (less reliable but can be a fallback)
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+      return true;
+    }
+    return false;
+  }
+
   onMount(() => {
     if (isDemo) {
         setupDemoMessages();
@@ -668,6 +684,11 @@
             if (!wsConnected && !isReconnecting) {
                 initWebSocket();
             }
+        }
+
+        // Set fullScreen to true if on mobile and not explicitly set to false
+        if (!fullScreen && isMobileDevice()) {
+            fullScreen = true;
         }
     }
 
