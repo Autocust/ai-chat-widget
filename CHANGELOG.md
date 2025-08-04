@@ -1,5 +1,38 @@
 # Changelog
 
+## [3.1.0](https://github.com/Autocust/ai-chat-widget/compare/v3.0.0...v3.1.0) (2025-08-04)
+
+### Features
+
+* **AI Chat Widget:** add support for human agent messages with custom background and text colors ([902148d](https://github.com/Autocust/ai-chat-widget/commit/902148d535a20d73d9aae6f0366b9d8643bd86ae))
+* assistant AI back online when human release ([d0aabdd](https://github.com/Autocust/ai-chat-widget/commit/d0aabdd51aba0d68511a45807cc8ec130bf79fad))
+* chat widget show animation ([1951fde](https://github.com/Autocust/ai-chat-widget/commit/1951fde4980a72c7622c929c4d085ab25699ca52))
+* full screen on mobile ([95e3f9d](https://github.com/Autocust/ai-chat-widget/commit/95e3f9d6d8a359155bf6a871b292fd90ac5d5942))
+* human agent bg color ([95c9cc8](https://github.com/Autocust/ai-chat-widget/commit/95c9cc8341a44b06704a0b922215d47d7aa35d55))
+* remove mobile font size ratio ([c0f72da](https://github.com/Autocust/ai-chat-widget/commit/c0f72da41505b19b7016bcfe422fbe4be5e16db0))
+* scroll to bottom shown only if > 1000px from bottom ([67aa636](https://github.com/Autocust/ai-chat-widget/commit/67aa6368732ca15f5284bb2fa26de55820f992b0))
+* scroll UX ([95c0e78](https://github.com/Autocust/ai-chat-widget/commit/95c0e78f414b2bfdd2458f16df0c5b7cebd4051b))
+* scroll UX ([dd0e9ee](https://github.com/Autocust/ai-chat-widget/commit/dd0e9ee6915629c098f25e869da355d822fbb166))
+* scroll UX ([c575365](https://github.com/Autocust/ai-chat-widget/commit/c575365ed7d4575c19c45fd916e3a6d196b3df39))
+* show date(s) ([c380877](https://github.com/Autocust/ai-chat-widget/commit/c3808771f4c10ce202f11778fd842e928616cba0))
+* smooth auto-scrolling on user message ([66fb97b](https://github.com/Autocust/ai-chat-widget/commit/66fb97b5d087aeca6d6968daaf1b783132cc889d))
+
+### Bug Fixes
+
+* message flickering during generation ([1b8278f](https://github.com/Autocust/ai-chat-widget/commit/1b8278fb37112a82f6a5e2b2aeb74f2b78e20574))
+* message flickering during generation ([39db583](https://github.com/Autocust/ai-chat-widget/commit/39db583449b8d5cb08364cf068fa39524f7b1380))
+
+### Code Refactoring
+
+* async style ([2a68be9](https://github.com/Autocust/ai-chat-widget/commit/2a68be9da41267629966b9e15cef6d119c9c20fa))
+* from bot to assistant ([c5c18a9](https://github.com/Autocust/ai-chat-widget/commit/c5c18a9a81bcbafb2bf357c90449efd680e48b2d))
+* remove autoscroll logic ([0f72421](https://github.com/Autocust/ai-chat-widget/commit/0f72421fdba7082064d09f83e49ce62c066f9c4c))
+
+### Chores
+
+* example humanAgentMessageIcon ([2582e8a](https://github.com/Autocust/ai-chat-widget/commit/2582e8a73c267e9f562514207e7530d6c732c830))
+* new build ([72163e3](https://github.com/Autocust/ai-chat-widget/commit/72163e341b4e03a46e16243996575590e2322951))
+
 ## [3.0.0](https://github.com/Autocust/ai-chat-widget/compare/v3.0.0-3...v3.0.0) (2025-07-31)
 
 ### Features
