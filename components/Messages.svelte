@@ -15,7 +15,6 @@
 
   let messagesContainer;
   let showScrollButton = false;
-  let spacerElement;
 
   export { messagesContainer as element };
 
@@ -24,47 +23,22 @@
     if (!messagesContainer) return;
 
     const messageElements = messagesContainer.querySelectorAll('.message-container.user-message');
-    console.log('Preparing for streaming, found user messages:', messageElements);
     if (messageElements.length === 0) return;
 
     const lastUserMessageElement = messageElements[messageElements.length - 1];
-    console.log('Last user message element:', lastUserMessageElement);
     if (lastUserMessageElement) {
-      // --- Measure paddings once (robust for Shadow DOM containers) ---
-      const style = getComputedStyle(messagesContainer);
-      const padTop = parseFloat(style.paddingTop) || 0;
-      const padBottom = parseFloat(style.paddingBottom) || 0;
+      const messageHeight = lastUserMessageElement.offsetHeight;
+      const containerHeight = messagesContainer.offsetHeight;
+      const diff = containerHeight - messageHeight;
 
-      console.log('Padding top:', padTop, 'Padding bottom:', padBottom);
+      console.log('Last user message height - messages container height:', diff);
 
-      // --- Ensure the spacer exists BEFORE scrolling ---
-      if (!spacerElement) {
-        spacerElement = document.createElement('div');
-        spacerElement.className = 'scroll-spacer'; // keep existing class/CSS
-        messagesContainer.appendChild(spacerElement);
-      }
+      // Set padding-bottom as diff height
+      messagesContainer.style.paddingBottom = diff > 0 ? `${diff}px` : '0px';
 
-      // --- Compute the user's message top relative to the scroll container ---
-      // Using the offset chain is more reliable than viewport rects in Shadow DOM contexts.
-      let relTop = lastUserMessageElement.offsetTop;
-      let node = lastUserMessageElement.offsetParent;
-      while (node && node !== messagesContainer) {
-        relTop += node.offsetTop;
-        node = node.offsetParent;
-      }
-
-      // --- Reserve the remaining visible space below the user message ---
-      const visibleHeight = messagesContainer.clientHeight - padTop - padBottom;
-      const spacerHeight = Math.max(0, visibleHeight - lastUserMessageElement.offsetHeight);
-      spacerElement.style.height = `${spacerHeight}px`;
-
-      // --- Now align the user's message to the very top of the scroll container (absolute scrollTop) ---
-      const desiredScrollTop = Math.max(0, relTop - padTop);
-      messagesContainer.scrollTop = desiredScrollTop;
-
-      // NOTE:
-      // - No RAF/loop here. We only set the initial spacer and alignment.
-      // - The spacer remains until cleanupAfterStreaming() runs at the true end of streaming.
+      // Smooth scroll so last user message is at the top of the container
+      const offsetTop = lastUserMessageElement.offsetTop;
+      messagesContainer.scrollTo({ top: offsetTop, behavior: 'smooth' });
     }
   }
 
@@ -73,9 +47,24 @@
    * This should be called after the last message has been processed.
    */
   export function cleanupAfterStreaming() {
-    if (spacerElement) {
-      spacerElement.remove();
-      spacerElement = null;
+    if (!messagesContainer) return;
+
+    const messageElements = messagesContainer.querySelectorAll('.message-container');
+    if (messageElements.length === 0) {
+      messagesContainer.style.paddingBottom = '0px';
+      return;
+    }
+
+    const lastUserMessageElement = messageElements[messageElements.length - 1];
+    if (lastUserMessageElement) {
+      const messageRect = lastUserMessageElement.getBoundingClientRect();
+      const containerRect = messagesContainer.getBoundingClientRect();
+      const distance = containerRect.bottom - messageRect.bottom;
+
+      // If last message is above container bottom, keep padding
+      messagesContainer.style.paddingBottom = distance > 0 ? `${distance}px` : '0px';
+    } else {
+      messagesContainer.style.paddingBottom = '0px';
     }
   }
 
