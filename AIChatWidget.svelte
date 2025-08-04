@@ -78,10 +78,6 @@
   let isHumanAgentActive = false;
   let socket;
   let wsConnected = false;
-  let reconnectAttempt = 0;
-  let maxReconnectAttempts = 5;
-  let reconnectInterval = null;
-  let isReconnecting = false;
 
   function grow(node, { duration = 300, origin = 'center' }) {
     return {
@@ -229,7 +225,7 @@
     if (isChatVisible) {
       showChatButton = false;
       await tick();
-      if (!isDemo && !wsConnected && !isReconnecting) {
+      if (!isDemo && !wsConnected) {
         initWebSocket();
       }
       await tick();
@@ -237,8 +233,6 @@
         chatInputComponent?.focusInput();
       }, 0);
     } else if (!isDemo) {
-      isReconnecting = false;
-      reconnectAttempt = 0;
       if (socket) {
         socket.disconnect();
         wsConnected = false;
@@ -261,14 +255,15 @@
         agentId: agentId
       },
       transports: ['websocket'],
-      reconnection: false
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 16000
     });
 
     socket.on('connect', () => {
       console.log('Socket.IO connected');
       wsConnected = true;
-      isReconnecting = false;
-      reconnectAttempt = 0;
       loadingState = null;
 
       if (context) {
@@ -360,69 +355,23 @@
       addMessageToUI($_('status.error'), 'assistant'); // This will save
     });
 
-    socket.on('connect_error', (error) => {
-      console.error('Socket.IO connection error:', error);
-      wsConnected = false;
-      attemptReconnect();
-    });
-
     socket.on('disconnect', (reason) => {
       console.log('Socket.IO disconnected:', reason);
       wsConnected = false;
       if (isChatVisible && reason !== 'io client disconnect') {
-        reconnectAttempt = 0;
-        isReconnecting = false;
-        addMessageToUI($_('status.connectionError'), 'assistant', { persist: false });
-        attemptReconnect();
-      } else {
-          isReconnecting = false;
-          loadingState = null;
+        loadingState = { type: 'reconnecting', message: $_('status.reconnecting') };
       }
     });
-  }
 
-  function attemptReconnect() {
-    clearTimeout(reconnectInterval);
+    socket.on('reconnect_attempt', (attempt) => {
+      console.log(`Attempting reconnect ${attempt}/${socket.io.opts.reconnectionAttempts}`);
+    });
 
-    if (isDemo || reconnectAttempt >= maxReconnectAttempts) {
-      if (isReconnecting) { // Only if we were in a cycle
-        loadingState = null;
-        addMessageToUI($_('status.reconnectFailed'), 'assistant', { persist: false });
-        console.log('Max reconnect attempts reached.');
-        isReconnecting = false;
-      }
-      return;
-    }
-
-    isReconnecting = true;
-    const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 16000);
-
-    loadingState = {
-      type: 'reconnecting',
-      message: $_('status.reconnecting', { values: { current: reconnectAttempt + 1, max: maxReconnectAttempts } })
-    };
-    console.log(`Attempting reconnect ${reconnectAttempt + 1}/${maxReconnectAttempts} in ${delay}ms`);
-
-    reconnectInterval = setTimeout(() => {
-      if (!isChatVisible || wsConnected) {
-        isReconnecting = false;
-        reconnectAttempt = 0;
-        loadingState = null;
-        console.log('Reconnect aborted: Chat closed or already connected.');
-        return;
-      }
-
-      reconnectAttempt++;
-      try {
-        console.log(`Executing reconnect attempt ${reconnectAttempt}`);
-        initWebSocket();
-      } catch (err) {
-        console.error('Reconnection failed immediately during initWebSocket:', err);
-        isReconnecting = false;
-        loadingState = null;
-        addMessageToUI($_('status.reconnectFailed'), 'assistant');
-      }
-    }, delay);
+    socket.on('reconnect_failed', () => {
+      console.log('Max reconnect attempts reached.');
+      loadingState = null;
+      addMessageToUI($_('status.reconnectFailed'), 'assistant', { persist: false });
+    });
   }
 
 
@@ -633,9 +582,6 @@
       socket.disconnect();
       wsConnected = false;
     }
-    clearTimeout(reconnectInterval);
-    isReconnecting = false;
-    reconnectAttempt = 0;
 
     try {
       // Tell the backend to reset/clean up the OLD session
@@ -700,7 +646,7 @@
         }
 
         if (startOpen) {
-            if (!wsConnected && !isReconnecting) {
+            if (!wsConnected) {
                 initWebSocket();
             }
         }
@@ -717,8 +663,6 @@
               socket.disconnect();
               wsConnected = false;
           }
-          clearTimeout(reconnectInterval);
-          isReconnecting = false;
       }
     };
   });

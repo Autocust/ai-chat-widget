@@ -16,7 +16,7 @@ export default {
   status: {
     thinking: "Denken...",
     searching: "🔍 Suche...",
-    reconnecting: "Wiederverbinden ({current}/{max})...",
+    reconnecting: "Wiederverbinden...",
     error: "Ein Kommunikationsfehler ist aufgetreten.",
     connectionError: "Ein Verbindungsfehler ist aufgetreten.",
     reconnectFailed:
