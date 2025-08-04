@@ -84,15 +84,7 @@
   let sessionId = getSessionIdFromCookie() || generateUUID();
 
   $: hasUserSentMessage = messages.some(m => m.sender === 'user');
-  $: mobileFontSize = (() => {
-    const value = parseInt(fontSize, 10);
-    const unit = fontSize.match(/[a-zA-Z%]+$/)?.[0] || 'px';
-    if (isNaN(value)) {
-      return '12px'; // Fallback for mobile
-    }
-    // Use Math.round to avoid excessive decimals, apply 70% ratio
-    return `${Math.round(value * 0.7)}${unit}`;
-  })();
+  $: mobileFontSize = fontSize;
 
   // --- Demo Content ---
   $: demoInitialMessage = $_('demo.initialMessage');
