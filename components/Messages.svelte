@@ -19,33 +19,59 @@
 
   export { messagesContainer as element };
 
-  export function prepareForStreaming() {
-    tick().then(() => {
-      if (!messagesContainer) return;
+  export async function prepareForStreaming() {
+    await tick();
+    if (!messagesContainer) return;
 
-      const messageElements = messagesContainer.querySelectorAll('.message-container.user-message');
-      if (messageElements.length === 0) return;
+    const messageElements = messagesContainer.querySelectorAll('.message-container.user-message');
+    console.log('Preparing for streaming, found user messages:', messageElements);
+    if (messageElements.length === 0) return;
 
-      const lastUserMessageElement = messageElements[messageElements.length - 1];
+    const lastUserMessageElement = messageElements[messageElements.length - 1];
+    console.log('Last user message element:', lastUserMessageElement);
+    if (lastUserMessageElement) {
+      // --- Measure paddings once (robust for Shadow DOM containers) ---
+      const style = getComputedStyle(messagesContainer);
+      const padTop = parseFloat(style.paddingTop) || 0;
+      const padBottom = parseFloat(style.paddingBottom) || 0;
 
-      if (lastUserMessageElement) {
-        // 1. Scroll the user message to the top
-        messagesContainer.scrollTo({ top: lastUserMessageElement.offsetTop, behavior: 'auto' });
+      console.log('Padding top:', padTop, 'Padding bottom:', padBottom);
 
-        // 2. Add a spacer the size of the viewport
-        tick().then(() => {
-          if (!spacerElement) {
-            spacerElement = document.createElement('div');
-            messagesContainer.appendChild(spacerElement);
-          }
-          // Make the spacer the height of the visible chat area, minus a bit for padding
-          const spacerHeight = messagesContainer.clientHeight - 20; // 20px buffer
-          spacerElement.style.height = `${spacerHeight > 0 ? spacerHeight : 0}px`;
-        });
+      // --- Ensure the spacer exists BEFORE scrolling ---
+      if (!spacerElement) {
+        spacerElement = document.createElement('div');
+        spacerElement.className = 'scroll-spacer'; // keep existing class/CSS
+        messagesContainer.appendChild(spacerElement);
       }
-    });
+
+      // --- Compute the user's message top relative to the scroll container ---
+      // Using the offset chain is more reliable than viewport rects in Shadow DOM contexts.
+      let relTop = lastUserMessageElement.offsetTop;
+      let node = lastUserMessageElement.offsetParent;
+      while (node && node !== messagesContainer) {
+        relTop += node.offsetTop;
+        node = node.offsetParent;
+      }
+
+      // --- Reserve the remaining visible space below the user message ---
+      const visibleHeight = messagesContainer.clientHeight - padTop - padBottom;
+      const spacerHeight = Math.max(0, visibleHeight - lastUserMessageElement.offsetHeight);
+      spacerElement.style.height = `${spacerHeight}px`;
+
+      // --- Now align the user's message to the very top of the scroll container (absolute scrollTop) ---
+      const desiredScrollTop = Math.max(0, relTop - padTop);
+      messagesContainer.scrollTop = desiredScrollTop;
+
+      // NOTE:
+      // - No RAF/loop here. We only set the initial spacer and alignment.
+      // - The spacer remains until cleanupAfterStreaming() runs at the true end of streaming.
+    }
   }
 
+  /**
+   * Cleans up the spacer element after streaming is done.
+   * This should be called after the last message has been processed.
+   */
   export function cleanupAfterStreaming() {
     if (spacerElement) {
       spacerElement.remove();
@@ -53,12 +79,15 @@
     }
   }
 
-  function scrollToEnd(behavior = 'smooth') {
-    tick().then(() => {
-      if (messagesContainer) {
-        messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior });
-      }
-    });
+  /**
+   * Scrolls the messages container to the bottom.
+   * @param {string} behavior - The scroll behavior ('smooth' or 'auto').
+   */
+  async function scrollToEnd(behavior = 'smooth') {
+    await tick();
+    if (messagesContainer) {
+      messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior });
+    }
   }
 
   function handleScroll() {
