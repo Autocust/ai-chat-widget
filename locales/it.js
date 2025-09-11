@@ -15,13 +15,16 @@ export default {
   status: {
     thinking: 'Sto pensando...',
     searching: '🔍 Cerco...',
-    reconnecting: 'Riconnessione in corso ({current}/{max})...',
+    reconnecting: 'Riconnessione in corso...',
     error: 'Si è verificato un errore di comunicazione.',
     connectionError: 'Si è verificato un errore di connessione.',
     reconnectFailed:
       'Impossibile ristabilire la connessione. Ricarica la pagina per riprovare.',
     configErrorApi: 'Errore di configurazione: URL API mancante.',
-    sendError: 'Si è verificato un errore durante l\'invio del messaggio.',
+    sendError: "Si è verificato un errore durante l'invio del messaggio.",
+    humanAgentJoined: "Un agente si è unito alla conversazione.",
+    humanAgentLeft: "L'agente ha lasciato la conversazione.",
+    assistantBack: "L'assistente AI è di nuovo online."
   },
   product: {
     buyButton: 'Acquista',

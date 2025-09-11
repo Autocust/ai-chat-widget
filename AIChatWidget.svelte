@@ -1,5 +1,6 @@
 <script>
   import { onMount, tick } from 'svelte';
+  import { quintOut } from 'svelte/easing';
   import { marked } from 'marked';
   import { io } from 'socket.io-client';
   import { _ } from './i18n'; // Import the translation function
@@ -11,6 +12,7 @@
   import QuickReplies from './components/QuickReplies.svelte';
   import ChatInput from './components/ChatInput.svelte';
   import ChatFooter from './components/ChatFooter.svelte';
+  import DateSeparator from './components/DateSeparator.svelte';
 
   // --- Props ---
   export let title = null;
@@ -30,6 +32,8 @@
   export let userMessageTextColor = '#000000';
   export let assistantMessageBgColor = '#f8f8f8';
   export let assistantMessageTextColor = '#000000';
+  export let humanAgentMessageBgColor = '#e0e0e0';
+  export let humanAgentMessageTextColor = '#000000';
   export let chatButtonBgColor = '#000000';
   export let chatButtonTextColor = '#ffffff';
   export let ctaButtonBgColor = '#f8f8f8';
@@ -46,7 +50,8 @@
   export let persistentSession = false;
   export let sessionExpiration = 24;
   export let userMessageIcon = null; // user message icon URL
-  export let botMessageIcon = null; // bot message icon URL
+  export let assistantMessageIcon = null; // assistant message icon URL
+  export let humanAgentMessageIcon = null; // human agent message icon URL
   export let buttonImageUrl = null; // custom button image URL
   export let buttonOverlayText = null;
   export let buttonOverlayDelay = 5000;
@@ -63,36 +68,42 @@
 
   // --- Internal State ---
   let isChatVisible = startOpen;
+  let showChatButton = !startOpen;
   let messages = [];
   let userInput = '';
   let loadingState = null;
   let messagesComponent;
   let chatInputComponent;
-  let currentBotMessage = '';
+  let currentAssistantMessage = '';
+  let isHumanAgentActive = false;
   let socket;
   let wsConnected = false;
-  let reconnectAttempt = 0;
-  let maxReconnectAttempts = 5;
-  let reconnectInterval = null;
-  let isReconnecting = false;
+
+  function grow(node, { duration = 300, origin = 'center' }) {
+    return {
+      duration,
+      css: t => {
+        const eased = quintOut(t);
+        return `
+          transform-origin: ${origin};
+          transform: scale(${eased});
+          opacity: ${eased};
+        `;
+      }
+    };
+  }
 
   let sessionId = getSessionIdFromCookie() || generateUUID();
 
+  $: transitionOrigin = position.replace('-', ' ');
+
   $: hasUserSentMessage = messages.some(m => m.sender === 'user');
-  $: mobileFontSize = (() => {
-    const value = parseInt(fontSize, 10);
-    const unit = fontSize.match(/[a-zA-Z%]+$/)?.[0] || 'px';
-    if (isNaN(value)) {
-      return '12px'; // Fallback for mobile
-    }
-    // Use Math.round to avoid excessive decimals, apply 70% ratio
-    return `${Math.round(value * 0.7)}${unit}`;
-  })();
+  $: mobileFontSize = fontSize;
 
   // --- Demo Content ---
   $: demoInitialMessage = $_('demo.initialMessage');
   $: demoUserMessage = $_('demo.userMessage');
-  $: demoBotReplyText = $_('demo.botReply');
+  $: demoAssistantReplyText = $_('demo.botReply');
   $: demoCta = { text: $_('demo.ctaText'), url: "#product-xyz" };
   const demoProducts = [
     { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://placehold.co/600x400", url: "#product-1", brand: "Brand A" },
@@ -114,6 +125,16 @@
   // --- Local Storage Helper Functions ---
   const getLocalStorageKey = (type, id) => `chat_${type}_${id}`;
 
+  // Reactive statement to save isHumanAgentActive to local storage
+  $: if (persistentSession && !isDemo && typeof localStorage !== 'undefined') {
+    try {
+      const humanStatusKey = getLocalStorageKey('human_status', sessionId);
+      localStorage.setItem(humanStatusKey, JSON.stringify({ isHumanAgentActive }));
+    } catch (e) {
+      console.error("Error saving human agent status to local storage:", e);
+    }
+  }
+
   function loadSessionFromLocalStorage(currentSessionId) {
     if (typeof localStorage === 'undefined' || !persistentSession || isDemo) return null;
     try {
@@ -134,10 +155,16 @@
       }
 
       const messagesString = localStorage.getItem(messagesKey);
+      const humanStatusKey = getLocalStorageKey('human_status', currentSessionId);
+      const humanStatusString = localStorage.getItem(humanStatusKey);
+
       if (!messagesString) return null;
 
+      const loadedMessages = JSON.parse(messagesString);
+      const humanStatus = humanStatusString ? JSON.parse(humanStatusString) : { isHumanAgentActive: false };
+
       console.log(`Loading session ${currentSessionId} from local storage.`);
-      return { messages: JSON.parse(messagesString) };
+      return { messages: loadedMessages, ...humanStatus };
     } catch (e) {
       console.error("Error loading session from local storage:", e);
       clearSessionFromLocalStorage(currentSessionId); // Clear potentially corrupted data
@@ -165,8 +192,10 @@
     try {
       const metaKey = getLocalStorageKey('meta', currentSessionId);
       const messagesKey = getLocalStorageKey('messages', currentSessionId);
+      const humanStatusKey = getLocalStorageKey('human_status', currentSessionId);
       localStorage.removeItem(metaKey);
       localStorage.removeItem(messagesKey);
+      localStorage.removeItem(humanStatusKey);
       console.log(`Session ${currentSessionId} cleared from local storage.`);
     } catch (e) {
       console.error("Error clearing session from local storage:", e);
@@ -194,15 +223,9 @@
     }
     isChatVisible = !isChatVisible;
     if (isChatVisible) {
+      showChatButton = false;
       await tick();
-      if (messagesComponent?.element) {
-        if (isDemo) {
-          messagesComponent.element.scrollTop = 0;
-        } else {
-          messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
-        }
-      }
-      if (!isDemo && !wsConnected && !isReconnecting) {
+      if (!isDemo && !wsConnected) {
         initWebSocket();
       }
       await tick();
@@ -210,8 +233,6 @@
         chatInputComponent?.focusInput();
       }, 0);
     } else if (!isDemo) {
-      isReconnecting = false;
-      reconnectAttempt = 0;
       if (socket) {
         socket.disconnect();
         wsConnected = false;
@@ -223,10 +244,10 @@
     if (isDemo) return;
     if (!apiUrl) {
         console.error("API URL is not defined. WebSocket connection cannot be established.");
-        addMessageToUI($_('status.configErrorApi'), 'bot', { persist: false });
+        addMessageToUI($_('status.configErrorApi'), 'assistant', { persist: false });
         return;
     }
-    
+
     socket = io(apiUrl + '/ws-chat', {
       path: '/ws',
       query: {
@@ -234,14 +255,15 @@
         agentId: agentId
       },
       transports: ['websocket'],
-      reconnection: false
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 16000
     });
 
     socket.on('connect', () => {
       console.log('Socket.IO connected');
       wsConnected = true;
-      isReconnecting = false;
-      reconnectAttempt = 0;
       loadingState = null;
 
       if (context) {
@@ -249,28 +271,48 @@
       }
     });
 
-    socket.on('thinking', () => {
+    socket.on('thinking', (data) => {
       loadingState = { type: 'thinking', message: $_('status.thinking') };
     });
 
-    socket.on('searching', () => {
+    socket.on('searching', (data) => {
       loadingState = { type: 'searching', message: $_('status.searching') };
     });
 
-    socket.on('token', async (content) => {
+    socket.on('take_over', (data) => {
+      if (data.status === true) {
+        isHumanAgentActive = true;
+        addMessageToUI($_('status.humanAgentJoined'), 'system');
+      } else {
+        isHumanAgentActive = false;
+        addMessageToUI($_('status.humanAgentLeft'), 'system');
+        if (socket) {
+          socket.disconnect();
+        }
+        initWebSocket();
+        addMessageToUI($_('status.assistantBack'), 'system');
+      }
+    });
+
+    socket.on('token', async (data) => {
       try {
+        if (currentAssistantMessage === '') { // First token
+          messagesComponent?.prepareForStreaming();
+        }
+        const content = data.content;
         loadingState = { type: 'writing' };
-        currentBotMessage += content;
-        if (messages.length > 0 && messages[messages.length - 1].sender === 'bot') {
+        currentAssistantMessage += content;
+        const sender = isHumanAgentActive ? 'human_agent' : 'assistant';
+        if (messages.length > 0 && messages[messages.length - 1].sender === sender) {
           const last = messages.at(-1);
-          last.content = marked.parse(currentBotMessage.replace(/\【.*?】/g,''));
-          last.links = extractLinks(currentBotMessage);
+          last.content = marked.parse(currentAssistantMessage.replace(/\【.*?】/g,''));
+          last.links = extractLinks(currentAssistantMessage);
           messages = [...messages];
           if (persistentSession && !isDemo) { // Save after updating streamed message
             saveSessionToLocalStorage(sessionId, messages);
           }
         } else {
-            addMessageToUI(currentBotMessage, 'bot'); // This already calls saveSessionToLocalStorage
+            addMessageToUI(currentAssistantMessage, sender); // This already calls saveSessionToLocalStorage
         }
         await tick();
         if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
@@ -285,7 +327,7 @@
         if (products && products.length > 0) {
           const carousel = createProductCarousel(products);
           const lastMessage = messages[messages.length - 1];
-          if (lastMessage && lastMessage.sender === 'bot') {
+          if (lastMessage && lastMessage.sender === 'assistant') {
             messages[messages.length - 1] = { ...lastMessage, productCarousel: carousel };
             messages = [...messages];
             if (persistentSession && !isDemo) { // Save after adding carousel
@@ -300,85 +342,39 @@
 
     socket.on('done', () => {
       loadingState = null;
+      messagesComponent?.cleanupAfterStreaming();
       // Ensure final state of messages is saved
       if (persistentSession && !isDemo && messages.length > 0) {
           saveSessionToLocalStorage(sessionId, messages);
       }
-      currentBotMessage = ''; // Reset after potential save
+      currentAssistantMessage = ''; // Reset after potential save
     });
 
     socket.on('error', (content) => {
       loadingState = null;
       console.error('Socket.IO error:', content);
-      addMessageToUI($_('status.error'), 'bot'); // This will save
-    });
-
-    socket.on('connect_error', (error) => {
-      console.error('Socket.IO connection error:', error);
-      wsConnected = false;
-      attemptReconnect();
+      addMessageToUI($_('status.error'), 'assistant'); // This will save
     });
 
     socket.on('disconnect', (reason) => {
       console.log('Socket.IO disconnected:', reason);
       wsConnected = false;
       if (isChatVisible && reason !== 'io client disconnect') {
-        reconnectAttempt = 0;
-        isReconnecting = false;
-        addMessageToUI($_('status.connectionError'), 'bot', { persist: false });
-        attemptReconnect();
-      } else {
-          isReconnecting = false;
-          loadingState = null;
+        loadingState = { type: 'reconnecting', message: $_('status.reconnecting') };
       }
+    });
+
+    socket.on('reconnect_attempt', (attempt) => {
+      console.log(`Attempting reconnect ${attempt}/${socket.io.opts.reconnectionAttempts}`);
+    });
+
+    socket.on('reconnect_failed', () => {
+      console.log('Max reconnect attempts reached.');
+      loadingState = null;
+      addMessageToUI($_('status.reconnectFailed'), 'assistant', { persist: false });
     });
   }
 
-  function attemptReconnect() {
-    clearTimeout(reconnectInterval);
-
-    if (isDemo || reconnectAttempt >= maxReconnectAttempts) {
-      if (isReconnecting) { // Only if we were in a cycle
-        loadingState = null;
-        addMessageToUI($_('status.reconnectFailed'), 'bot', { persist: false });
-        console.log('Max reconnect attempts reached.');
-        isReconnecting = false;
-      }
-      return;
-    }
-
-    isReconnecting = true;
-    const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 16000);
-
-    loadingState = {
-      type: 'reconnecting',
-      message: $_('status.reconnecting', { values: { current: reconnectAttempt + 1, max: maxReconnectAttempts } })
-    };
-    console.log(`Attempting reconnect ${reconnectAttempt + 1}/${maxReconnectAttempts} in ${delay}ms`);
-
-    reconnectInterval = setTimeout(() => {
-      if (!isChatVisible || wsConnected) {
-        isReconnecting = false;
-        reconnectAttempt = 0;
-        loadingState = null;
-        console.log('Reconnect aborted: Chat closed or already connected.');
-        return;
-      }
-
-      reconnectAttempt++;
-      try {
-        console.log(`Executing reconnect attempt ${reconnectAttempt}`);
-        initWebSocket();
-      } catch (err) {
-        console.error('Reconnection failed immediately during initWebSocket:', err);
-        isReconnecting = false;
-        loadingState = null;
-        addMessageToUI($_('status.reconnectFailed'), 'bot');
-      }
-    }, delay);
-  }
-
-  
 
   function createProductCarousel(products) {
     if (!products || products.length === 0) return '';
@@ -436,12 +432,20 @@
     const shouldPersistMessage = additionalData.hasOwnProperty('persist') ? additionalData.persist : true;
     const rawMarkdown = content || '';
 
-    if (sender === 'bot') {
+    if (sender === 'assistant' || sender === 'human_agent') {
       links = extractLinks(rawMarkdown);
       const cleanedMarkdown = rawMarkdown.replace(/\【.*?】/g, '');
       processedContent = marked.parse(cleanedMarkdown);
-    } else { // This will apply to 'user'
+    } else if (sender === 'user') { // This will apply to 'user'
       processedContent = marked.parse(rawMarkdown);
+    } else if (sender === 'system') {
+        processedContent = rawMarkdown;
+    }
+
+    const lastMessage = messages.filter(m => m.type !== 'date').pop();
+    const now = new Date();
+    if (!lastMessage || new Date(lastMessage.date).toDateString() !== now.toDateString()) {
+        messages = [...messages, { type: 'date', date: now }];
     }
 
     messages = [...messages, {
@@ -450,7 +454,8 @@
       links,
       productCarousel: additionalData.productCarousel || '',
       url: additionalData.url || '',
-      ctaText: additionalData.ctaText || displayCtaText
+      ctaText: additionalData.ctaText || displayCtaText,
+      date: new Date()
     }];
 
     if (persistentSession && !isDemo && shouldPersistMessage) {
@@ -459,9 +464,30 @@
 
     tick().then(() => {
       if (messagesComponent?.element && !isDemo) {
-        messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
+
       }
     });
+  }
+
+  function processMessagesAndAddSeparators(messageList) {
+    if (!messageList || messageList.length === 0) {
+        return [];
+    }
+    const processed = [];
+    let lastDateString = null;
+    messageList.forEach(msg => {
+        if (msg.type === 'date') return; // Skip old separators
+
+        const msgDate = new Date(msg.date);
+        const msgDateString = msgDate.toDateString();
+
+        if (msgDateString !== lastDateString) {
+            processed.push({ type: 'date', date: msgDate });
+            lastDateString = msgDateString;
+        }
+        processed.push(msg);
+    });
+    return processed;
   }
 
   function formatPrice(price) {
@@ -487,14 +513,14 @@
 
     addMessageToUI(message, 'user'); // This will save if persistentSession is true
     userInput = '';
-    loadingState = { type: 'thinking', message: $_('status.thinking') };
-    currentBotMessage = ''; // Reset for the new bot message stream
+    loadingState = { type: 'waiting' };
+    currentAssistantMessage = ''; // Reset for the new bot message stream
 
     try {
       socket.emit('message', { chatInput: message });
     } catch (err) {
       console.error("Error sending message:", err);
-      addMessageToUI($_('status.sendError'), 'bot'); // This will save
+      addMessageToUI($_('status.sendError'), 'assistant'); // This will save
       loadingState = null;
     }
     chatInputComponent?.focusInput();
@@ -515,17 +541,17 @@
 
   function setupDemoMessages() {
       messages = [];
-      addMessageToUI(initialMessage ?? demoInitialMessage, 'bot');
+      addMessageToUI(initialMessage ?? demoInitialMessage, 'assistant');
       addMessageToUI(demoUserMessage, 'user');
       const demoCarouselHtml = createProductCarousel(demoProducts);
-      addMessageToUI(demoBotReplyText, 'bot', {
+      addMessageToUI(demoAssistantReplyText, 'assistant', {
           url: demoCta.url,
           ctaText: demoCta.text,
           productCarousel: demoCarouselHtml
       });
       tick().then(() => {
         if (messagesComponent?.element) {
-          messagesComponent.element.scrollTop = 0;
+
         }
       });
   }
@@ -547,21 +573,15 @@
     saveSessionIdToCookie(sessionId);
 
     messages = [];
-    currentBotMessage = '';
+    currentAssistantMessage = '';
     loadingState = null;
     // Add initial message to the new session (this will save it to local storage with the new ID)
-    addMessageToUI(displayInitialMessage, 'bot');
-    tick().then(() => {
-        if (messagesComponent?.element) messagesComponent.element.scrollTop = 0;
-    });
+    addMessageToUI(displayInitialMessage, 'assistant');
 
     if (socket) {
       socket.disconnect();
       wsConnected = false;
     }
-    clearTimeout(reconnectInterval);
-    isReconnecting = false;
-    reconnectAttempt = 0;
 
     try {
       // Tell the backend to reset/clean up the OLD session
@@ -581,6 +601,22 @@
     }
   }
 
+  function isMobileDevice() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    // Basic check for common mobile OS and devices
+    if (/android/i.test(userAgent)) {
+      return true;
+    }
+    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+      return true;
+    }
+    // Check for common mobile screen sizes (less reliable but can be a fallback)
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+      return true;
+    }
+    return false;
+  }
+
   onMount(() => {
     if (isDemo) {
         setupDemoMessages();
@@ -590,27 +626,34 @@
         let loadedMessagesFromStorage = false;
         if (persistentSession) {
             const storedSession = loadSessionFromLocalStorage(sessionId);
-            if (storedSession && storedSession.messages) {
-                messages = storedSession.messages;
-                loadedMessagesFromStorage = true;
+            if (storedSession) {
+                if (storedSession.messages) {
+                    messages = processMessagesAndAddSeparators(storedSession.messages);
+                    loadedMessagesFromStorage = true;
+                }
+                if (storedSession.hasOwnProperty('isHumanAgentActive')) {
+                    isHumanAgentActive = storedSession.isHumanAgentActive;
+                }
                 // Update last activity timestamp as session is now active
                 saveSessionToLocalStorage(sessionId, messages);
-                tick().then(() => {
-                    if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
-                });
             } else {
                  // Session expired or not found, ensure it's cleared (loadSession handles this)
             }
         }
 
         if (!loadedMessagesFromStorage && messages.length === 0) {
-            addMessageToUI(displayInitialMessage, 'bot'); // This will also save if persistentSession is true
+            addMessageToUI(displayInitialMessage, 'assistant'); // This will also save if persistentSession is true
         }
 
         if (startOpen) {
-            if (!wsConnected && !isReconnecting) {
+            if (!wsConnected) {
                 initWebSocket();
             }
+        }
+
+        // Set fullScreen to true if on mobile and not explicitly set to false
+        if (!fullScreen && isMobileDevice()) {
+            fullScreen = true;
         }
     }
 
@@ -620,8 +663,6 @@
               socket.disconnect();
               wsConnected = false;
           }
-          clearTimeout(reconnectInterval);
-          isReconnecting = false;
       }
     };
   });
@@ -645,26 +686,7 @@
     return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="${openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
   }
 
-  $: if (isChatVisible && messages.length > 0 && messagesComponent?.element) {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage.sender === 'bot') {
-      const messageElements = messagesComponent.element.querySelectorAll('.message-container');
-      const lastMessageElement = messageElements[messageElements.length - 1];
-      if (lastMessageElement) {
-        const offset = 50; // 50px offset from the top
-        const topPos = lastMessageElement.offsetTop;
-        messagesComponent.element.scrollTo({
-          top: topPos - offset,
-          behavior: 'smooth'
-        });
-      }
-    } else {
-      messagesComponent.element.scrollTo({
-        top: messagesComponent.element.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }
+
 </script>
 
 <div
@@ -679,6 +701,8 @@
   style:--user-msg-text={userMessageTextColor}
   style:--assistant-msg-bg={assistantMessageBgColor}
   style:--assistant-msg-text={assistantMessageTextColor}
+  style:--human-agent-msg-bg={humanAgentMessageBgColor}
+  style:--human-agent-msg-text={humanAgentMessageTextColor}
   style:--chat-btn-bg={chatButtonBgColor}
   style:--chat-btn-text={chatButtonTextColor}
   style:--cta-btn-bg={ctaButtonBgColor}
@@ -688,7 +712,7 @@
   style:--header-bg={headerBgColor}
   style:--header-text={headerTextColor}
 >
-  {#if !isChatVisible || isDemo}
+  {#if showChatButton || isDemo}
     <ChatButton
       {isChatVisible}
       {isDemo}
@@ -701,7 +725,7 @@
   {/if}
 
   {#if isChatVisible}
-    <div id="chat-container">
+    <div id="chat-container" transition:grow={{ duration: 300, origin: transitionOrigin }} on:outroend={() => showChatButton = true}>
       <ChatHeader
         {displayTitle}
         {isDemo}
@@ -715,7 +739,8 @@
         {isDemo}
         {loadingState}
         {userMessageIcon}
-        {botMessageIcon}
+        {assistantMessageIcon}
+        {humanAgentMessageIcon}
         {openInNewTab}
         {enableUTM}
       />

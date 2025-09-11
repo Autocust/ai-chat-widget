@@ -40,7 +40,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
                     if (['fontSize', 'width', 'height'].includes(newKey) && typeof value === 'number') {
                         value = `${value}px`;
                     }
-                    
+
                     acc[newKey] = value;
                     return acc;
                 }, {});
@@ -70,11 +70,13 @@ import AIChatWidget from "./AIChatWidget.svelte";
         sessionExpiration: 24,
         theme: "light",
         userMessageIcon: null,
-        botMessageIcon: null,
+        assistantMessageIcon: null,
         userMessageBgColor: "#e0e0e0",
         userMessageTextColor: "#000000",
         assistantMessageBgColor: "#f8f8f8",
         assistantMessageTextColor: "#000000",
+        humanAgentMessageBgColor: "#e0e0e0",
+        humanAgentMessageTextColor: "#000000",
         chatButtonBgColor: "#000000",
         chatButtonTextColor: "#ffffff",
         ctaButtonBgColor: "#f8f8f8",
@@ -150,11 +152,14 @@ import AIChatWidget from "./AIChatWidget.svelte";
         sessionExpiration: getAttr("data-session-expiration", finalDefaults.sessionExpiration),
         theme: getAttr("data-theme", finalDefaults.theme),
         userMessageIcon: getAttr("data-user-message-icon", finalDefaults.userMessageIcon),
-        botMessageIcon: getAttr("data-bot-message-icon", finalDefaults.botMessageIcon),
+        assistantMessageIcon: getAttr("data-assistant-message-icon", finalDefaults.assistantMessageIcon),
+        humanAgentMessageIcon: getAttr("data-human-agent-message-icon", finalDefaults.humanAgentMessageIcon),
         userMessageBgColor: getAttr("data-user-message-bg-color", finalDefaults.userMessageBgColor),
         userMessageTextColor: getAttr("data-user-message-text-color", finalDefaults.userMessageTextColor),
         assistantMessageBgColor: getAttr("data-assistant-message-bg-color", finalDefaults.assistantMessageBgColor),
         assistantMessageTextColor: getAttr("data-assistant-message-text-color", finalDefaults.assistantMessageTextColor),
+        humanAgentMessageBgColor: getAttr("data-human-agent-message-bg-color", finalDefaults.humanAgentMessageBgColor),
+        humanAgentMessageTextColor: getAttr("data-human-agent-message-text-color", finalDefaults.humanAgentMessageTextColor),
         chatButtonBgColor: getAttr("data-chat-button-bg-color", finalDefaults.chatButtonBgColor),
         chatButtonTextColor: getAttr("data-chat-button-text-color", finalDefaults.chatButtonTextColor),
         ctaButtonBgColor: getAttr("data-cta-button-bg-color", finalDefaults.ctaButtonBgColor),

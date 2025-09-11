@@ -16,13 +16,16 @@ export default {
   status: {
     thinking: "Pensando...",
     searching: "🔍 Buscando...",
-    reconnecting: "Reconectando ({current}/{max})...",
+    reconnecting: "Reconectando...",
     error: "Ocurrió un error de comunicación.",
     connectionError: "Ocurrió un error de conexión.",
     reconnectFailed:
       "No se pudo restablecer la conexión. Por favor, recarga la página para intentarlo de nuevo.",
     configErrorApi: "Error de Configuración: Falta la URL de la API.",
     sendError: "Ocurrió un error al enviar el mensaje.",
+    humanAgentJoined: "Un agente se ha unido al chat.",
+    humanAgentLeft: "El agente ha abandonado el chat.",
+    assistantBack: 'El asistente está de nuevo en línea.'
   },
   product: {
     buyButton: "Comprar",

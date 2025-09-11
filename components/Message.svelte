@@ -3,7 +3,8 @@
 
   export let message;
   export let userMessageIcon = null;
-  export let botMessageIcon = null;
+  export let assistantMessageIcon = null;
+  export let humanAgentMessageIcon = null;
   export let openInNewTab = true;
   export let enableUTM = true;
 </script>
@@ -13,8 +14,11 @@
     {#if message.sender === 'user' && userMessageIcon}
       <img src={userMessageIcon} alt="User Icon" class="message-icon user-icon" />
     {/if}
-    {#if message.sender === 'bot' && botMessageIcon}
-      <img src={botMessageIcon} alt="Bot Icon" class="message-icon bot-icon" />
+    {#if message.sender === 'assistant' && assistantMessageIcon}
+      <img src={assistantMessageIcon} alt="Assistant Icon" class="message-icon assistant-icon" />
+    {/if}
+    {#if message.sender === 'human_agent' && humanAgentMessageIcon}
+      <img src={humanAgentMessageIcon} alt="Human Agent Icon" class="message-icon human-agent-icon" />
     {/if}
     <div class="message-content">
       {@html message.content}
@@ -51,8 +55,16 @@
   .user-message {
     margin-left: auto;
   }
-  .bot-message {
+  .assistant-message,
+  .human_agent-message {
     margin-right: auto;
+  }
+  .system-message {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    font-style: italic;
+    color: #888;
   }
   .message {
     display: flex;
@@ -74,9 +86,13 @@
     background-color: var(--user-msg-bg);
     color: var(--user-msg-text);
   }
-  .bot-message .message-content {
+  .assistant-message .message-content {
     background-color: var(--assistant-msg-bg);
     color: var(--assistant-msg-text);
+  }
+  .human_agent-message .message-content {
+    background-color: var(--human-agent-msg-bg);
+    color: var(--human-agent-msg-text);
   }
   .message-content :global(a) {
     color: var(--link-color);
