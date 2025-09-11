@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.1.1](https://github.com/Autocust/ai-chat-widget/compare/v3.1.0...v3.1.1) (2025-09-11)
+
+### Features
+
+* socket.io ([859604e](https://github.com/Autocust/ai-chat-widget/commit/859604ea3372722e727e62c2de66da559b23125c))
+
+### Code Refactoring
+
+* reconnecting totally managed by socket.io ([d050192](https://github.com/Autocust/ai-chat-widget/commit/d0501921ade5211ea7be794886fa06ed955004a8))
+
 ## [3.1.0](https://github.com/Autocust/ai-chat-widget/compare/v3.0.0...v3.1.0) (2025-08-04)
 
 ### Features
