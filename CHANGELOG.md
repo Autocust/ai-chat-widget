@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.2](https://github.com/Autocust/ai-chat-widget/compare/v3.1.1...v3.1.2) (2025-10-07)
+
+### Bug Fixes
+
+* scroll behavior ([074b52f](https://github.com/Autocust/ai-chat-widget/commit/074b52fae3aa8a0eee04fc53bd6879bf00c9a679))
+
 ## [3.1.1](https://github.com/Autocust/ai-chat-widget/compare/v3.1.0...v3.1.1) (2025-09-11)
 
 ### Features
