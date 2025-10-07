@@ -29,16 +29,15 @@
     if (lastUserMessageElement) {
       const messageHeight = lastUserMessageElement.offsetHeight;
       const containerHeight = messagesContainer.offsetHeight;
-      const diff = containerHeight - messageHeight;
 
-      console.log('Last user message height - messages container height:', diff);
+      messagesContainer.style.paddingBottom = '0px';
 
-      // Set padding-bottom as diff height
-      messagesContainer.style.paddingBottom = diff > 0 ? `${diff}px` : '0px';
-
-      // Smooth scroll so last user message is at the top of the container
-      const offsetTop = lastUserMessageElement.offsetTop;
-      messagesContainer.scrollTo({ top: offsetTop, behavior: 'smooth' });
+      if (messageHeight > containerHeight) {
+        const offsetTop = lastUserMessageElement.offsetTop;
+        messagesContainer.scrollTo({ top: offsetTop, behavior: 'smooth' });
+      } else {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
     }
   }
 
@@ -55,17 +54,7 @@
       return;
     }
 
-    const lastUserMessageElement = messageElements[messageElements.length - 1];
-    if (lastUserMessageElement) {
-      const messageRect = lastUserMessageElement.getBoundingClientRect();
-      const containerRect = messagesContainer.getBoundingClientRect();
-      const distance = containerRect.bottom - messageRect.bottom;
-
-      // If last message is above container bottom, keep padding
-      messagesContainer.style.paddingBottom = distance > 0 ? `${distance}px` : '0px';
-    } else {
-      messagesContainer.style.paddingBottom = '0px';
-    }
+    messagesContainer.style.paddingBottom = '0px';
   }
 
   /**

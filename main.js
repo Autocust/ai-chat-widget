@@ -49,7 +49,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         persistentSession: true,
         sessionExpiration: 24, // in hours
         showPoweredBy: true,
-        agentId: "f828107f-0983-4e6c-a8db-255a9f68a429", // Add your development Agent ID here
+        agentId: "d1de56bf-a1dc-4e71-8fb0-20cff7db1404", // Add your development Agent ID here
         cms: "", // Set to 'prestashop' or other CMS for local testing
         startOpen: false,
         fullScreen: false,
@@ -59,6 +59,17 @@ import AIChatWidget from "./AIChatWidget.svelte";
         isDemo: false,
         closable: true, // Add closable prop for development
         footerText: "Controlla le info importanti",
+        context: {
+          "fullName": "Mario Rossi",
+          "email": "mario.rossi@gmail.com",
+          "persID": "66630",
+          "stuIDs": ["88529","115554"],
+          "matIDs": ["93089","121764"],
+          "cdsIDs": ["10026","10673"],
+          "departmentIDs": ["10055","10055"],
+          "adIDs": ["1723","4242","5063","5064","5065","5066","5067","5068","5069","5070"],
+          "academicYear": "2025"
+        }
       },
     });
 
