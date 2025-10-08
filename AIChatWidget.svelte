@@ -411,6 +411,27 @@
     return links;
   }
 
+  function toDateInstance(value) {
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  function toIsoString(date) {
+    return date.toISOString();
+  }
+
+  function areDatesOnSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+  }
+
   async function fetchProducts() {
     if (isDemo) return demoProducts;
     try {
