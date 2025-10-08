@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.1.3](https://github.com/Autocust/ai-chat-widget/compare/v3.1.2...v3.1.3) (2025-10-08)
+
+### Bug Fixes
+
+* datetime ([187283d](https://github.com/Autocust/ai-chat-widget/commit/187283d103167c392ada222bdf00a798f1d4fc6e))
+
 ## [3.1.2](https://github.com/Autocust/ai-chat-widget/compare/v3.1.1...v3.1.2) (2025-10-07)
 
 ### Bug Fixes
