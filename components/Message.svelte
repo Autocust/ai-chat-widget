@@ -1,36 +1,32 @@
 <script>
   import CtaButton from './CtaButton.svelte';
+  import { widgetConfig } from '../utils/stores.js';
 
   export let message;
-  export let userMessageIcon = null;
-  export let assistantMessageIcon = null;
-  export let humanAgentMessageIcon = null;
-  export let openInNewTab = true;
-  export let enableUTM = true;
 </script>
 
 <div class="message-container {message.sender}-message {message.url || (message.links && message.links.length > 0) ? 'has-cta' : ''}">
   <div class="message">
-    {#if message.sender === 'user' && userMessageIcon}
-      <img src={userMessageIcon} alt="User Icon" class="message-icon user-icon" />
+    {#if message.sender === 'user' && $widgetConfig.userMessageIcon}
+      <img src={$widgetConfig.userMessageIcon} alt="User Icon" class="message-icon user-icon" />
     {/if}
-    {#if message.sender === 'assistant' && assistantMessageIcon}
-      <img src={assistantMessageIcon} alt="Assistant Icon" class="message-icon assistant-icon" />
+    {#if message.sender === 'assistant' && $widgetConfig.assistantMessageIcon}
+      <img src={$widgetConfig.assistantMessageIcon} alt="Assistant Icon" class="message-icon assistant-icon" />
     {/if}
-    {#if message.sender === 'human_agent' && humanAgentMessageIcon}
-      <img src={humanAgentMessageIcon} alt="Human Agent Icon" class="message-icon human-agent-icon" />
+    {#if message.sender === 'human_agent' && $widgetConfig.humanAgentMessageIcon}
+      <img src={$widgetConfig.humanAgentMessageIcon} alt="Human Agent Icon" class="message-icon human-agent-icon" />
     {/if}
     <div class="message-content">
       {@html message.content}
     </div>
   </div>
   {#if message.url}
-    <CtaButton url={message.url} ctaText={message.ctaText} {openInNewTab} {enableUTM} />
+    <CtaButton url={message.url} ctaText={message.ctaText} />
   {/if}
   {#if message.links && message.links.length > 0}
     <div class="message-links">
       {#each message.links as link}
-        <CtaButton url={link.url} ctaText={link.text} {openInNewTab} {enableUTM} />
+        <CtaButton url={link.url} ctaText={link.text} />
       {/each}
     </div>
   {/if}

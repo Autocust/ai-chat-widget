@@ -2,24 +2,18 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { _ } from '../i18n';
-
-  export let isChatVisible = false;
-  export let isDemo = false;
-  export let buttonIcon = '💬';
-  export let buttonImageUrl = null;
-  export let buttonOverlayText = null;
-  export let buttonOverlayDelay = 5000;
+  import { widgetConfig, chatState } from '../utils/stores.js';
 
   let isOverlayVisible = false;
   let overlayTimeout;
 
-  $: isImageUrl = buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
-  $: isSvg = buttonIcon.trim().startsWith('<svg');
+  $: isImageUrl = $widgetConfig.buttonIcon && $widgetConfig.buttonIcon.match(/\.(jpeg|jpg|gif|png)$/) != null;
+  $: isSvg = $widgetConfig.buttonIcon && $widgetConfig.buttonIcon.trim().startsWith('<svg');
 
   const dispatch = createEventDispatcher();
 
   function toggleChat() {
-    if (isOverlayVisible && !isDemo) {
+    if (isOverlayVisible && !$widgetConfig.isDemo) {
       isOverlayVisible = false;
       clearTimeout(overlayTimeout);
     }
@@ -27,12 +21,12 @@
   }
 
   onMount(() => {
-    if (buttonOverlayText && (!isChatVisible || isDemo)) {
+    if ($widgetConfig.buttonOverlayText && (!$chatState.isChatVisible || $widgetConfig.isDemo)) {
       isOverlayVisible = true;
-      if (!isDemo) {
+      if (!$widgetConfig.isDemo) {
         overlayTimeout = setTimeout(() => {
           isOverlayVisible = false;
-        }, parseInt(buttonOverlayDelay, 10) || 5000);
+        }, parseInt($widgetConfig.buttonOverlayDelay, 10) || 5000);
       }
     }
 
@@ -43,14 +37,14 @@
 </script>
 
 <div class="button-wrapper">
-  {#if isOverlayVisible && buttonOverlayText && (!isChatVisible || isDemo)}
+  {#if isOverlayVisible && $widgetConfig.buttonOverlayText && (!$chatState.isChatVisible || $widgetConfig.isDemo)}
     <div class="button-overlay" transition:fade={{ duration: 300 }}>
-      {buttonOverlayText}
+      {$widgetConfig.buttonOverlayText}
       <div class="button-overlay-tail"></div>
     </div>
   {/if}
 
-  {#if buttonImageUrl}
+  {#if $widgetConfig.buttonImageUrl}
     <button
       class="custom-chat-button-wrapper"
       on:click={toggleChat}
@@ -59,7 +53,7 @@
       tabindex="0"
     >
       <img
-        src={buttonImageUrl}
+        src={$widgetConfig.buttonImageUrl}
         alt=""
         class="custom-chat-button-image"
       />
@@ -67,11 +61,11 @@
   {:else}
     <button id="chat-button" on:click={toggleChat} aria-label={$_('widget.title')}>
       {#if isImageUrl}
-        <img src={buttonIcon} alt="" /> <!-- Decorative icon, button has aria-label -->
+        <img src={$widgetConfig.buttonIcon} alt="" /> <!-- Decorative icon, button has aria-label -->
       {:else if isSvg}
-        {@html buttonIcon}
+        {@html $widgetConfig.buttonIcon}
       {:else}
-        {@html buttonIcon}
+        {@html $widgetConfig.buttonIcon}
       {/if}
     </button>
   {/if}

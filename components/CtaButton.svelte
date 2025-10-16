@@ -1,14 +1,13 @@
 <script>
   import { addUtmParams } from '../utils/url.js';
+  import { widgetConfig } from '../utils/stores.js';
 
   export let url;
   export let ctaText;
-  export let openInNewTab = true;
-  export let enableUTM = true;
 </script>
 
-<a href={addUtmParams(url, 'chat', 'chatbot', 'chatbot', enableUTM)}
-   target={openInNewTab ? '_blank' : '_self'}
+<a href={addUtmParams(url, 'chat', 'chatbot', 'chatbot', $widgetConfig.enableUTM)}
+   target={$widgetConfig.openInNewTab ? '_blank' : '_self'}
    class="cta-button">{ctaText}</a>
 
 <style>

@@ -10,7 +10,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
       target: document.body,
       props: {
         title: "AI Sales Assistant", // Let component handle default via i18n
-        apiUrl: "http://assistant.tractiontools.local",
+        apiUrl: "https://assistant.tim-ai-platform.tractiontools.it",
         initialMessage: "Ciao, come posso aiutarti?", // Let component handle default via i18n
         ctaText: "Chiedi informazioni", // Let component handle default via i18n
         buttonIcon: "💬",
@@ -49,27 +49,38 @@ import AIChatWidget from "./AIChatWidget.svelte";
         persistentSession: true,
         sessionExpiration: 24, // in hours
         showPoweredBy: true,
-        agentId: "d1de56bf-a1dc-4e71-8fb0-20cff7db1404", // Add your development Agent ID here
+        agentId: "3b69f381-9fd8-4ace-867e-581e713561b0", // Add your development Agent ID here
         cms: "", // Set to 'prestashop' or other CMS for local testing
         startOpen: false,
         fullScreen: false,
         width: "340px",
         height: "485px",
         fontSize: "16px",
-        isDemo: false,
+        isDemo: true,
         closable: true, // Add closable prop for development
         footerText: "Controlla le info importanti",
         context: {
-          "fullName": "Mario Rossi",
-          "email": "mario.rossi@gmail.com",
-          "persID": "66630",
-          "stuIDs": ["88529","115554"],
-          "matIDs": ["93089","121764"],
-          "cdsIDs": ["10026","10673"],
-          "departmentIDs": ["10055","10055"],
-          "adIDs": ["1723","4242","5063","5064","5065","5066","5067","5068","5069","5070"],
-          "academicYear": "2025"
-        }
+          fullName: "Mario Rossi",
+          email: "mario.rossi@gmail.com",
+          persID: "66630",
+          stuIDs: ["88529", "115554"],
+          matIDs: ["93089", "121764"],
+          cdsIDs: ["10026", "10673"],
+          departmentIDs: ["10055", "10055"],
+          adIDs: [
+            "1723",
+            "4242",
+            "5063",
+            "5064",
+            "5065",
+            "5066",
+            "5067",
+            "5068",
+            "5069",
+            "5070",
+          ],
+          academicYear: "2025",
+        },
       },
     });
 

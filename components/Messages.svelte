@@ -3,15 +3,7 @@
   import { onMount, tick } from 'svelte';
   import Message from './Message.svelte';
   import DateSeparator from './DateSeparator.svelte';
-
-  export let messages = [];
-  export let isDemo = false;
-  export let loadingState = null;
-  export let userMessageIcon = null;
-  export let assistantMessageIcon = null;
-  export let humanAgentMessageIcon = null;
-  export let openInNewTab = true;
-  export let enableUTM = true;
+  import { widgetConfig, chatState } from '../utils/stores.js';
 
   let messagesContainer;
   let showScrollButton = false;
@@ -78,7 +70,7 @@
 
   onMount(() => {
     messagesContainer.addEventListener('scroll', handleScroll);
-    if (!isDemo) {
+    if (!$widgetConfig.isDemo) {
       scrollToEnd('auto');
     }
     return () => {
@@ -89,8 +81,8 @@
   });
 
   // Scroll to end when loading state appears, so user sees "Thinking..."
-  $: if (loadingState && loadingState.message) {
-    if (!isDemo) {
+  $: if ($chatState.loadingState && $chatState.loadingState.message) {
+    if (!$widgetConfig.isDemo) {
       scrollToEnd('smooth');
     }
   }
@@ -98,19 +90,19 @@
 
 <div id="chat-messages-wrapper">
   <div id="chat-messages" aria-live="polite" bind:this={messagesContainer}>
-    {#each messages as message, i (
+    {#each $chatState.messages as message, i (
       message.type === 'date' ? 'date:' + message.date : i
     )}
       {#if message.type === 'date'}
         <DateSeparator date={message.date} />
       {:else}
-        <Message {message} {userMessageIcon} {assistantMessageIcon} {humanAgentMessageIcon} {openInNewTab} {enableUTM} />
+        <Message {message} />
       {/if}
     {/each}
-    {#if !isDemo && loadingState?.message}
+    {#if !$widgetConfig.isDemo && $chatState.loadingState?.message}
       <div class="loading-container" aria-live="assertive">
         <div class="loading-indicator">
-          <span class="loading-text">{loadingState.message}</span>
+          <span class="loading-text">{$chatState.loadingState.message}</span>
           <div class="typing-dots"><span></span><span></span><span></span></div>
         </div>
       </div>

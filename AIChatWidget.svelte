@@ -5,6 +5,7 @@
   import { io } from 'socket.io-client';
   import { _ } from './i18n'; // Import the translation function
   import { addUtmParams } from './utils/url.js';
+  import { widgetConfig, chatState } from './utils/stores.js';
 
   import ChatButton from './components/ChatButton.svelte';
   import ChatHeader from './components/ChatHeader.svelte';
@@ -66,12 +67,7 @@
   $: displayCtaText = ctaText ?? $_('widget.ctaText');
   $: displayFooterText = footerText ?? $_('widget.footerText');
 
-  // --- Internal State ---
-  let isChatVisible = startOpen;
-  let showChatButton = !startOpen;
-  let messages = [];
-  let userInput = '';
-  let loadingState = null;
+  // --- Internal State -- -
   let messagesComponent;
   let chatInputComponent;
   let currentAssistantMessage = '';
@@ -97,7 +93,7 @@
 
   $: transitionOrigin = position.replace('-', ' ');
 
-  $: hasUserSentMessage = messages.some(m => m.sender === 'user');
+  $: hasUserSentMessage = $chatState.messages.some(m => m.sender === 'user');
   $: mobileFontSize = fontSize;
 
   // --- Demo Content ---
@@ -218,12 +214,12 @@
   }
 
   async function toggleChat() {
-    if (!closable && isChatVisible) {
+    if (!closable && $chatState.isChatVisible) {
         return;
     }
-    isChatVisible = !isChatVisible;
-    if (isChatVisible) {
-      showChatButton = false;
+    chatState.update(s => ({ ...s, isChatVisible: !s.isChatVisible }));
+    if ($chatState.isChatVisible) {
+      chatState.update(s => ({ ...s, showChatButton: false }));
       await tick();
       if (!isDemo && !wsConnected) {
         initWebSocket();
@@ -264,7 +260,7 @@
     socket.on('connect', () => {
       console.log('Socket.IO connected');
       wsConnected = true;
-      loadingState = null;
+      chatState.update(s => ({ ...s, loadingState: null }));
 
       if (context) {
         socket.emit('context', context);
@@ -272,11 +268,11 @@
     });
 
     socket.on('thinking', (data) => {
-      loadingState = { type: 'thinking', message: $_('status.thinking') };
+      chatState.update(s => ({ ...s, loadingState: { type: 'thinking', message: $_('status.thinking') } }));
     });
 
     socket.on('searching', (data) => {
-      loadingState = { type: 'searching', message: $_('status.searching') };
+      chatState.update(s => ({ ...s, loadingState: { type: 'searching', message: $_('status.searching') } }));
     });
 
     socket.on('take_over', (data) => {
@@ -300,16 +296,16 @@
           messagesComponent?.prepareForStreaming();
         }
         const content = data.content;
-        loadingState = { type: 'writing' };
+        chatState.update(s => ({ ...s, loadingState: { type: 'writing' } }));
         currentAssistantMessage += content;
         const sender = isHumanAgentActive ? 'human_agent' : 'assistant';
-        if (messages.length > 0 && messages[messages.length - 1].sender === sender) {
-          const last = messages.at(-1);
+        if ($chatState.messages.length > 0 && $chatState.messages[$chatState.messages.length - 1].sender === sender) {
+          const last = $chatState.messages.at(-1);
           last.content = marked.parse(currentAssistantMessage.replace(/\【.*?】/g,''));
           last.links = extractLinks(currentAssistantMessage);
-          messages = [...messages];
+          chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
           if (persistentSession && !isDemo) { // Save after updating streamed message
-            saveSessionToLocalStorage(sessionId, messages);
+            saveSessionToLocalStorage(sessionId, $chatState.messages);
           }
         } else {
             addMessageToUI(currentAssistantMessage, sender); // This already calls saveSessionToLocalStorage
@@ -326,12 +322,12 @@
         const products = await fetchProducts();
         if (products && products.length > 0) {
           const carousel = createProductCarousel(products);
-          const lastMessage = messages[messages.length - 1];
+          const lastMessage = $chatState.messages[$chatState.messages.length - 1];
           if (lastMessage && lastMessage.sender === 'assistant') {
-            messages[messages.length - 1] = { ...lastMessage, productCarousel: carousel };
-            messages = [...messages];
+            $chatState.messages[$chatState.messages.length - 1] = { ...lastMessage, productCarousel: carousel };
+            chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
             if (persistentSession && !isDemo) { // Save after adding carousel
-                saveSessionToLocalStorage(sessionId, messages);
+                saveSessionToLocalStorage(sessionId, $chatState.messages);
             }
           }
         }
@@ -341,17 +337,17 @@
     });
 
     socket.on('done', () => {
-      loadingState = null;
+      chatState.update(s => ({ ...s, loadingState: null }));
       messagesComponent?.cleanupAfterStreaming();
       // Ensure final state of messages is saved
-      if (persistentSession && !isDemo && messages.length > 0) {
-          saveSessionToLocalStorage(sessionId, messages);
+      if (persistentSession && !isDemo && $chatState.messages.length > 0) {
+          saveSessionToLocalStorage(sessionId, $chatState.messages);
       }
       currentAssistantMessage = ''; // Reset after potential save
     });
 
     socket.on('error', (content) => {
-      loadingState = null;
+      chatState.update(s => ({ ...s, loadingState: null }));
       console.error('Socket.IO error:', content);
       addMessageToUI($_('status.error'), 'assistant'); // This will save
     });
@@ -359,8 +355,8 @@
     socket.on('disconnect', (reason) => {
       console.log('Socket.IO disconnected:', reason);
       wsConnected = false;
-      if (isChatVisible && reason !== 'io client disconnect') {
-        loadingState = { type: 'reconnecting', message: $_('status.reconnecting') };
+      if ($chatState.isChatVisible && reason !== 'io client disconnect') {
+        chatState.update(s => ({ ...s, loadingState: { type: 'reconnecting', message: $_('status.reconnecting') } }));
       }
     });
 
@@ -370,7 +366,7 @@
 
     socket.on('reconnect_failed', () => {
       console.log('Max reconnect attempts reached.');
-      loadingState = null;
+      chatState.update(s => ({ ...s, loadingState: null }));
       addMessageToUI($_('status.reconnectFailed'), 'assistant', { persist: false });
     });
   }
@@ -384,20 +380,20 @@
            target="${openInNewTab ? '_blank' : '_self'}"
            class="product-link">
           ${product.regular_price && product.regular_price > product.price ?
-            `<span class="discount-label">${calculateDiscount(product.price, product.regular_price)}</span>` : ''}
-          <img src="${product.image}" alt="${product.name}">
-          ${product.brand ? `<div class="product-brand">${product.brand}</div>` : ''}
-          <h4>${product.name}</h4>
+            `<span class="discount-label">${"$"}{calculateDiscount(product.price, product.regular_price)}</span>` : ''}
+          <img src="${"$"}{product.image}" alt="${"$"}{product.name}">
+          ${product.brand ? `<div class="product-brand">${"$"}{product.brand}</div>` : ''}
+          <h4>${"$"}{product.name}</h4>
           <div class="product-price">
             ${product.regular_price && product.regular_price !== product.price ?
-              `<span class="regular-price">${formatPrice(product.regular_price)}</span>` : ''}
-            <span class="current-price">${formatPrice(product.price)}</span>
+              `<span class="regular-price">${"$"}{formatPrice(product.regular_price)}</span>` : ''}
+            <span class="current-price">${"$"}{formatPrice(product.price)}</span>
           </div>
         </a>
         ${renderAddToCartButton(product)}
       </div>
     `).join('');
-    return `<div class="product-carousel">${productCards}</div>`;
+    return `<div class="product-carousel">${"$"}{productCards}</div>`;
   }
 
   function extractLinks(markdownText) {
@@ -435,9 +431,9 @@
   async function fetchProducts() {
     if (isDemo) return demoProducts;
     try {
-      const response = await fetch(`${apiUrl}/products/${sessionId}`, { headers: { 'X-Agent-ID': agentId } });
+      const response = await fetch(`${"$"}{apiUrl}/products/${"$"}{sessionId}`, { headers: { 'X-Agent-ID': agentId } });
       if (!response.ok) {
-          console.error(`Error fetching products: ${response.status} ${response.statusText}`);
+          console.error(`Error fetching products: ${"$"}{response.status} ${"$"}{response.statusText}`);
           return null;
       }
       return (await response.json()).products;
@@ -463,24 +459,30 @@
         processedContent = rawMarkdown;
     }
 
-    const lastMessage = messages.filter(m => m.type !== 'date').pop();
+    const lastMessage = $chatState.messages.filter(m => m.type !== 'date').pop();
     const now = new Date();
     if (!lastMessage || new Date(lastMessage.date).toDateString() !== now.toDateString()) {
-        messages = [...messages, { type: 'date', date: now }];
+        chatState.update(s => ({ ...s, messages: [...s.messages, { type: 'date', date: now }] }));
     }
 
-    messages = [...messages, {
-      content: processedContent, // Now always HTML
-      sender,
-      links,
-      productCarousel: additionalData.productCarousel || '',
-      url: additionalData.url || '',
-      ctaText: additionalData.ctaText || displayCtaText,
-      date: new Date()
-    }];
+    chatState.update(s => ({
+      ...s,
+      messages: [
+        ...s.messages,
+        {
+          content: processedContent, // Now always HTML
+          sender,
+          links,
+          productCarousel: additionalData.productCarousel || '',
+          url: additionalData.url || '',
+          ctaText: additionalData.ctaText || displayCtaText,
+          date: new Date()
+        }
+      ]
+    }));
 
     if (persistentSession && !isDemo && shouldPersistMessage) {
-      saveSessionToLocalStorage(sessionId, messages);
+      saveSessionToLocalStorage(sessionId, $chatState.messages);
     }
 
     tick().then(() => {
@@ -517,24 +519,24 @@
         return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(price);
      } catch (e) {
         console.warn("Intl.NumberFormat failed, falling back to basic format.", e);
-        return `€${Number(price).toFixed(2)}`;
+        return `€${"$"}{Number(price).toFixed(2)}`;
      }
   }
 
   function calculateDiscount(price, regularPrice) {
     if (!regularPrice || regularPrice <= price) return null;
     const discount = ((regularPrice - price) / regularPrice) * 100;
-    return `-${Math.round(discount)}%`;
+    return `-${"$"}{Math.round(discount)}%`;
   }
 
   async function sendMessage() {
     if (isDemo) return;
-    const message = userInput.trim();
-    if (!message || !wsConnected || loadingState) return;
+    const message = $chatState.userInput.trim();
+    if (!message || !wsConnected || $chatState.loadingState) return;
 
     addMessageToUI(message, 'user'); // This will save if persistentSession is true
-    userInput = '';
-    loadingState = { type: 'waiting' };
+    chatState.update(s => ({ ...s, userInput: '' }));
+    chatState.update(s => ({ ...s, loadingState: { type: 'waiting' } }));
     currentAssistantMessage = ''; // Reset for the new bot message stream
 
     try {
@@ -542,14 +544,14 @@
     } catch (err) {
       console.error("Error sending message:", err);
       addMessageToUI($_('status.sendError'), 'assistant'); // This will save
-      loadingState = null;
+      chatState.update(s => ({ ...s, loadingState: null }));
     }
     chatInputComponent?.focusInput();
   }
 
   function sendQuickMessage(message) {
-    if (isDemo || !!loadingState) return;
-    userInput = message;
+    if (isDemo || !!$chatState.loadingState) return;
+    chatState.update(s => ({ ...s, userInput: message }));
     sendMessage();
   }
 
@@ -561,7 +563,7 @@
   }
 
   function setupDemoMessages() {
-      messages = [];
+      chatState.update(s => ({ ...s, messages: [] }));
       addMessageToUI(initialMessage ?? demoInitialMessage, 'assistant');
       addMessageToUI(demoUserMessage, 'user');
       const demoCarouselHtml = createProductCarousel(demoProducts);
@@ -593,9 +595,9 @@
     sessionId = generateUUID();
     saveSessionIdToCookie(sessionId);
 
-    messages = [];
+    chatState.update(s => ({ ...s, messages: [] }));
     currentAssistantMessage = '';
-    loadingState = null;
+    chatState.update(s => ({ ...s, loadingState: null }));
     // Add initial message to the new session (this will save it to local storage with the new ID)
     addMessageToUI(displayInitialMessage, 'assistant');
 
@@ -606,18 +608,18 @@
 
     try {
       // Tell the backend to reset/clean up the OLD session
-      const response = await fetch(`${apiUrl}/reset-session?sessionId=${oldSessionId}`, {
+      const response = await fetch(`${"$"}{apiUrl}/reset-session?sessionId=${"$"}{oldSessionId}`, {
         method: 'DELETE',
         headers: { 'X-Agent-ID': agentId }
       });
       if (!response.ok) console.error('Reset chat failed on backend:', await response.text());
-      else console.log(`Session ${oldSessionId} reset successfully on backend.`);
+      else console.log(`Session ${"$"}{oldSessionId} reset successfully on backend.`);
     } catch (err) {
       console.error('Error sending reset chat request:', err);
     }
 
     // If the chat is visible, start a new WebSocket connection with the new session ID
-    if (isChatVisible) {
+    if ($chatState.isChatVisible) {
       initWebSocket();
     }
   }
@@ -639,6 +641,55 @@
   }
 
   onMount(() => {
+    widgetConfig.set({
+      title,
+      apiUrl,
+      initialMessage,
+      buttonIcon,
+      ctaText,
+      position,
+      openInNewTab,
+      enableUTM,
+      startOpen,
+      fullScreen,
+      isDemo,
+      closable,
+      theme,
+      userMessageBgColor,
+      userMessageTextColor,
+      assistantMessageBgColor,
+      assistantMessageTextColor,
+      humanAgentMessageBgColor,
+      humanAgentMessageTextColor,
+      chatButtonBgColor,
+      chatButtonTextColor,
+      ctaButtonBgColor,
+      ctaButtonTextColor,
+      ctaButtonHoverBgColor,
+      ctaButtonHoverTextColor,
+      headerBgColor,
+      headerTextColor,
+      footerText,
+      showPoweredBy,
+      agentId,
+      context,
+      cms,
+      persistentSession,
+      sessionExpiration,
+      userMessageIcon,
+      assistantMessageIcon,
+      humanAgentMessageIcon,
+      buttonImageUrl,
+      buttonOverlayText,
+      buttonOverlayDelay,
+      predefinedQuestions,
+      width,
+      height,
+      fontSize,
+    });
+
+    chatState.update(s => ({ ...s, isChatVisible: startOpen, showChatButton: !startOpen }));
+
     if (isDemo) {
         setupDemoMessages();
     } else {
@@ -649,20 +700,20 @@
             const storedSession = loadSessionFromLocalStorage(sessionId);
             if (storedSession) {
                 if (storedSession.messages) {
-                    messages = processMessagesAndAddSeparators(storedSession.messages);
+                    chatState.update(s => ({ ...s, messages: processMessagesAndAddSeparators(storedSession.messages) }));
                     loadedMessagesFromStorage = true;
                 }
                 if (storedSession.hasOwnProperty('isHumanAgentActive')) {
                     isHumanAgentActive = storedSession.isHumanAgentActive;
                 }
                 // Update last activity timestamp as session is now active
-                saveSessionToLocalStorage(sessionId, messages);
+                saveSessionToLocalStorage(sessionId, $chatState.messages);
             } else {
                  // Session expired or not found, ensure it's cleared (loadSession handles this)
             }
         }
 
-        if (!loadedMessagesFromStorage && messages.length === 0) {
+        if (!loadedMessagesFromStorage && $chatState.messages.length === 0) {
             addMessageToUI(displayInitialMessage, 'assistant'); // This will also save if persistentSession is true
         }
 
@@ -691,20 +742,20 @@
   function renderAddToCartButton(product) {
     const buttonText = $_('product.buyButton');
     if (isDemo || !cms) {
-      return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="_blank" class="add-to-cart"><span>${buttonText}</span></a>`;
+      return `<a href="${"$"}{addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="_blank" class="add-to-cart"><span>${"$"}{buttonText}</span></a>`;
     }
     if (cms === 'prestashop') {
       return `
         <form class="product-miniature__form" action="/carrello" method="post">
-          <input type="hidden" name="id_product" value="${product.id}">
-          <input type="hidden" name="id_product_attribute" value="${product.id_product_attribute || 0}">
+          <input type="hidden" name="id_product" value="${"$"}{product.id}">
+          <input type="hidden" name="id_product_attribute" value="${"$"}{product.id_product_attribute || 0}">
           <input type="hidden" name="qty" value="1" class="form-control input-qty">
-          <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}">
+          <input type="hidden" name="token" value="${"$"}{window.prestashop?.static_token || ''}">
           <input type="hidden" name="add" value="1">
-          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit"><span>${buttonText}</span></button>
+          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit"><span>${"$"}{buttonText}</span></button>
         </form>`;
     }
-    return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="${openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
+    return `<a href="${"$"}{addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="${"$"}{openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${"$"}{buttonText}</span></a>`;
   }
 
 
@@ -713,7 +764,7 @@
 <div
   id="chat-widget"
   class="{position} theme-{theme}"
-  class:fullscreen="{isChatVisible && fullScreen}"
+  class:fullscreen="{$chatState.isChatVisible && fullScreen}"
   style:--widget-font-size={fontSize}
   style:--widget-mobile-font-size={mobileFontSize}
   style:--widget-width={width}
@@ -733,55 +784,34 @@
   style:--header-bg={headerBgColor}
   style:--header-text={headerTextColor}
 >
-  {#if showChatButton || isDemo}
+  {#if $chatState.showChatButton || isDemo}
     <ChatButton
-      {isChatVisible}
-      {isDemo}
-      {buttonIcon}
-      {buttonImageUrl}
-      {buttonOverlayText}
-      {buttonOverlayDelay}
+      isChatVisible={$chatState.isChatVisible}
       on:toggleChat={toggleChat}
     />
   {/if}
 
-  {#if isChatVisible}
-    <div id="chat-container" transition:grow={{ duration: 300, origin: transitionOrigin }} on:outroend={() => showChatButton = true}>
+  {#if $chatState.isChatVisible}
+    <div id="chat-container" transition:grow={{ duration: 300, origin: transitionOrigin }} on:outroend={() => chatState.update(s => ({ ...s, showChatButton: true }))}>
       <ChatHeader
-        {displayTitle}
-        {isDemo}
-        {closable}
         on:resetChat={resetChat}
         on:toggleChat={toggleChat}
       />
       <Messages
         bind:this={messagesComponent}
-        {messages}
-        {isDemo}
-        {loadingState}
-        {userMessageIcon}
-        {assistantMessageIcon}
-        {humanAgentMessageIcon}
-        {openInNewTab}
-        {enableUTM}
       />
 
-      {#if predefinedQuestions.length > 0}
+      {#if $widgetConfig.predefinedQuestions && $widgetConfig.predefinedQuestions.length > 0}
         <QuickReplies
-          {predefinedQuestions}
-          {isDemo}
           on:sendQuickMessage={(e) => sendQuickMessage(e.detail)}
         />
       {/if}
 
       <ChatInput
         bind:this={chatInputComponent}
-        bind:userInput
-        {isDemo}
-        {loadingState}
         on:sendMessage={sendMessage}
       />
-      <ChatFooter {displayFooterText} {showPoweredBy} />
+      <ChatFooter />
     </div>
   {/if}
 </div>

@@ -1,12 +1,10 @@
 <script>
   import { _ } from '../i18n';
-
-  export let displayFooterText = '';
-  export let showPoweredBy = true;
+  import { widgetConfig } from '../utils/stores.js';
 </script>
 
-<div id="chat-footer">{displayFooterText}</div>
-{#if showPoweredBy}
+<div id="chat-footer">{$widgetConfig.footerText ?? $_('widget.footerText')}</div>
+{#if $widgetConfig.showPoweredBy}
   <div id="powered-by">
     {$_('widget.poweredBy')} <a href="https://www.autocust.it" target="_blank" rel="noopener noreferrer">Autocust</a>
   </div>

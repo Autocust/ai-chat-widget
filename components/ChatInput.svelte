@@ -1,10 +1,7 @@
 <script>
   import { createEventDispatcher } from 'svelte';
   import { _ } from '../i18n';
-
-  export let userInput = '';
-  export let isDemo = false;
-  export let loadingState = null;
+  import { widgetConfig, chatState } from '../utils/stores.js';
 
   let inputElement;
 
@@ -14,8 +11,8 @@
     dispatch('sendMessage');
   }
 
-  function handleInput() {
-    dispatch('handleInput');
+  function handleInput(e) {
+    chatState.update(s => ({ ...s, userInput: e.target.value }));
   }
 
   export function focusInput() {
@@ -27,17 +24,17 @@
   <input
     type="text"
     id="user-input"
-    bind:value={userInput}
     bind:this={inputElement}
+    value={$chatState.userInput}
     on:keydown={(e) => e.key === 'Enter' && sendMessage()}
     on:input={handleInput}
-    placeholder={isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
-    disabled={isDemo}
+    placeholder={$widgetConfig.isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
+    disabled={$widgetConfig.isDemo}
     aria-label={$_('widget.placeholder')}
   >
   <button
     id="send-button"
-    disabled={isDemo || !!loadingState || !userInput.trim()}
+    disabled={$widgetConfig.isDemo || !!$chatState.loadingState || !$chatState.userInput.trim()}
     on:click={sendMessage}
   >{$_('widget.sendButton')}</button>
 </div>
