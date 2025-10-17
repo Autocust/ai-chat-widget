@@ -100,7 +100,8 @@
   }
 
   .message-content :global(a) {
-    color: var(--link-color);
+    color: inherit;
+    text-decoration: underline;
   }
 
   :global(.message-content ul), :global(.message-content ol) {
