@@ -824,7 +824,7 @@
   --input-text: #000000;
   --disclaimer-text: #656565;
   --primary-text-color: #000000;
-  --link-color: #000000;
+  --link-color: var(--primary-text-color);
   --cta-hover-bg: #000000;
   --cta-hover-text: #ffffff;
   --product-card-bg: #ffffff;
@@ -849,7 +849,7 @@
   --input-text: #ffffff;
   --disclaimer-text: #aaaaaa;
   --primary-text-color: #ffffff;
-  --link-color: #eeeeee;
+  --link-color: var(--primary-text-color);
   --cta-hover-bg: #ffffff;
   --cta-hover-text: #000000;
   --product-card-bg: #3a3a3a;
