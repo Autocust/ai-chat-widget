@@ -116,7 +116,7 @@
     }
     return link.replace('<a ', '<a target="_self" ');
   };
-  marked.setOptions({ renderer });
+  marked.setOptions({ renderer, sanitize: false });
 
   // --- Local Storage Helper Functions ---
   const getLocalStorageKey = (type, id) => `chat_${type}_${id}`;
@@ -321,10 +321,9 @@
       try {
         const products = await fetchProducts();
         if (products && products.length > 0) {
-          const carousel = createProductCarousel(products);
           const lastMessage = $chatState.messages[$chatState.messages.length - 1];
           if (lastMessage && lastMessage.sender === 'assistant') {
-            $chatState.messages[$chatState.messages.length - 1] = { ...lastMessage, productCarousel: carousel };
+            $chatState.messages[$chatState.messages.length - 1] = { ...lastMessage, products: products };
             chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
             if (persistentSession && !isDemo) { // Save after adding carousel
                 saveSessionToLocalStorage(sessionId, $chatState.messages);
@@ -372,29 +371,7 @@
   }
 
 
-  function createProductCarousel(products) {
-    if (!products || products.length === 0) return '';
-    const productCards = products.map(product => `
-      <div class="carousel-product">
-        <a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot', enableUTM)}"
-           target="${openInNewTab ? '_blank' : '_self'}"
-           class="product-link">
-          ${product.regular_price && product.regular_price > product.price ?
-            `<span class="discount-label">${"$"}{calculateDiscount(product.price, product.regular_price)}</span>` : ''}
-          <img src="${"$"}{product.image}" alt="${"$"}{product.name}">
-          ${product.brand ? `<div class="product-brand">${"$"}{product.brand}</div>` : ''}
-          <h4>${"$"}{product.name}</h4>
-          <div class="product-price">
-            ${product.regular_price && product.regular_price !== product.price ?
-              `<span class="regular-price">${"$"}{formatPrice(product.regular_price)}</span>` : ''}
-            <span class="current-price">${"$"}{formatPrice(product.price)}</span>
-          </div>
-        </a>
-        ${renderAddToCartButton(product)}
-      </div>
-    `).join('');
-    return `<div class="product-carousel">${"$"}{productCards}</div>`;
-  }
+
 
   function extractLinks(markdownText) {
     if (!markdownText) return [];
@@ -473,7 +450,7 @@
           content: processedContent, // Now always HTML
           sender,
           links,
-          productCarousel: additionalData.productCarousel || '',
+          products: additionalData.products || [],
           url: additionalData.url || '',
           ctaText: additionalData.ctaText || displayCtaText,
           date: new Date()
@@ -566,11 +543,10 @@
       chatState.update(s => ({ ...s, messages: [] }));
       addMessageToUI(initialMessage ?? demoInitialMessage, 'assistant');
       addMessageToUI(demoUserMessage, 'user');
-      const demoCarouselHtml = createProductCarousel(demoProducts);
       addMessageToUI(demoAssistantReplyText, 'assistant', {
           url: demoCta.url,
           ctaText: demoCta.text,
-          productCarousel: demoCarouselHtml
+          products: demoProducts
       });
       tick().then(() => {
         if (messagesComponent?.element) {
@@ -742,20 +718,20 @@
   function renderAddToCartButton(product) {
     const buttonText = $_('product.buyButton');
     if (isDemo || !cms) {
-      return `<a href="${"$"}{addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="_blank" class="add-to-cart"><span>${"$"}{buttonText}</span></a>`;
+      return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="_blank" class="add-to-cart"><span>${buttonText}</span></a>`;
     }
     if (cms === 'prestashop') {
       return `
         <form class="product-miniature__form" action="/carrello" method="post">
-          <input type="hidden" name="id_product" value="${"$"}{product.id}">
-          <input type="hidden" name="id_product_attribute" value="${"$"}{product.id_product_attribute || 0}">
+          <input type="hidden" name="id_product" value="${product.id}">
+          <input type="hidden" name="id_product_attribute" value="${product.id_product_attribute || 0}">
           <input type="hidden" name="qty" value="1" class="form-control input-qty">
-          <input type="hidden" name="token" value="${"$"}{window.prestashop?.static_token || ''}">
+          <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}">
           <input type="hidden" name="add" value="1">
-          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit"><span>${"$"}{buttonText}</span></button>
+          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit"><span>${buttonText}</span></button>
         </form>`;
     }
-    return `<a href="${"$"}{addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="${"$"}{openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${"$"}{buttonText}</span></a>`;
+    return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', enableUTM)}" target="${openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
   }
 
 

@@ -1,6 +1,7 @@
 <script>
   import CtaButton from './CtaButton.svelte';
   import { widgetConfig } from '../utils/stores.js';
+  import ProductCarousel from './ProductCarousel.svelte';
 
   export let message;
 </script>
@@ -30,8 +31,8 @@
       {/each}
     </div>
   {/if}
-  {#if message.productCarousel}
-    {@html message.productCarousel}
+  {#if message.products && message.products.length > 0}
+    <ProductCarousel products={message.products} />
   {/if}
 </div>
 
