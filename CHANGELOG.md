@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.2.2](https://github.com/Autocust/ai-chat-widget/compare/v3.2.1...v3.2.2) (2025-10-17)
+
+### Code Refactoring
+
+* components ([65c0a1a](https://github.com/Autocust/ai-chat-widget/commit/65c0a1afb6a9969fc17ecb6822d7f8093a51635f))
+* spacing ([6138fd7](https://github.com/Autocust/ai-chat-widget/commit/6138fd74522520beeb85ac197a47120f12b715e9))
+* split in submodules ([19255e7](https://github.com/Autocust/ai-chat-widget/commit/19255e70b39428053944dcfdc31891e9f3fb1be0))
+* use text color as link color ([c050372](https://github.com/Autocust/ai-chat-widget/commit/c050372dd30a8644761d8c74d10b41718617783c))
+
 ## [3.2.1](https://github.com/Autocust/ai-chat-widget/compare/v3.2.0...v3.2.1) (2025-10-08)
 
 ### Bug Fixes
