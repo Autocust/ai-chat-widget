@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.3](https://github.com/Autocust/ai-chat-widget/compare/v3.2.2...v3.2.3) (2025-10-17)
+
+### Code Refactoring
+
+* use text color as link color ([9951115](https://github.com/Autocust/ai-chat-widget/commit/995111591eee5e9a64d226f3cee2981bdd6dcd55))
+
 ## [3.2.2](https://github.com/Autocust/ai-chat-widget/compare/v3.2.1...v3.2.2) (2025-10-17)
 
 ### Code Refactoring
