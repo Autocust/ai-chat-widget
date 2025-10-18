@@ -1,13 +1,15 @@
 <script>
+  import { getContext } from 'svelte';
   import { addUtmParams } from '../utils/url.js';
-  import { widgetConfig } from '../utils/stores.js';
+
+  const widgetConfig = getContext('widgetConfig');
 
   export let url;
   export let ctaText;
 </script>
 
-<a href={addUtmParams(url, 'chat', 'chatbot', 'chatbot', $widgetConfig.enableUTM)}
-   target={$widgetConfig.openInNewTab ? '_blank' : '_self'}
+<a href={addUtmParams(url, 'chat', 'chatbot', 'chatbot', widgetConfig.enableUTM)}
+   target={widgetConfig.openInNewTab ? '_blank' : '_self'}
    class="cta-button">{ctaText}</a>
 
 <style>

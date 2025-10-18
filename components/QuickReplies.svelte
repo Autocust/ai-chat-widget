@@ -1,8 +1,8 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, getContext } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { widgetConfig } from '../utils/stores.js';
 
+  const widgetConfig = getContext('widgetConfig');
   const dispatch = createEventDispatcher();
 
   function sendQuickMessage(question) {
@@ -11,8 +11,8 @@
 </script>
 
 <div class="quick-messages-flow" transition:fade={{ duration: 300 }}>
-  {#each $widgetConfig.predefinedQuestions as question (question)}
-    <button class="quick-message-btn" on:click={() => sendQuickMessage(question)} disabled={$widgetConfig.isDemo}>
+  {#each widgetConfig.predefinedQuestions as question (question)}
+    <button class="quick-message-btn" on:click={() => sendQuickMessage(question)} disabled={widgetConfig.isDemo}>
       {question}
     </button>
   {/each}

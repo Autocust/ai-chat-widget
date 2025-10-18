@@ -1,8 +1,9 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, getContext } from 'svelte';
   import { _ } from '../i18n';
-  import { widgetConfig, chatState } from '../utils/stores.js';
+  import { chatState } from '../utils/stores.js';
 
+  const widgetConfig = getContext('widgetConfig');
   let inputElement;
 
   const dispatch = createEventDispatcher();
@@ -28,13 +29,13 @@
     value={$chatState.userInput}
     on:keydown={(e) => e.key === 'Enter' && sendMessage()}
     on:input={handleInput}
-    placeholder={$widgetConfig.isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
-    disabled={$widgetConfig.isDemo}
+    placeholder={widgetConfig.isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
+    disabled={widgetConfig.isDemo}
     aria-label={$_('widget.placeholder')}
   >
   <button
     id="send-button"
-    disabled={$widgetConfig.isDemo || !!$chatState.loadingState || !$chatState.userInput.trim()}
+    disabled={widgetConfig.isDemo || !!$chatState.loadingState || !$chatState.userInput.trim()}
     on:click={sendMessage}
   >{$_('widget.sendButton')}</button>
 </div>

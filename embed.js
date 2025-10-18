@@ -95,6 +95,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         width: "340px",
         height: "485px",
         fontSize: "16px",
+        zIndex: 1000,
         isDemo: false,
         closable: true,
     };
@@ -178,6 +179,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         width: getAttr("data-width", finalDefaults.width),
         height: getAttr("data-height", finalDefaults.height),
         fontSize: getAttr("data-font-size", finalDefaults.fontSize),
+        zIndex: getAttr("data-z-index", finalDefaults.zIndex),
         isDemo: getAttr("data-is-demo", finalDefaults.isDemo),
         closable: getAttr("data-closable", finalDefaults.closable),
       },

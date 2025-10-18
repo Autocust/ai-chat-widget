@@ -1,12 +1,11 @@
 <script>
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick, setContext } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { marked } from 'marked';
   import { io } from 'socket.io-client';
   import { _ } from './i18n'; // Import the translation function
   import { addUtmParams } from './utils/url.js';
-  import { widgetConfig, chatState } from './utils/stores.js';
-
+  import { chatState } from './utils/stores.js';
   import ChatButton from './components/ChatButton.svelte';
   import ChatHeader from './components/ChatHeader.svelte';
   import Messages from './components/Messages.svelte';
@@ -60,9 +59,57 @@
   export let width = '340px';
   export let height = '485px';
   export let fontSize = '16px';
-
-  // --- Reactive variables for props with translatable defaults ---
-  $: displayTitle = title ?? $_('widget.title');
+  export let zIndex = 1000;
+  
+  setContext('widgetConfig', {
+    title,
+    apiUrl,
+    initialMessage,
+    buttonIcon,
+    ctaText,
+    position,
+    openInNewTab,
+    enableUTM,
+    startOpen,
+    fullScreen,
+    isDemo,
+    closable,
+    theme,
+    userMessageBgColor,
+    userMessageTextColor,
+    assistantMessageBgColor,
+    assistantMessageTextColor,
+    humanAgentMessageBgColor,
+    humanAgentMessageTextColor,
+    chatButtonBgColor,
+    chatButtonTextColor,
+    ctaButtonBgColor,
+    ctaButtonTextColor,
+    ctaButtonHoverBgColor,
+    ctaButtonHoverTextColor,
+    headerBgColor,
+    headerTextColor,
+    footerText,
+    showPoweredBy,
+    agentId,
+    context,
+    cms,
+    persistentSession,
+    sessionExpiration,
+    userMessageIcon,
+    assistantMessageIcon,
+    humanAgentMessageIcon,
+    buttonImageUrl,
+    buttonOverlayText,
+    buttonOverlayDelay,
+    predefinedQuestions,
+    width,
+    height,
+    fontSize,
+    zIndex,
+  });
+  
+  // --- Reactive variables for props with translatable defaults ---  $: displayTitle = title ?? $_('widget.title');
   $: displayInitialMessage = initialMessage ?? $_('widget.initialMessage');
   $: displayCtaText = ctaText ?? $_('widget.ctaText');
   $: displayFooterText = footerText ?? $_('widget.footerText');
@@ -617,53 +664,6 @@
   }
 
   onMount(() => {
-    widgetConfig.set({
-      title,
-      apiUrl,
-      initialMessage,
-      buttonIcon,
-      ctaText,
-      position,
-      openInNewTab,
-      enableUTM,
-      startOpen,
-      fullScreen,
-      isDemo,
-      closable,
-      theme,
-      userMessageBgColor,
-      userMessageTextColor,
-      assistantMessageBgColor,
-      assistantMessageTextColor,
-      humanAgentMessageBgColor,
-      humanAgentMessageTextColor,
-      chatButtonBgColor,
-      chatButtonTextColor,
-      ctaButtonBgColor,
-      ctaButtonTextColor,
-      ctaButtonHoverBgColor,
-      ctaButtonHoverTextColor,
-      headerBgColor,
-      headerTextColor,
-      footerText,
-      showPoweredBy,
-      agentId,
-      context,
-      cms,
-      persistentSession,
-      sessionExpiration,
-      userMessageIcon,
-      assistantMessageIcon,
-      humanAgentMessageIcon,
-      buttonImageUrl,
-      buttonOverlayText,
-      buttonOverlayDelay,
-      predefinedQuestions,
-      width,
-      height,
-      fontSize,
-    });
-
     chatState.update(s => ({ ...s, isChatVisible: startOpen, showChatButton: !startOpen }));
 
     if (isDemo) {
@@ -759,6 +759,7 @@
   style:--cta-btn-hover-text={ctaButtonHoverTextColor}
   style:--header-bg={headerBgColor}
   style:--header-text={headerTextColor}
+  style:--widget-z-index={zIndex}
 >
   {#if $chatState.showChatButton || isDemo}
     <ChatButton
@@ -777,7 +778,7 @@
         bind:this={messagesComponent}
       />
 
-      {#if $widgetConfig.predefinedQuestions && $widgetConfig.predefinedQuestions.length > 0}
+      {#if predefinedQuestions && predefinedQuestions.length > 0}
         <QuickReplies
           on:sendQuickMessage={(e) => sendQuickMessage(e.detail)}
         />
@@ -867,7 +868,7 @@
 
 #chat-widget {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--widget-z-index);
   font-family: Arial, sans-serif;
   display: flex;
   gap: 10px;
@@ -883,7 +884,8 @@
 /* Fullscreen styles */
 #chat-widget.fullscreen {
   top: 0; left: 0; bottom: 0; right: 0;
-  width: 100vw; height: 100vh;
+  width: 100%;
+  height: 100%;
   z-index: 2147483647;
 }
 #chat-widget.fullscreen #chat-container {

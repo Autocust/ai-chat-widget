@@ -1,10 +1,12 @@
 <script>
+  import { getContext } from 'svelte';
   import { _ } from '../i18n';
-  import { widgetConfig } from '../utils/stores.js';
+
+  const widgetConfig = getContext('widgetConfig');
 </script>
 
-<div id="chat-footer">{$widgetConfig.footerText ?? $_('widget.footerText')}</div>
-{#if $widgetConfig.showPoweredBy}
+<div id="chat-footer">{widgetConfig.footerText ?? $_('widget.footerText')}</div>
+{#if widgetConfig.showPoweredBy}
   <div id="powered-by">
     {$_('widget.poweredBy')} <a href="https://www.autocust.it" target="_blank" rel="noopener noreferrer">Autocust</a>
   </div>

@@ -1,8 +1,9 @@
 <script>
+  import { getContext } from 'svelte';
   import { addUtmParams } from '../utils/url.js';
-  import { widgetConfig } from '../utils/stores.js';
   import { _ } from '../i18n';
 
+  const widgetConfig = getContext('widgetConfig');
   export let products = [];
 
   function formatPrice(price) {
@@ -23,10 +24,10 @@
 
   function renderAddToCartButton(product) {
     const buttonText = $_('product.buyButton');
-    if ($widgetConfig.isDemo || !$widgetConfig.cms) {
-      return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', $widgetConfig.enableUTM)}" target="_blank" class="add-to-cart"><span>${buttonText}</span></a>`;
+    if (widgetConfig.isDemo || !widgetConfig.cms) {
+      return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', widgetConfig.enableUTM)}" target="_blank" class="add-to-cart"><span>${buttonText}</span></a>`;
     }
-    if ($widgetConfig.cms === 'prestashop') {
+    if (widgetConfig.cms === 'prestashop') {
       return `
         <form class="product-miniature__form" action="/carrello" method="post">
           <input type="hidden" name="id_product" value="${product.id}">
@@ -37,15 +38,15 @@
           <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit"><span>${buttonText}</span></button>
         </form>`;
     }
-    return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', $widgetConfig.enableUTM)}" target="${$widgetConfig.openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
+    return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', widgetConfig.enableUTM)}" target="${widgetConfig.openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
   }
 </script>
 
 <div class="product-carousel">
   {#each products as product}
     <div class="carousel-product">
-      <a href={addUtmParams(product.url, 'chat', 'chatbot', 'chatbot', $widgetConfig.enableUTM)}
-         target={$widgetConfig.openInNewTab ? '_blank' : '_self'}
+      <a href={addUtmParams(product.url, 'chat', 'chatbot', 'chatbot', widgetConfig.enableUTM)}
+         target={widgetConfig.openInNewTab ? '_blank' : '_self'}
          class="product-link">
         {#if product.regular_price && product.regular_price > product.price}
           <span class="discount-label">{calculateDiscount(product.price, product.regular_price)}</span>

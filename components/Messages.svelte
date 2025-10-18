@@ -1,10 +1,11 @@
 <svelte:options accessors={true} />
 <script>
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick, getContext } from 'svelte';
   import Message from './Message.svelte';
   import DateSeparator from './DateSeparator.svelte';
-  import { widgetConfig, chatState } from '../utils/stores.js';
+  import { chatState } from '../utils/stores.js';
 
+  const widgetConfig = getContext('widgetConfig');
   let messagesContainer;
   let showScrollButton = false;
 
@@ -70,7 +71,7 @@
 
   onMount(() => {
     messagesContainer.addEventListener('scroll', handleScroll);
-    if (!$widgetConfig.isDemo) {
+    if (!widgetConfig.isDemo) {
       scrollToEnd('auto');
     }
     return () => {
@@ -82,7 +83,7 @@
 
   // Scroll to end when loading state appears, so user sees "Thinking..."
   $: if ($chatState.loadingState && $chatState.loadingState.message) {
-    if (!$widgetConfig.isDemo) {
+    if (!widgetConfig.isDemo) {
       scrollToEnd('smooth');
     }
   }
@@ -99,7 +100,7 @@
         <Message {message} />
       {/if}
     {/each}
-    {#if !$widgetConfig.isDemo && $chatState.loadingState?.message}
+    {#if !widgetConfig.isDemo && $chatState.loadingState?.message}
       <div class="loading-container" aria-live="assertive">
         <div class="loading-indicator">
           <span class="loading-text">{$chatState.loadingState.message}</span>

@@ -40,6 +40,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
     data-closable="true"
     data-header-bg-color="#00529b"
     data-header-text-color="#ffffff"
+    data-z-index="1000"
 ></script>
 ```
 
@@ -80,6 +81,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-full-screen`: Set to `true` to make the chat widget open in fullscreen mode, covering the entire viewport. Default is `false`.
 - `data-width`: The width of the chat widget container (e.g., '350px', '90%'). Default is `340px`.
 - `data-height`: The height of the chat widget container (e.g., '500px', '80vh'). Default is `485px`.
+- `data-z-index`: The z-index of the non-fullscreen chat widget, controlling its stacking order on the page. Default is `1000`.
 - `data-is-demo`: Set to `true` to enable demo mode. This shows a predefined conversation including a product carousel and disables real chat functionality (API connection, message sending). Default is `false`.
 - `data-closable`: Set to `false` to hide the close button (x) in the chat header, preventing users from closing the chat window once opened. Default is `true`.
 

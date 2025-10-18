@@ -1,21 +1,22 @@
 <script>
+  import { getContext } from 'svelte';
   import CtaButton from './CtaButton.svelte';
-  import { widgetConfig } from '../utils/stores.js';
   import ProductCarousel from './ProductCarousel.svelte';
 
+  const widgetConfig = getContext('widgetConfig');
   export let message;
 </script>
 
 <div class="message-container {message.sender}-message {message.url || (message.links && message.links.length > 0) ? 'has-cta' : ''}">
   <div class="message">
-    {#if message.sender === 'user' && $widgetConfig.userMessageIcon}
-      <img src={$widgetConfig.userMessageIcon} alt="User Icon" class="message-icon user-icon" />
+    {#if message.sender === 'user' && widgetConfig.userMessageIcon}
+      <img src={widgetConfig.userMessageIcon} alt="User Icon" class="message-icon user-icon" />
     {/if}
-    {#if message.sender === 'assistant' && $widgetConfig.assistantMessageIcon}
-      <img src={$widgetConfig.assistantMessageIcon} alt="Assistant Icon" class="message-icon assistant-icon" />
+    {#if message.sender === 'assistant' && widgetConfig.assistantMessageIcon}
+      <img src={widgetConfig.assistantMessageIcon} alt="Assistant Icon" class="message-icon assistant-icon" />
     {/if}
-    {#if message.sender === 'human_agent' && $widgetConfig.humanAgentMessageIcon}
-      <img src={$widgetConfig.humanAgentMessageIcon} alt="Human Agent Icon" class="message-icon human-agent-icon" />
+    {#if message.sender === 'human_agent' && widgetConfig.humanAgentMessageIcon}
+      <img src={widgetConfig.humanAgentMessageIcon} alt="Human Agent Icon" class="message-icon human-agent-icon" />
     {/if}
     <div class="message-content">
       {@html message.content}

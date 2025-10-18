@@ -58,6 +58,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         fontSize: "16px",
         isDemo: false,
         closable: true, // Add closable prop for development
+        zIndex: 1001,
         footerText: "Controlla le info importanti",
         context: {
           fullName: "Mario Rossi",
@@ -83,11 +84,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         },
       },
     });
-
-    // You might not need to export app anymore depending on your setup
-    // export default app;
   } catch (error) {
-      console.error("Error initializing chat widget:", error);
-      // Optionally display an error message to the user on the page
+    console.error("Error initializing chat widget:", error);
   }
 })();
