@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.4](https://github.com/Autocust/ai-chat-widget/compare/v3.2.3...v3.2.4) (2025-10-18)
+
+### Code Refactoring
+
+* using context api for settins handling ([7e9be03](https://github.com/Autocust/ai-chat-widget/commit/7e9be038d8252e47c32da72491d77b29211168fb))
+
 ## [3.2.3](https://github.com/Autocust/ai-chat-widget/compare/v3.2.2...v3.2.3) (2025-10-17)
 
 ### Code Refactoring
