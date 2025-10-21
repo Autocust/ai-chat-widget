@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.5](https://github.com/Autocust/ai-chat-widget/compare/v3.2.4...v3.2.5) (2025-10-21)
+
+### Bug Fixes
+
+* prevent iOS devices from zooming into input message ([5774cd4](https://github.com/Autocust/ai-chat-widget/commit/5774cd4917c828c5b5f3b44ca0263cde8f269c01))
+
 ## [3.2.4](https://github.com/Autocust/ai-chat-widget/compare/v3.2.3...v3.2.4) (2025-10-18)
 
 ### Code Refactoring
