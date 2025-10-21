@@ -115,6 +115,7 @@
   $: displayFooterText = footerText ?? $_('widget.footerText');
 
   // --- Internal State -- -
+  let widgetElement;
   let messagesComponent;
   let chatInputComponent;
   let currentAssistantMessage = '';
@@ -137,6 +138,13 @@
   }
 
   let sessionId = getSessionIdFromCookie() || generateUUID();
+
+  function updateViewportHeight() {
+    if (typeof window === 'undefined' || !widgetElement) return;
+    const viewport = window.visualViewport;
+    const height = viewport ? viewport.height : window.innerHeight;
+    widgetElement.style.setProperty('--chat-viewport-height', `${height}px`);
+  }
 
   $: transitionOrigin = position.replace('-', ' ');
 
@@ -664,6 +672,16 @@
   }
 
   onMount(() => {
+    const handleViewportChange = () => updateViewportHeight();
+    updateViewportHeight();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleViewportChange);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', handleViewportChange);
+        window.visualViewport.addEventListener('scroll', handleViewportChange);
+      }
+    }
+
     chatState.update(s => ({ ...s, isChatVisible: startOpen, showChatButton: !startOpen }));
 
     if (isDemo) {
@@ -702,10 +720,18 @@
         // Set fullScreen to true if on mobile and not explicitly set to false
         if (!fullScreen && isMobileDevice()) {
             fullScreen = true;
+            updateViewportHeight();
         }
     }
 
     return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleViewportChange);
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', handleViewportChange);
+          window.visualViewport.removeEventListener('scroll', handleViewportChange);
+        }
+      }
       if (!isDemo) {
           if (socket) {
               socket.disconnect();
@@ -739,6 +765,7 @@
 
 <div
   id="chat-widget"
+  bind:this={widgetElement}
   class="{position} theme-{theme}"
   class:fullscreen="{$chatState.isChatVisible && fullScreen}"
   style:--widget-font-size={fontSize}
@@ -800,6 +827,8 @@
   background: none;
   line-height: 1.5; /* Base line-height for the widget */
   -webkit-text-size-adjust: 100%; /* Prevent iOS auto-zoom when focusing inputs */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* Reset and establish baseline for widget elements */
@@ -875,6 +904,7 @@
   gap: 10px;
   font-size: var(--widget-font-size, 16px);
   -webkit-text-size-adjust: 100%;
+  --chat-viewport-height: 100dvh;
 }
 
 /* Default positioning classes */
@@ -885,9 +915,10 @@
 
 /* Fullscreen styles */
 #chat-widget.fullscreen {
-  top: 0; left: 0; bottom: 0; right: 0;
+  top: 0; left: 0; right: 0;
   width: 100%;
-  height: 100%;
+  height: var(--chat-viewport-height, 100dvh);
+  max-height: var(--chat-viewport-height, 100dvh);
   z-index: 2147483647;
 }
 #chat-widget.fullscreen #chat-container {

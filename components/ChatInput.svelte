@@ -9,6 +9,10 @@
   const dispatch = createEventDispatcher();
 
   function sendMessage() {
+    // Blur input so mobile keyboards close after sending
+    if (inputElement) {
+      inputElement.blur();
+    }
     dispatch('sendMessage');
   }
 
