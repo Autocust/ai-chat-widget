@@ -48,7 +48,9 @@
 
 #user-input {
   flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 3px;
-  background-color: var(--input-bg); color: var(--input-text); font-size: 1em;
+  background-color: var(--input-bg); color: var(--input-text);
+  font-size: var(--widget-font-size, 1em);
+  font-size: max(16px, var(--widget-font-size, 1em));
 }
 #user-input:disabled { background-color: var(--disabled-input-bg); cursor: not-allowed; }
 
@@ -72,5 +74,12 @@
   background-color: var(--disabled-button-bg);
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+@media (max-width: 480px) {
+  #user-input {
+    font-size: var(--widget-mobile-font-size, var(--widget-font-size, 16px));
+    font-size: max(16px, var(--widget-mobile-font-size, var(--widget-font-size, 16px)));
+  }
 }
 </style>

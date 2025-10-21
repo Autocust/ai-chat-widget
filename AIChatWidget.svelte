@@ -799,6 +799,7 @@
   color: var(--primary-text-color, #222);
   background: none;
   line-height: 1.5; /* Base line-height for the widget */
+  -webkit-text-size-adjust: 100%; /* Prevent iOS auto-zoom when focusing inputs */
 }
 
 /* Reset and establish baseline for widget elements */
@@ -873,6 +874,7 @@
   display: flex;
   gap: 10px;
   font-size: var(--widget-font-size, 16px);
+  -webkit-text-size-adjust: 100%;
 }
 
 /* Default positioning classes */
