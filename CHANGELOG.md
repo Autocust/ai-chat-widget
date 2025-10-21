@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.6](https://github.com/Autocust/ai-chat-widget/compare/v3.2.5...v3.2.6) (2025-10-21)
+
+### Features
+
+* enhance mobile chat experience ([7daecaa](https://github.com/Autocust/ai-chat-widget/commit/7daecaa12bf396cb9889baa7983bcd4b88d20229))
+
 ## [3.2.5](https://github.com/Autocust/ai-chat-widget/compare/v3.2.4...v3.2.5) (2025-10-21)
 
 ### Bug Fixes
