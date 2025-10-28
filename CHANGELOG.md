@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.7](https://github.com/Autocust/ai-chat-widget/compare/v3.2.6...v3.2.7) (2025-10-28)
+
+### Bug Fixes
+
+* Fixed the literal placeholders that were sneaking into fetch URLs and strings, which made the reset call hit /preview//… and return 405. ([6c1914d](https://github.com/Autocust/ai-chat-widget/commit/6c1914d75cffefc008125421fc3f02b767600423))
+
 ## [3.2.6](https://github.com/Autocust/ai-chat-widget/compare/v3.2.5...v3.2.6) (2025-10-21)
 
 ### Features
