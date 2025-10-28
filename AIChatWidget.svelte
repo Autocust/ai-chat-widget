@@ -463,9 +463,9 @@
   async function fetchProducts() {
     if (isDemo) return demoProducts;
     try {
-      const response = await fetch(`${"$"}{apiUrl}/products/${"$"}{sessionId}`, { headers: { 'X-Agent-ID': agentId } });
+      const response = await fetch(`${apiUrl}/products/${sessionId}`, { headers: { 'X-Agent-ID': agentId } });
       if (!response.ok) {
-          console.error(`Error fetching products: ${"$"}{response.status} ${"$"}{response.statusText}`);
+          console.error(`Error fetching products: ${response.status} ${response.statusText}`);
           return null;
       }
       return (await response.json()).products;
@@ -551,14 +551,14 @@
         return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(price);
      } catch (e) {
         console.warn("Intl.NumberFormat failed, falling back to basic format.", e);
-        return `€${"$"}{Number(price).toFixed(2)}`;
+        return `€${Number(price).toFixed(2)}`;
      }
   }
 
   function calculateDiscount(price, regularPrice) {
     if (!regularPrice || regularPrice <= price) return null;
     const discount = ((regularPrice - price) / regularPrice) * 100;
-    return `-${"$"}{Math.round(discount)}%`;
+    return `-${Math.round(discount)}%`;
   }
 
   async function sendMessage() {
@@ -639,12 +639,12 @@
 
     try {
       // Tell the backend to reset/clean up the OLD session
-      const response = await fetch(`${"$"}{apiUrl}/reset-session?sessionId=${"$"}{oldSessionId}`, {
+      const response = await fetch(`${apiUrl}/reset-session?sessionId=${oldSessionId}`, {
         method: 'DELETE',
         headers: { 'X-Agent-ID': agentId }
       });
       if (!response.ok) console.error('Reset chat failed on backend:', await response.text());
-      else console.log(`Session ${"$"}{oldSessionId} reset successfully on backend.`);
+      else console.log(`Session ${oldSessionId} reset successfully on backend.`);
     } catch (err) {
       console.error('Error sending reset chat request:', err);
     }
