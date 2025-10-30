@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.9](https://github.com/Autocust/ai-chat-widget/compare/v3.2.8...v3.2.9) (2025-10-30)
+
+### Bug Fixes
+
+* auto-scroll on human message + allow multiple consecutive messages ([c37f54f](https://github.com/Autocust/ai-chat-widget/commit/c37f54fcfafb059ad4d641b92124725eb572be8b))
+
 ## [3.2.8](https://github.com/Autocust/ai-chat-widget/compare/v3.2.7...v3.2.8) (2025-10-30)
 
 ### Features
