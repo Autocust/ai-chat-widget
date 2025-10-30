@@ -123,6 +123,8 @@
   let customStyleElement;
   let currentAssistantMessage = '';
   let isHumanAgentActive = false;
+  let isStreamingMessage = false;
+  let streamingSender = null;
   let socket;
   let wsConnected = false;
 
@@ -385,23 +387,30 @@
 
     socket.on('token', async (data) => {
       try {
-        if (currentAssistantMessage === '') { // First token
-          messagesComponent?.prepareForStreaming();
-        }
+        const sender = isHumanAgentActive ? 'human_agent' : 'assistant';
         const content = data.content;
         chatState.update(s => ({ ...s, loadingState: { type: 'writing' } }));
-        currentAssistantMessage += content;
-        const sender = isHumanAgentActive ? 'human_agent' : 'assistant';
-        if ($chatState.messages.length > 0 && $chatState.messages[$chatState.messages.length - 1].sender === sender) {
-          const last = $chatState.messages.at(-1);
-          last.content = marked.parse(currentAssistantMessage.replace(/\【.*?】/g,''));
-          last.links = extractLinks(currentAssistantMessage);
-          chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
-          if (persistentSession && !isDemo) { // Save after updating streamed message
-            saveSessionToLocalStorage(sessionId, $chatState.messages);
-          }
+        const isNewStream = !isStreamingMessage || streamingSender !== sender;
+
+        if (isNewStream) {
+          messagesComponent?.prepareForStreaming();
+          isStreamingMessage = true;
+          streamingSender = sender;
+          currentAssistantMessage = content;
+          addMessageToUI(currentAssistantMessage, sender); // This already calls saveSessionToLocalStorage
         } else {
-            addMessageToUI(currentAssistantMessage, sender); // This already calls saveSessionToLocalStorage
+          currentAssistantMessage += content;
+          const last = $chatState.messages.at(-1);
+          if (last && last.sender === sender) {
+            last.content = marked.parse(currentAssistantMessage.replace(/\【.*?】/g,''));
+            last.links = extractLinks(currentAssistantMessage);
+            chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
+            if (persistentSession && !isDemo) { // Save after updating streamed message
+              saveSessionToLocalStorage(sessionId, $chatState.messages);
+            }
+          } else {
+            addMessageToUI(currentAssistantMessage, sender); // Fallback to ensure message is visible
+          }
         }
         await tick();
         if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
@@ -436,6 +445,8 @@
           saveSessionToLocalStorage(sessionId, $chatState.messages);
       }
       currentAssistantMessage = ''; // Reset after potential save
+      isStreamingMessage = false;
+      streamingSender = null;
     });
 
     socket.on('error', (content) => {
@@ -557,7 +568,7 @@
 
     tick().then(() => {
       if (messagesComponent?.element && !isDemo) {
-
+        messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
       }
     });
   }
@@ -608,6 +619,8 @@
     chatState.update(s => ({ ...s, userInput: '' }));
     chatState.update(s => ({ ...s, loadingState: { type: 'waiting' } }));
     currentAssistantMessage = ''; // Reset for the new bot message stream
+    isStreamingMessage = false;
+    streamingSender = null;
 
     try {
       socket.emit('message', { chatInput: message });
