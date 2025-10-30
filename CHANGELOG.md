@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.8](https://github.com/Autocust/ai-chat-widget/compare/v3.2.7...v3.2.8) (2025-10-30)
+
+### Features
+
+* custom css closes [#1](https://github.com/Autocust/ai-chat-widget/issues/1) ([c20d36e](https://github.com/Autocust/ai-chat-widget/commit/c20d36e29b412440adebbccb597250b468eb7744))
+
 ## [3.2.7](https://github.com/Autocust/ai-chat-widget/compare/v3.2.6...v3.2.7) (2025-10-28)
 
 ### Bug Fixes
