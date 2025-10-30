@@ -1,5 +1,5 @@
 <script>
-  import { onMount, tick, setContext } from 'svelte';
+  import { onMount, tick, setContext, afterUpdate } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { marked } from 'marked';
   import { io } from 'socket.io-client';
@@ -60,6 +60,7 @@
   export let height = '485px';
   export let fontSize = '16px';
   export let zIndex = 1000;
+  export let customCSS = '';
   
   setContext('widgetConfig', {
     title,
@@ -107,6 +108,7 @@
     height,
     fontSize,
     zIndex,
+    customCSS,
   });
   
   // --- Reactive variables for props with translatable defaults ---  $: displayTitle = title ?? $_('widget.title');
@@ -118,10 +120,46 @@
   let widgetElement;
   let messagesComponent;
   let chatInputComponent;
+  let customStyleElement;
   let currentAssistantMessage = '';
   let isHumanAgentActive = false;
   let socket;
   let wsConnected = false;
+
+  function getCustomStyleHost() {
+    if (!widgetElement) return null;
+    const rootNode = widgetElement.getRootNode ? widgetElement.getRootNode() : null;
+    if (typeof ShadowRoot !== 'undefined' && rootNode instanceof ShadowRoot) {
+      return rootNode;
+    }
+    return widgetElement;
+  }
+
+  function applyCustomStyles(css) {
+    const trimmed = typeof css === 'string' ? css.trim() : '';
+    if (!trimmed) {
+      removeCustomStyles();
+      return;
+    }
+    const host = getCustomStyleHost();
+    if (!host || typeof document === 'undefined') return;
+    if (!customStyleElement) {
+      customStyleElement = document.createElement('style');
+      customStyleElement.setAttribute('data-ai-chat-widget-custom-style', '');
+    }
+    if (customStyleElement.parentNode !== host) {
+      customStyleElement.parentNode?.removeChild(customStyleElement);
+      host.appendChild(customStyleElement);
+    }
+    customStyleElement.textContent = css;
+  }
+
+  function removeCustomStyles() {
+    if (customStyleElement?.parentNode) {
+      customStyleElement.parentNode.removeChild(customStyleElement);
+    }
+    customStyleElement = null;
+  }
 
   function grow(node, { duration = 300, origin = 'center' }) {
     return {
@@ -674,6 +712,7 @@
   onMount(() => {
     const handleViewportChange = () => updateViewportHeight();
     updateViewportHeight();
+    applyCustomStyles(customCSS);
     if (typeof window !== 'undefined') {
       window.addEventListener('resize', handleViewportChange);
       if (window.visualViewport) {
@@ -738,7 +777,12 @@
               wsConnected = false;
           }
       }
+      removeCustomStyles();
     };
+  });
+
+  afterUpdate(() => {
+    applyCustomStyles(customCSS);
   });
 
   function renderAddToCartButton(product) {

@@ -84,6 +84,7 @@ To use the AI Chat Widget on your website, add the following script tag anywhere
 - `data-z-index`: The z-index of the non-fullscreen chat widget, controlling its stacking order on the page. Default is `1000`.
 - `data-is-demo`: Set to `true` to enable demo mode. This shows a predefined conversation including a product carousel and disables real chat functionality (API connection, message sending). Default is `false`.
 - `data-closable`: Set to `false` to hide the close button (x) in the chat header, preventing users from closing the chat window once opened. Default is `true`.
+- `data-custom-css`: A raw CSS string that is injected into the widget's Shadow DOM for advanced styling needs. Use with caution; see "Advanced Styling Escape Hatch".
 
 ### Supported Positions
 
@@ -95,6 +96,36 @@ The `data-position` attribute can be set to one of the following values:
 - `bottom-right`: Positions the widget in the bottom-right corner of the page (default)
 
 If no position is specified or an invalid value is provided, the widget will default to the `bottom-right` position. **Note:** This setting is ignored if `data-full-screen` is set to `true`.
+
+## Advanced Styling Escape Hatch
+
+When the built-in CSS custom properties are not enough, you can supply a raw CSS string via the `data-custom-css` attribute. The provided CSS is injected into the widget's Shadow DOM and can target internal elements.
+
+```html
+<script
+  src="https://cdn.jsdelivr.net/gh/Autocust/ai-chat-widget@latest/dist/chat-widget.min.js"
+  data-api-url="https://your-api-endpoint.com"
+  data-custom-css="
+    #chat-header {
+      min-height: 70px;
+      font-family: 'Georgia', serif;
+    }
+    .assistant-message {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  "
+></script>
+```
+
+**Important warnings:**
+
+- **No stable DOM API:** Internal IDs, classes, and markup are private. They may change in any release without notice.
+- **High risk of breakage:** You are responsible for maintaining and testing custom styles after each widget upgrade.
+- **Selector discipline:** Keep selectors as specific as necessary while avoiding overly complex rules to reduce the chance of conflicts.
 
 ## Development
 

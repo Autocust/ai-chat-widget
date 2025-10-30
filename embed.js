@@ -98,6 +98,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         zIndex: 1000,
         isDemo: false,
         closable: true,
+        customCSS: "",
     };
 
     // API config overrides base defaults
@@ -182,6 +183,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         zIndex: getAttr("data-z-index", finalDefaults.zIndex),
         isDemo: getAttr("data-is-demo", finalDefaults.isDemo),
         closable: getAttr("data-closable", finalDefaults.closable),
+        customCSS: getAttr("data-custom-css", finalDefaults.customCSS),
       },
     });
   } catch (error) {
