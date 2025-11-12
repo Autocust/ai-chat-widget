@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.11](https://github.com/Autocust/ai-chat-widget/compare/v3.2.10...v3.2.11) (2025-11-12)
+
+### Bug Fixes
+
+* ios ([10a7834](https://github.com/Autocust/ai-chat-widget/commit/10a78347604829bae88e9c53bcfbdce210e27393))
+
 ## [3.2.10](https://github.com/Autocust/ai-chat-widget/compare/v3.2.9...v3.2.10) (2025-11-12)
 
 ### Bug Fixes
