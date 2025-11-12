@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.2.10](https://github.com/Autocust/ai-chat-widget/compare/v3.2.9...v3.2.10) (2025-11-12)
+
+### Bug Fixes
+
+* ios size ([c32634b](https://github.com/Autocust/ai-chat-widget/commit/c32634b152f2ed413cd9ea945960d9e7142654fb))
+
+### Chores
+
+* settings ([183ba6a](https://github.com/Autocust/ai-chat-widget/commit/183ba6a54c2850d9e5fd88f3a615432e545643c1))
+
 ## [3.2.9](https://github.com/Autocust/ai-chat-widget/compare/v3.2.8...v3.2.9) (2025-10-30)
 
 ### Bug Fixes
