@@ -178,12 +178,27 @@
   }
 
   let sessionId = getSessionIdFromCookie() || generateUUID();
+  let lockedViewportHeight = null;
+
+  function measureViewportHeight() {
+    if (typeof window === 'undefined') return 0;
+    return (
+      window.innerHeight ||
+      document.documentElement?.clientHeight ||
+      window.visualViewport?.height ||
+      window.screen?.height ||
+      0
+    );
+  }
 
   function updateViewportHeight() {
     if (typeof window === 'undefined' || !widgetElement) return;
-    const viewport = window.visualViewport;
-    const height = viewport ? viewport.height : window.innerHeight;
-    widgetElement.style.setProperty('--chat-viewport-height', `${height}px`);
+    if (lockedViewportHeight === null) {
+      lockedViewportHeight = measureViewportHeight();
+    }
+    if (lockedViewportHeight) {
+      widgetElement.style.setProperty('--chat-viewport-height', `${lockedViewportHeight}px`);
+    }
   }
 
   $: transitionOrigin = position.replace('-', ' ');
@@ -707,6 +722,7 @@
   }
 
   function isMobileDevice() {
+    if (typeof navigator === 'undefined') return false;
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     // Basic check for common mobile OS and devices
     if (/android/i.test(userAgent)) {
@@ -723,16 +739,8 @@
   }
 
   onMount(() => {
-    const handleViewportChange = () => updateViewportHeight();
     updateViewportHeight();
     applyCustomStyles(customCSS);
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleViewportChange);
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', handleViewportChange);
-        window.visualViewport.addEventListener('scroll', handleViewportChange);
-      }
-    }
 
     chatState.update(s => ({ ...s, isChatVisible: startOpen, showChatButton: !startOpen }));
 
@@ -777,13 +785,6 @@
     }
 
     return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', handleViewportChange);
-        if (window.visualViewport) {
-          window.visualViewport.removeEventListener('resize', handleViewportChange);
-          window.visualViewport.removeEventListener('scroll', handleViewportChange);
-        }
-      }
       if (!isDemo) {
           if (socket) {
               socket.disconnect();
