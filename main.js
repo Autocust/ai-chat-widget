@@ -10,7 +10,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
       target: document.body,
       props: {
         title: "AI Sales Assistant", // Let component handle default via i18n
-        apiUrl: "https://assistant.tim-ai-platform.tractiontools.it",
+        apiUrl: "http://assistant.tractiontools.local",
         initialMessage: "Ciao, come posso aiutarti?", // Let component handle default via i18n
         ctaText: "Chiedi informazioni", // Let component handle default via i18n
         buttonIcon: "💬",
@@ -49,7 +49,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         persistentSession: true,
         sessionExpiration: 24, // in hours
         showPoweredBy: true,
-        agentId: "3b69f381-9fd8-4ace-867e-581e713561b0", // Add your development Agent ID here
+        agentId: "bba48c05-4a3c-4f53-9b24-64bfac6d3856", // Add your development Agent ID here
         cms: "", // Set to 'prestashop' or other CMS for local testing
         startOpen: false,
         fullScreen: false,
