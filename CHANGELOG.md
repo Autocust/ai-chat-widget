@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.12](https://github.com/Autocust/ai-chat-widget/compare/v3.2.11...v3.2.12) (2025-11-16)
+
+### Features
+
+* extend demo UI with human agent example ([ceb6fba](https://github.com/Autocust/ai-chat-widget/commit/ceb6fba08a4fec5467d91a32b9118f5876d61d59))
+
 ## [3.2.11](https://github.com/Autocust/ai-chat-widget/compare/v3.2.10...v3.2.11) (2025-11-12)
 
 ### Bug Fixes
