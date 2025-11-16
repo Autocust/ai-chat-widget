@@ -36,6 +36,8 @@ export default {
     userMessage: "Ich suche bequeme Laufschuhe.",
     botReply:
       "Natürlich! Wir haben mehrere Optionen. Hier ist ein sehr beliebtes Modell, das für seinen Komfort und seine Unterstützung bekannt ist. Weitere Details finden Sie hier:",
+    humanAgentReply:
+      "Hallo! Ich bin ein menschlicher Agent und übernehme. Hier sind meine personalisierten Vorschläge und die nächsten Schritte für dich.",
     ctaText: "Schuh XYZ ansehen",
   },
 };

@@ -36,6 +36,8 @@ export default {
     userMessage: "Je cherche des chaussures de course confortables.",
     botReply:
       "Certainement ! Nous avons plusieurs options. Voici un modèle très populaire connu pour son confort et son soutien. Vous pouvez voir plus de détails ici :",
+    humanAgentReply:
+      "Bonjour ! Je suis un agent humain qui prend le relais. Voici mes recommandations personnalisées et les prochaines étapes pour vous.",
     ctaText: "Voir Chaussure XYZ",
   },
 };

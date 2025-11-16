@@ -36,6 +36,8 @@ export default {
     userMessage: "Estoy buscando zapatillas cómodas para correr.",
     botReply:
       "¡Claro! Tenemos varias opciones. Aquí hay un modelo muy popular conocido por su comodidad y soporte. Puedes ver más detalles aquí:",
+    humanAgentReply:
+      "¡Hola! Soy un agente humano y me sumo a la conversación. Aquí tienes mis recomendaciones personalizadas y próximos pasos.",
     ctaText: "Ver Zapato XYZ",
   },
 };

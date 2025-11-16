@@ -210,6 +210,7 @@
   $: demoInitialMessage = $_('demo.initialMessage');
   $: demoUserMessage = $_('demo.userMessage');
   $: demoAssistantReplyText = $_('demo.botReply');
+  $: demoHumanAgentReply = $_('demo.humanAgentReply');
   $: demoCta = { text: $_('demo.ctaText'), url: "#product-xyz" };
   const demoProducts = [
     { id: 1, name: "Comfort Running Shoe", price: 89.99, regular_price: 110.00, image: "https://placehold.co/600x400", url: "#product-1", brand: "Brand A" },
@@ -669,6 +670,8 @@
           ctaText: demoCta.text,
           products: demoProducts
       });
+      addMessageToUI($_('status.humanAgentJoined'), 'system');
+      addMessageToUI(demoHumanAgentReply, 'human_agent');
       tick().then(() => {
         if (messagesComponent?.element) {
 

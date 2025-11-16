@@ -34,6 +34,7 @@ export default {
     initialMessage: 'Hi, how can I help you?',
     userMessage: 'I\'m looking for comfortable running shoes.',
     botReply: 'Certainly! We have several options. Here is a very popular model known for its comfort and support. You can see more details here:',
+    humanAgentReply: "Hi! I'm a human agent jumping in. Here are my personalized picks and next steps for you.",
     ctaText: 'See Shoe XYZ',
   },
 };

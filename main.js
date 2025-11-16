@@ -10,7 +10,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
       target: document.body,
       props: {
         title: "AI Sales Assistant", // Let component handle default via i18n
-        apiUrl: "http://assistant.tractiontools.local",
+        apiUrl: "https://assistant.aisa.tractiontools.it",
         initialMessage: "Ciao, come posso aiutarti?", // Let component handle default via i18n
         ctaText: "Chiedi informazioni", // Let component handle default via i18n
         buttonIcon: "💬",
@@ -32,7 +32,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         humanAgentMessageTextColor: "#fff",
         userMessageIcon: "https://i.ibb.co/HDy5dkH5/Avatar-generico.png",
         assistantMessageIcon:
-          "https://i.ibb.co/j9d8YgS9/Avatar-generico-Marconio.png",
+          "https://static.aisa.tractiontools.it/1763143514193-ChatGPT%20Image%2014%20nov%202025,%2019_03_17.png",
         humanAgentMessageIcon:
           "https://i.ibb.co/j9d8YgS9/Avatar-generico-Marconio.png",
         chatButtonBgColor: "#007bff", // Blue
@@ -49,14 +49,14 @@ import AIChatWidget from "./AIChatWidget.svelte";
         persistentSession: true,
         sessionExpiration: 24, // in hours
         showPoweredBy: true,
-        agentId: "bba48c05-4a3c-4f53-9b24-64bfac6d3856", // Add your development Agent ID here
+        agentId: "1da03dfa-2516-4d84-ad7a-99468403c654", // Add your development Agent ID here
         cms: "", // Set to 'prestashop' or other CMS for local testing
         startOpen: false,
         fullScreen: false,
         width: "340px",
         height: "485px",
         fontSize: "16px",
-        isDemo: false,
+        isDemo: true,
         closable: true, // Add closable prop for development
         zIndex: 1001,
         footerText: "Controlla le info importanti",

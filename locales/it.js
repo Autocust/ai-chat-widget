@@ -34,6 +34,7 @@ export default {
     initialMessage: 'Ciao, come posso aiutarti?',
     userMessage: 'Sto cercando scarpe da corsa comode.',
     botReply: 'Certamente! Abbiamo diverse opzioni. Ecco un modello molto popolare noto per il suo comfort e supporto. Puoi vedere più dettagli qui:',
+    humanAgentReply: 'Ciao! Sono un agente umano e intervengo ora. Ecco i miei suggerimenti personalizzati e i prossimi passi per te.',
     ctaText: 'Vedi Scarpe XYZ',
   },
 };
