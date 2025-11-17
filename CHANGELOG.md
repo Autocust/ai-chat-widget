@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.13](https://github.com/Autocust/ai-chat-widget/compare/v3.2.12...v3.2.13) (2025-11-17)
+
+### Features
+
+* open/close/ask APIs and custom event ([13b6315](https://github.com/Autocust/ai-chat-widget/commit/13b6315b3694d0181036b8215defe4e1860f306d))
+
 ## [3.2.12](https://github.com/Autocust/ai-chat-widget/compare/v3.2.11...v3.2.12) (2025-11-16)
 
 ### Features
