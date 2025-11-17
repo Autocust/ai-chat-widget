@@ -10,7 +10,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
       target: document.body,
       props: {
         title: "AI Sales Assistant", // Let component handle default via i18n
-        apiUrl: "https://assistant.aisa.tractiontools.it",
+        apiUrl: "https://assistant.tractiontools.local",
         initialMessage: "Ciao, come posso aiutarti?", // Let component handle default via i18n
         ctaText: "Chiedi informazioni", // Let component handle default via i18n
         buttonIcon: "💬",
@@ -32,7 +32,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         humanAgentMessageTextColor: "#fff",
         userMessageIcon: "https://i.ibb.co/HDy5dkH5/Avatar-generico.png",
         assistantMessageIcon:
-          "https://static.aisa.tractiontools.it/1763143514193-ChatGPT%20Image%2014%20nov%202025,%2019_03_17.png",
+          "https://i.ibb.co/j9d8YgS9/Avatar-generico-Marconio.png",
         humanAgentMessageIcon:
           "https://i.ibb.co/j9d8YgS9/Avatar-generico-Marconio.png",
         chatButtonBgColor: "#007bff", // Blue
@@ -63,24 +63,6 @@ import AIChatWidget from "./AIChatWidget.svelte";
         context: {
           fullName: "Mario Rossi",
           email: "mario.rossi@gmail.com",
-          persID: "66630",
-          stuIDs: ["88529", "115554"],
-          matIDs: ["93089", "121764"],
-          cdsIDs: ["10026", "10673"],
-          departmentIDs: ["10055", "10055"],
-          adIDs: [
-            "1723",
-            "4242",
-            "5063",
-            "5064",
-            "5065",
-            "5066",
-            "5067",
-            "5068",
-            "5069",
-            "5070",
-          ],
-          academicYear: "2025",
         },
       },
     });

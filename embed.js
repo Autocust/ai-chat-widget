@@ -186,6 +186,14 @@ import AIChatWidget from "./AIChatWidget.svelte";
         customCSS: getAttr("data-custom-css", finalDefaults.customCSS),
       },
     });
+
+    if (typeof window !== 'undefined') {
+      window.autocustChatWidget = {
+        open: () => chatWidget?.openChat?.(),
+        close: () => chatWidget?.closeChat?.(),
+        ask: (question, options) => chatWidget?.askQuestion?.(question, options),
+      };
+    }
   } catch (error) {
       console.error("Error initializing chat widget:", error);
       // Optionally display an error message to the user

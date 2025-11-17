@@ -97,6 +97,32 @@ The `data-position` attribute can be set to one of the following values:
 
 If no position is specified or an invalid value is provided, the widget will default to the `bottom-right` position. **Note:** This setting is ignored if `data-full-screen` is set to `true`.
 
+## Programmatic control
+
+Expose and control the widget from your page via the global `window.autocustChatWidget` API or a custom event:
+
+- Open the widget: `window.autocustChatWidget.open()`
+- Close the widget: `window.autocustChatWidget.close()` (no-op if `data-closable="false"`)
+- Prefill a question (keeps it typed in): `window.autocustChatWidget.ask('Do you ship internationally?')`
+- Prefill and send immediately: `window.autocustChatWidget.ask('Do you ship internationally?', { sendImmediately: true })`
+- Listen for a custom event instead of calling the API directly:
+
+```js
+window.dispatchEvent(new CustomEvent('autocust:ask', {
+  detail: { question: 'What is your return policy?', sendImmediately: true }
+}));
+```
+
+Example link that opens the widget, injects a question, and sends it:
+
+```html
+<a href="#" onclick="window.autocustChatWidget.ask('Do you have student discounts?', { sendImmediately: true }); return false;">
+  Ask about discounts
+</a>
+```
+
+See `examples/landing.html` for a ready-to-run landing page demonstrating the widget plus programmatic triggers.
+
 ## Advanced Styling Escape Hatch
 
 When the built-in CSS custom properties are not enough, you can supply a raw CSS string via the `data-custom-css` attribute. The provided CSS is injected into the widget's Shadow DOM and can target internal elements.

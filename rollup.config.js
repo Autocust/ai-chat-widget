@@ -24,6 +24,8 @@ export default {
       dedupe: ["svelte"],
     }),
     commonjs(),
-    terser(),
+    terser({
+      maxWorkers: 1,
+    }),
   ],
 };

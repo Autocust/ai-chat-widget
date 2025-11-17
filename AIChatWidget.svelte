@@ -125,6 +125,7 @@
   let isHumanAgentActive = false;
   let isStreamingMessage = false;
   let streamingSender = null;
+  let pendingAutoSendMessage = null;
   let socket;
   let wsConnected = false;
 
@@ -347,6 +348,25 @@
     }
   }
 
+  async function focusInputSoon() {
+    await tick();
+    setTimeout(() => {
+      chatInputComponent?.focusInput();
+    }, 0);
+  }
+
+  async function ensureChatVisible() {
+    if (!$chatState.isChatVisible) {
+      await toggleChat();
+    } else {
+      chatState.update(s => ({ ...s, showChatButton: false }));
+      if (!isDemo && !wsConnected) {
+        initWebSocket();
+      }
+      await focusInputSoon();
+    }
+  }
+
   function initWebSocket() {
     if (isDemo) return;
     if (!apiUrl) {
@@ -376,6 +396,8 @@
       if (context) {
         socket.emit('context', context);
       }
+
+      trySendPendingQuestion();
     });
 
     socket.on('thinking', (data) => {
@@ -626,10 +648,55 @@
     return `-${Math.round(discount)}%`;
   }
 
+  function trySendPendingQuestion() {
+    if (!pendingAutoSendMessage) return;
+    if (isDemo || !wsConnected || $chatState.loadingState) return;
+    pendingAutoSendMessage = null;
+    sendMessage();
+  }
+
+  export async function openChat() {
+    await ensureChatVisible();
+  }
+
+  export function closeChat() {
+    if (!closable) return;
+    if ($chatState.isChatVisible) {
+      toggleChat();
+    }
+  }
+
+  export async function askQuestion(question, { sendImmediately = false, focusInput = true } = {}) {
+    const prepared = (question ?? '').toString().trim();
+    if (!prepared) return;
+
+    await ensureChatVisible();
+    chatState.update(s => ({ ...s, userInput: prepared }));
+
+    if (focusInput) {
+      await focusInputSoon();
+    }
+
+    if (sendImmediately) {
+      pendingAutoSendMessage = prepared;
+      trySendPendingQuestion();
+    }
+  }
+
+  function handleExternalAsk(event) {
+    const detail = event?.detail || {};
+    const { question, message, sendImmediately = false, focusInput = true } = detail;
+    const payload = question ?? message;
+    if (!payload) return;
+    askQuestion(payload, { sendImmediately, focusInput });
+  }
+
   async function sendMessage() {
     if (isDemo) return;
     const message = $chatState.userInput.trim();
     if (!message || !wsConnected || $chatState.loadingState) return;
+
+    pendingAutoSendMessage = null;
 
     addMessageToUI(message, 'user'); // This will save if persistentSession is true
     chatState.update(s => ({ ...s, userInput: '' }));
@@ -745,6 +812,11 @@
     updateViewportHeight();
     applyCustomStyles(customCSS);
 
+    const externalAskListener = (event) => handleExternalAsk(event);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('autocust:ask', externalAskListener);
+    }
+
     chatState.update(s => ({ ...s, isChatVisible: startOpen, showChatButton: !startOpen }));
 
     if (isDemo) {
@@ -793,6 +865,9 @@
               socket.disconnect();
               wsConnected = false;
           }
+      }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('autocust:ask', externalAskListener);
       }
       removeCustomStyles();
     };
