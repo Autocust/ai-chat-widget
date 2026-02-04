@@ -27,11 +27,15 @@ import AIChatWidget from "./AIChatWidget.svelte";
     const isDemo = currentScript ? currentScript.getAttribute("data-is-demo") === 'true' : false;
 
     let apiConfig = {};
+    let apiSessionExpiration = null;
     if (!isDemo && apiUrl) {
         try {
             const response = await fetch(`${apiUrl}/preview/${agentId}`);
             if (response.ok) {
                 const rawConfig = await response.json();
+                if (Object.prototype.hasOwnProperty.call(rawConfig, 'session_expiration')) {
+                    apiSessionExpiration = rawConfig.session_expiration;
+                }
                 // Convert snake_case keys from API to camelCase for component props
                 apiConfig = Object.keys(rawConfig).reduce((acc, key) => {
                     const newKey = key.replace(/_(\w)/g, (_, c) => c.toUpperCase());
@@ -120,6 +124,27 @@ import AIChatWidget from "./AIChatWidget.svelte";
         return ['top-left', 'top-right', 'bottom-left', 'bottom-right'].includes(position) ? position : defaultValue;
     }
 
+    const HARD_CAP_SESSION_EXPIRATION = 24;
+
+    function parseSessionExpiration(value) {
+        if (value === null || value === undefined || value === '') return null;
+        const parsed = parseFloat(value);
+        if (Number.isNaN(parsed) || parsed <= 0) return null;
+        return parsed;
+    }
+
+    const dataSessionExpirationAttr = currentScript ? currentScript.getAttribute("data-session-expiration") : null;
+    const apiSessionExpirationValue = parseSessionExpiration(apiSessionExpiration);
+    const dataSessionExpirationValue = parseSessionExpiration(dataSessionExpirationAttr);
+
+    let effectiveSessionExpiration = HARD_CAP_SESSION_EXPIRATION;
+    if (apiSessionExpirationValue !== null) {
+        effectiveSessionExpiration = Math.min(effectiveSessionExpiration, apiSessionExpirationValue);
+    }
+    if (dataSessionExpirationValue !== null) {
+        effectiveSessionExpiration = Math.min(effectiveSessionExpiration, dataSessionExpirationValue);
+    }
+
     // --- Instantiate the Svelte component ---
     const shadowRoot = targetDiv.attachShadow({ mode: 'open' });
     const chatWidget = new AIChatWidget({
@@ -151,7 +176,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         enableUTM: getAttr("data-enable-utm", finalDefaults.enableUTM),
         position: getPosition(finalDefaults.position),
         persistentSession: getAttr("data-persistent-session", finalDefaults.persistentSession),
-        sessionExpiration: getAttr("data-session-expiration", finalDefaults.sessionExpiration),
+        sessionExpiration: effectiveSessionExpiration,
         theme: getAttr("data-theme", finalDefaults.theme),
         userMessageIcon: getAttr("data-user-message-icon", finalDefaults.userMessageIcon),
         assistantMessageIcon: getAttr("data-assistant-message-icon", finalDefaults.assistantMessageIcon),

@@ -230,6 +230,14 @@
   };
   marked.setOptions({ renderer, sanitize: false });
 
+  const MAX_SESSION_EXPIRATION_HOURS = 24;
+
+  function getEffectiveSessionExpirationHours() {
+    const parsed = parseFloat(sessionExpiration);
+    if (Number.isNaN(parsed) || parsed <= 0) return MAX_SESSION_EXPIRATION_HOURS;
+    return Math.min(parsed, MAX_SESSION_EXPIRATION_HOURS);
+  }
+
   // --- Local Storage Helper Functions ---
   const getLocalStorageKey = (type, id) => `chat_${type}_${id}`;
 
@@ -253,13 +261,10 @@
       if (!metaString) return null;
 
       const meta = JSON.parse(metaString);
-      const expirationHours = parseFloat(sessionExpiration) || 24;
-      const sessionAgeHours = (Date.now() - meta.lastActivity) / (1000 * 60 * 60);
-
-      if (sessionAgeHours > expirationHours) {
+      if (isSessionExpired(meta.lastActivity)) {
         console.log(`Session ${currentSessionId} expired. Clearing from local storage.`);
         clearSessionFromLocalStorage(currentSessionId);
-        return null;
+        return { expired: true };
       }
 
       const messagesString = localStorage.getItem(messagesKey);
@@ -310,10 +315,52 @@
     }
   }
 
+  function getSessionLastActivityFromLocalStorage(currentSessionId) {
+    if (typeof localStorage === 'undefined' || !persistentSession || isDemo) return null;
+    try {
+      const metaKey = getLocalStorageKey('meta', currentSessionId);
+      const metaString = localStorage.getItem(metaKey);
+      if (!metaString) return null;
+      const meta = JSON.parse(metaString);
+      return meta?.lastActivity ?? null;
+    } catch (e) {
+      console.error("Error reading session meta from local storage:", e);
+      return null;
+    }
+  }
+
+  function isSessionExpired(lastActivity) {
+    if (!lastActivity) return false;
+    const expirationHours = getEffectiveSessionExpirationHours();
+    const sessionAgeHours = (Date.now() - lastActivity) / (1000 * 60 * 60);
+    return sessionAgeHours > expirationHours;
+  }
+
   function getSessionIdFromCookie() {
     const cookieName = `aisa_agent_${agentId}`;
     const match = document.cookie.match(new RegExp('(^| )' + cookieName + '=([^;]+)'));
     return match ? match[2] : null;
+  }
+
+  function getSessionActivityCookieName(sessionIdValue) {
+    return `aisa_agent_${agentId}_${sessionIdValue}_last_activity`;
+  }
+
+  function getSessionActivityFromCookie(sessionIdValue = sessionId) {
+    if (typeof document === 'undefined') return null;
+    if (!sessionIdValue) return null;
+    const cookieName = getSessionActivityCookieName(sessionIdValue);
+    const match = document.cookie.match(new RegExp('(^| )' + cookieName + '=([^;]+)'));
+    if (!match) return null;
+    const parsed = parseInt(match[2], 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  }
+
+  function getSessionLastActivity(sessionIdValue = sessionId) {
+    if (persistentSession) {
+      return getSessionLastActivityFromLocalStorage(sessionIdValue);
+    }
+    return getSessionActivityFromCookie(sessionIdValue);
   }
 
   function saveSessionIdToCookie(sessionIdValue) {
@@ -323,6 +370,57 @@
       cookieString += `;Max-Age=${maxAgeSeconds}`;
     }
     document.cookie = cookieString;
+  }
+
+  function saveSessionActivityToCookie(timestamp, sessionIdValue = sessionId) {
+    if (typeof document === 'undefined' || isDemo) return;
+    if (!sessionIdValue) return;
+    const cookieName = getSessionActivityCookieName(sessionIdValue);
+    const expirationHours = getEffectiveSessionExpirationHours();
+    const maxAgeSeconds = Math.ceil(expirationHours * 60 * 60);
+    let cookieString = `${cookieName}=${timestamp};path=/;SameSite=Lax`;
+    if (Number.isFinite(maxAgeSeconds) && maxAgeSeconds > 0) {
+      cookieString += `;Max-Age=${maxAgeSeconds}`;
+    }
+    document.cookie = cookieString;
+  }
+
+  function clearSessionActivityCookie(sessionIdValue) {
+    if (typeof document === 'undefined' || isDemo) return;
+    if (!sessionIdValue) return;
+    const cookieName = getSessionActivityCookieName(sessionIdValue);
+    document.cookie = `${cookieName}=;path=/;SameSite=Lax;Max-Age=0`;
+  }
+
+  function persistSessionState(currentMessages) {
+    if (isDemo) return;
+    if (persistentSession) {
+      saveSessionToLocalStorage(sessionId, currentMessages);
+    } else {
+      saveSessionActivityToCookie(Date.now());
+    }
+  }
+
+  function resetSessionOnBackend(sessionIdToReset) {
+    if (isDemo) return;
+    if (!apiUrl) {
+      console.error("API URL is not defined. Session reset cannot be sent.");
+      return;
+    }
+    fetch(`${apiUrl}/reset-session?sessionId=${sessionIdToReset}`, {
+      method: 'DELETE',
+      headers: { 'X-Agent-ID': agentId }
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          console.error('Reset chat failed on backend:', await response.text());
+        } else {
+          console.log(`Session ${sessionIdToReset} reset successfully on backend.`);
+        }
+      })
+      .catch((err) => {
+        console.error('Error sending reset chat request:', err);
+      });
   }
 
   async function toggleChat() {
@@ -367,8 +465,13 @@
     }
   }
 
-  function initWebSocket() {
+  async function initWebSocket() {
     if (isDemo) return;
+    const lastActivity = getSessionLastActivity();
+    if (isSessionExpired(lastActivity)) {
+      await resetChat();
+      return;
+    }
     if (!apiUrl) {
         console.error("API URL is not defined. WebSocket connection cannot be established.");
         addMessageToUI($_('status.configErrorApi'), 'assistant', { persist: false });
@@ -435,7 +538,7 @@
           isStreamingMessage = true;
           streamingSender = sender;
           currentAssistantMessage = content;
-          addMessageToUI(currentAssistantMessage, sender); // This already calls saveSessionToLocalStorage
+          addMessageToUI(currentAssistantMessage, sender); // This already persists session state
         } else {
           currentAssistantMessage += content;
           const last = $chatState.messages.at(-1);
@@ -443,9 +546,8 @@
             last.content = marked.parse(currentAssistantMessage.replace(/\【.*?】/g,''));
             last.links = extractLinks(currentAssistantMessage);
             chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
-            if (persistentSession && !isDemo) { // Save after updating streamed message
-              saveSessionToLocalStorage(sessionId, $chatState.messages);
-            }
+            // Persist after updating streamed message
+            persistSessionState($chatState.messages);
           } else {
             addMessageToUI(currentAssistantMessage, sender); // Fallback to ensure message is visible
           }
@@ -465,9 +567,8 @@
           if (lastMessage && lastMessage.sender === 'assistant') {
             $chatState.messages[$chatState.messages.length - 1] = { ...lastMessage, products: products };
             chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
-            if (persistentSession && !isDemo) { // Save after adding carousel
-                saveSessionToLocalStorage(sessionId, $chatState.messages);
-            }
+            // Persist after adding carousel
+            persistSessionState($chatState.messages);
           }
         }
       } catch (err) {
@@ -479,8 +580,8 @@
       chatState.update(s => ({ ...s, loadingState: null }));
       messagesComponent?.cleanupAfterStreaming();
       // Ensure final state of messages is saved
-      if (persistentSession && !isDemo && $chatState.messages.length > 0) {
-          saveSessionToLocalStorage(sessionId, $chatState.messages);
+      if ($chatState.messages.length > 0) {
+          persistSessionState($chatState.messages);
       }
       currentAssistantMessage = ''; // Reset after potential save
       isStreamingMessage = false;
@@ -600,8 +701,8 @@
       ]
     }));
 
-    if (persistentSession && !isDemo && shouldPersistMessage) {
-      saveSessionToLocalStorage(sessionId, $chatState.messages);
+    if (shouldPersistMessage) {
+      persistSessionState($chatState.messages);
     }
 
     tick().then(() => {
@@ -694,7 +795,18 @@
   async function sendMessage() {
     if (isDemo) return;
     const message = $chatState.userInput.trim();
-    if (!message || !wsConnected || $chatState.loadingState) return;
+    if (!message || $chatState.loadingState) return;
+
+    const lastActivity = getSessionLastActivity();
+    if (isSessionExpired(lastActivity)) {
+      pendingAutoSendMessage = message;
+      chatState.update(s => ({ ...s, userInput: '' }));
+      await resetChat();
+      trySendPendingQuestion();
+      return;
+    }
+
+    if (!wsConnected) return;
 
     pendingAutoSendMessage = null;
 
@@ -757,6 +869,9 @@
     if (persistentSession && !isDemo) {
       clearSessionFromLocalStorage(oldSessionId);
     }
+    if (!persistentSession && !isDemo) {
+      clearSessionActivityCookie(oldSessionId);
+    }
 
     // Generate a new session ID and save it
     sessionId = generateUUID();
@@ -773,17 +888,8 @@
       wsConnected = false;
     }
 
-    try {
-      // Tell the backend to reset/clean up the OLD session
-      const response = await fetch(`${apiUrl}/reset-session?sessionId=${oldSessionId}`, {
-        method: 'DELETE',
-        headers: { 'X-Agent-ID': agentId }
-      });
-      if (!response.ok) console.error('Reset chat failed on backend:', await response.text());
-      else console.log(`Session ${oldSessionId} reset successfully on backend.`);
-    } catch (err) {
-      console.error('Error sending reset chat request:', err);
-    }
+    // Tell the backend to reset/clean up the OLD session
+    resetSessionOnBackend(oldSessionId);
 
     // If the chat is visible, start a new WebSocket connection with the new session ID
     if ($chatState.isChatVisible) {
@@ -822,12 +928,15 @@
     if (isDemo) {
         setupDemoMessages();
     } else {
-        saveSessionIdToCookie(sessionId); // Save/update cookie, respecting persistentSession for Max-Age
-
         let loadedMessagesFromStorage = false;
+
         if (persistentSession) {
             const storedSession = loadSessionFromLocalStorage(sessionId);
-            if (storedSession) {
+            if (storedSession?.expired) {
+                const oldSessionId = sessionId;
+                sessionId = generateUUID();
+                resetSessionOnBackend(oldSessionId);
+            } else if (storedSession) {
                 if (storedSession.messages) {
                     chatState.update(s => ({ ...s, messages: processMessagesAndAddSeparators(storedSession.messages) }));
                     loadedMessagesFromStorage = true;
@@ -836,11 +945,21 @@
                     isHumanAgentActive = storedSession.isHumanAgentActive;
                 }
                 // Update last activity timestamp as session is now active
-                saveSessionToLocalStorage(sessionId, $chatState.messages);
+                persistSessionState($chatState.messages);
             } else {
-                 // Session expired or not found, ensure it's cleared (loadSession handles this)
+                // Session not found
+            }
+        } else {
+            const lastActivity = getSessionActivityFromCookie();
+            if (isSessionExpired(lastActivity)) {
+                const oldSessionId = sessionId;
+                sessionId = generateUUID();
+                clearSessionActivityCookie(oldSessionId);
+                resetSessionOnBackend(oldSessionId);
             }
         }
+
+        saveSessionIdToCookie(sessionId); // Save/update cookie, respecting persistentSession for Max-Age
 
         if (!loadedMessagesFromStorage && $chatState.messages.length === 0) {
             addMessageToUI(displayInitialMessage, 'assistant'); // This will also save if persistentSession is true
