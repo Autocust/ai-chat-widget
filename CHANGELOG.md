@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.2.14](https://github.com/Autocust/ai-chat-widget/compare/v3.2.13...v3.2.14) (2026-02-04)
+
+### Features
+
+* **chat:** add configurable session expiration and auto-reset ([4301325](https://github.com/Autocust/ai-chat-widget/commit/43013255d52bb6dc9ab0b091e4a22e945181c1f1))
+
+### Chores
+
+* build dist ([7af0757](https://github.com/Autocust/ai-chat-widget/commit/7af0757fe58dd8e0a8bf8fddb30e8620c4a2276a))
+
 ## [3.2.13](https://github.com/Autocust/ai-chat-widget/compare/v3.2.12...v3.2.13) (2025-11-17)
 
 ### Features
