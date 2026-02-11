@@ -6,6 +6,15 @@
   const widgetConfig = getContext('widgetConfig');
   export let products = [];
 
+  function onProductClick(product, action = 'view') {
+    // Emit event for GTM/attribution tracking
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('autocust:productClicked', {
+        detail: { product, action }
+      }));
+    }
+  }
+
   function formatPrice(price) {
      try {
         const locale = navigator.language || 'en';
@@ -24,8 +33,16 @@
 
   function renderAddToCartButton(product) {
     const buttonText = $_('product.buyButton');
+    // Create a minimal product data object for the event
+    const eventProductData = JSON.stringify({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      url: product.url
+    }).replace(/"/g, '&quot;');
+
     if (widgetConfig.isDemo || !widgetConfig.cms) {
-      return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', widgetConfig.enableUTM)}" target="_blank" class="add-to-cart"><span>${buttonText}</span></a>`;
+      return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', widgetConfig.enableUTM)}" target="_blank" class="add-to-cart" onclick="window.dispatchEvent(new CustomEvent('autocust:productClicked', {detail: {product: ${eventProductData}, action: 'add_to_cart'}}))"><span>${buttonText}</span></a>`;
     }
     if (widgetConfig.cms === 'prestashop') {
       return `
@@ -35,10 +52,10 @@
           <input type="hidden" name="qty" value="1" class="form-control input-qty">
           <input type="hidden" name="token" value="${window.prestashop?.static_token || ''}">
           <input type="hidden" name="add" value="1">
-          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit"><span>${buttonText}</span></button>
+          <button class="btn add-to-cart" data-button-action="add-to-cart" type="submit" onclick="window.dispatchEvent(new CustomEvent('autocust:productClicked', {detail: {product: ${eventProductData}, action: 'add_to_cart'}}))"><span>${buttonText}</span></button>
         </form>`;
     }
-    return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', widgetConfig.enableUTM)}" target="${widgetConfig.openInNewTab ? '_blank' : '_self'}" class="add-to-cart"><span>${buttonText}</span></a>`;
+    return `<a href="${addUtmParams(product.url, 'chat', 'chatbot', 'chatbot_add_to_cart', widgetConfig.enableUTM)}" target="${widgetConfig.openInNewTab ? '_blank' : '_self'}" class="add-to-cart" onclick="window.dispatchEvent(new CustomEvent('autocust:productClicked', {detail: {product: ${eventProductData}, action: 'add_to_cart'}}))"><span>${buttonText}</span></a>`;
   }
 </script>
 
@@ -47,7 +64,8 @@
     <div class="carousel-product">
       <a href={addUtmParams(product.url, 'chat', 'chatbot', 'chatbot', widgetConfig.enableUTM)}
          target={widgetConfig.openInNewTab ? '_blank' : '_self'}
-         class="product-link">
+         class="product-link"
+         on:click={() => onProductClick(product, 'view')}>
         {#if product.regular_price && product.regular_price > product.price}
           <span class="discount-label">{calculateDiscount(product.price, product.regular_price)}</span>
         {/if}

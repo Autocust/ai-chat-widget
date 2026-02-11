@@ -758,6 +758,10 @@
 
   export async function openChat() {
     await ensureChatVisible();
+    // Emit event for GTM/attribution tracking
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('autocust:chatOpened', { detail: {} }));
+    }
   }
 
   export function closeChat() {
