@@ -46,6 +46,7 @@
   export let showPoweredBy = true;
   export let agentId = 'xyz';
   export let context = null;
+  export let identity = null;
   export let cms = '';
   export let persistentSession = false;
   export let sessionExpiration = 24;
@@ -94,6 +95,7 @@
     showPoweredBy,
     agentId,
     context,
+    identity,
     cms,
     persistentSession,
     sessionExpiration,
@@ -498,6 +500,10 @@
 
       if (context) {
         socket.emit('context', context);
+      }
+
+      if (identity) {
+        socket.emit('identity', identity);
       }
 
       trySendPendingQuestion();
