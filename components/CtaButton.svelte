@@ -6,11 +6,21 @@
 
   export let url;
   export let ctaText;
+
+  function handleClick() {
+    // Emit event for GTM/attribution tracking
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('autocust:ctaClicked', {
+        detail: { url, ctaText }
+      }));
+    }
+  }
 </script>
 
 <a href={addUtmParams(url, 'chat', 'chatbot', 'chatbot', widgetConfig.enableUTM)}
    target={widgetConfig.openInNewTab ? '_blank' : '_self'}
-   class="cta-button">{ctaText}</a>
+   class="cta-button"
+   on:click={handleClick}>{ctaText}</a>
 
 <style>
   .cta-button {

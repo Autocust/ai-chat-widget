@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.15](https://github.com/Autocust/ai-chat-widget/compare/v3.2.14...v3.2.15) (2026-02-11)
+
+### Features
+
+* add analytics events for GTM/attribution tracking ([f4228df](https://github.com/Autocust/ai-chat-widget/commit/f4228df0ca68e30766ae6c2ea669d50d849a6a5c))
+
 ## [3.2.14](https://github.com/Autocust/ai-chat-widget/compare/v3.2.13...v3.2.14) (2026-02-04)
 
 ### Features
