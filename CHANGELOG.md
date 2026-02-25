@@ -1,5 +1,7 @@
 # Changelog
 
+## [3.2.16](https://github.com/Autocust/ai-chat-widget/compare/v3.2.15...v3.2.16) (2026-02-25)
+
 ## [3.2.15](https://github.com/Autocust/ai-chat-widget/compare/v3.2.14...v3.2.15) (2026-02-11)
 
 ### Features
