@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.2.17](https://github.com/Autocust/ai-chat-widget/compare/v3.2.16...v3.2.17) (2026-04-07)
+
+### Bug Fixes
+
+* translation ([09570a3](https://github.com/Autocust/ai-chat-widget/commit/09570a37eb3d44760aa516ad394d013da43c1380))
+
+### Chores
+
+* agentsfile ([5d2eb75](https://github.com/Autocust/ai-chat-widget/commit/5d2eb751e64d79784414346864d1fe503ce5608e))
+* git ignore ([154b053](https://github.com/Autocust/ai-chat-widget/commit/154b053d57687640e8eaf09ff038f2d50e51c52c))
+
 ## [3.2.16](https://github.com/Autocust/ai-chat-widget/compare/v3.2.15...v3.2.16) (2026-02-25)
 
 ## [3.2.15](https://github.com/Autocust/ai-chat-widget/compare/v3.2.14...v3.2.15) (2026-02-11)
