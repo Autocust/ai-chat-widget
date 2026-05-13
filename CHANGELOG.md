@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.2.18](https://github.com/Autocust/ai-chat-widget/compare/v3.2.17...v3.2.18) (2026-05-13)
+
+### Bug Fixes
+
+* typo ([785322c](https://github.com/Autocust/ai-chat-widget/commit/785322c97e46d16c9a2b15486ad25da6ee7173fb))
+
 ## [3.2.17](https://github.com/Autocust/ai-chat-widget/compare/v3.2.16...v3.2.17) (2026-04-07)
 
 ### Bug Fixes
