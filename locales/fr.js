@@ -10,7 +10,7 @@ export default {
     sendButton: "Envoyer",
     resetTitle: "Réinitialiser le chat",
     closeTitle: "Fermer le chat", // Assuming '×' doesn't need translation, but title might
-    poweredBy: "Powered by by",
+    poweredBy: "Powered by",
     demoSuffix: "(Démo)",
   },
   status: {
