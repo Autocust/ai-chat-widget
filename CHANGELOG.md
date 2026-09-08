@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.2.19](https://github.com/Autocust/ai-chat-widget/compare/v3.2.18...v3.2.19) (2026-09-08)
+
+### Bug Fixes
+
+* never render CTA buttons for the initial message ([b8c1f3d](https://github.com/Autocust/ai-chat-widget/commit/b8c1f3d5362b02d7765c9b2f2ed222abfad466af))
+
+### Chores
+
+* ignore local tooling directories ([c9a10c1](https://github.com/Autocust/ai-chat-widget/commit/c9a10c1617af2d2f61238cd56e93bfdda31ce788))
+
 ## [3.2.18](https://github.com/Autocust/ai-chat-widget/compare/v3.2.17...v3.2.18) (2026-05-13)
 
 ### Bug Fixes
