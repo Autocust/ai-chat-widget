@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.20](https://github.com/Autocust/ai-chat-widget/compare/v3.2.19...v3.2.20) (2026-09-08)
+
+
+### Bug Fixes
+
+* one CTA button per destination URL ([515318e](https://github.com/Autocust/ai-chat-widget/commit/515318eeefefce52d88b05fb7733ddc07484dce3))
+
 ## [3.2.19](https://github.com/Autocust/ai-chat-widget/compare/v3.2.18...v3.2.19) (2026-09-08)
 
 ### Bug Fixes
