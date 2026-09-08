@@ -622,6 +622,17 @@
 
 
 
+  // One CTA button per destination: a link repeated in the same message (often
+  // with different anchor texts) must not produce duplicate buttons.
+  function dedupeLinksByUrl(links) {
+    const seenUrls = new Set();
+    return (links || []).filter(link => {
+      if (!link || seenUrls.has(link.url)) return false;
+      seenUrls.add(link.url);
+      return true;
+    });
+  }
+
   function extractLinks(markdownText) {
     if (!markdownText) return [];
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
@@ -630,7 +641,7 @@
     while ((match = linkRegex.exec(markdownText)) !== null) {
       links.push({ text: match[1], url: match[2] });
     }
-    return links;
+    return dedupeLinksByUrl(links);
   }
 
   function toDateInstance(value) {
@@ -742,7 +753,7 @@
         }
         // Same rule as addMessageToUI: the initial greeting never carries CTA
         // buttons, including in sessions persisted before this rule existed.
-        processed.push(isInitialMessage ? { ...msg, links: [] } : msg);
+        processed.push(isInitialMessage ? { ...msg, links: [] } : { ...msg, links: dedupeLinksByUrl(msg.links) });
         isInitialMessage = false;
     });
     return processed;
