@@ -675,8 +675,15 @@
     const shouldPersistMessage = additionalData.hasOwnProperty('persist') ? additionalData.persist : true;
     const rawMarkdown = content || '';
 
+    const lastMessage = $chatState.messages.filter(m => m.type !== 'date').pop();
+    const now = new Date();
+    // The first message of a transcript is always the canned initial greeting
+    // (seeded before the socket connects). Its links stay inline in the bubble:
+    // no CTA buttons below it.
+    const isInitialMessage = !lastMessage;
+
     if (sender === 'assistant' || sender === 'human_agent') {
-      links = extractLinks(rawMarkdown);
+      links = isInitialMessage ? [] : extractLinks(rawMarkdown);
       const cleanedMarkdown = rawMarkdown.replace(/\【.*?】/g, '');
       processedContent = marked.parse(cleanedMarkdown);
     } else if (sender === 'user') { // This will apply to 'user'
@@ -685,8 +692,6 @@
         processedContent = rawMarkdown;
     }
 
-    const lastMessage = $chatState.messages.filter(m => m.type !== 'date').pop();
-    const now = new Date();
     if (!lastMessage || new Date(lastMessage.date).toDateString() !== now.toDateString()) {
         chatState.update(s => ({ ...s, messages: [...s.messages, { type: 'date', date: now }] }));
     }
@@ -724,6 +729,7 @@
     }
     const processed = [];
     let lastDateString = null;
+    let isInitialMessage = true;
     messageList.forEach(msg => {
         if (msg.type === 'date') return; // Skip old separators
 
@@ -734,7 +740,10 @@
             processed.push({ type: 'date', date: msgDate });
             lastDateString = msgDateString;
         }
-        processed.push(msg);
+        // Same rule as addMessageToUI: the initial greeting never carries CTA
+        // buttons, including in sessions persisted before this rule existed.
+        processed.push(isInitialMessage ? { ...msg, links: [] } : msg);
+        isInitialMessage = false;
     });
     return processed;
   }
