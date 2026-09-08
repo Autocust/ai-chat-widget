@@ -88,3 +88,7 @@ typings/
 .aider*
 examples/
 example/
+.claude/
+.codegraph/
+.playwright-mcp/
+.wolf
