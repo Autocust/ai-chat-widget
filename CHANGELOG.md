@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.3.0](https://github.com/Autocust/ai-chat-widget/compare/v3.2.20...v3.3.0) (2026-10-01)
+
+### Bug Fixes
+
+* keep header and messages visible with the on-screen keyboard ([d345ed3](https://github.com/Autocust/ai-chat-widget/commit/d345ed3240402a8400bd12556d68e9d354329a41))
+
 ## [3.2.20](https://github.com/Autocust/ai-chat-widget/compare/v3.2.19...v3.2.20) (2026-09-08)
 
 
