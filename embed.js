@@ -66,6 +66,7 @@ import AIChatWidget from "./AIChatWidget.svelte";
         buttonOverlayText: null,
         buttonOverlayDelay: 5000,
         predefinedQuestions: [],
+        gateQuestion: null,
         ctaText: null,
         openInNewTab: true,
         enableUTM: true,
@@ -171,6 +172,18 @@ import AIChatWidget from "./AIChatWidget.svelte";
                 }
             }
             return Array.isArray(attr) ? attr : [];
+        })(),
+        gateQuestion: (() => {
+            const attr = getAttr("data-gate-question", finalDefaults.gateQuestion);
+            if (typeof attr === 'string') {
+                try {
+                    return JSON.parse(attr);
+                } catch (e) {
+                    console.warn("Could not parse data-gate-question. It should be a valid JSON object string.", e);
+                    return null;
+                }
+            }
+            return attr && typeof attr === 'object' ? attr : null;
         })(),
         ctaText: getAttr("data-cta-text", finalDefaults.ctaText),
         openInNewTab: getAttr("data-open-in-new-tab", finalDefaults.openInNewTab),

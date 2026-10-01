@@ -6,10 +6,12 @@
   import { _ } from './i18n'; // Import the translation function
   import { addUtmParams } from './utils/url.js';
   import { chatState } from './utils/stores.js';
+  import { normalizeGateQuestion, normalizeGateChoice, mergeGateContext } from './utils/gateQuestion.js';
   import ChatButton from './components/ChatButton.svelte';
   import ChatHeader from './components/ChatHeader.svelte';
   import Messages from './components/Messages.svelte';
   import QuickReplies from './components/QuickReplies.svelte';
+  import GateQuestion from './components/GateQuestion.svelte';
   import ChatInput from './components/ChatInput.svelte';
   import ChatFooter from './components/ChatFooter.svelte';
   import DateSeparator from './components/DateSeparator.svelte';
@@ -57,6 +59,7 @@
   export let buttonOverlayText = null;
   export let buttonOverlayDelay = 5000;
   export let predefinedQuestions = [];
+  export let gateQuestion = null;
   export let width = '340px';
   export let height = '485px';
   export let fontSize = '16px';
@@ -233,6 +236,11 @@
   $: transitionOrigin = position.replace('-', ' ');
 
   $: hasUserSentMessage = $chatState.messages.some(m => m.sender === 'user');
+
+  // --- Gate question (opt-in): a fixed question with buttons that must be answered first ---
+  $: gate = normalizeGateQuestion(gateQuestion);
+  let gateChoice = null; // { id, label, reply, question, context? }
+  $: gatePending = !!gate && !gateChoice && !hasUserSentMessage;
   $: mobileFontSize = fontSize;
 
   // --- Demo Content ---
@@ -337,9 +345,30 @@
       localStorage.removeItem(metaKey);
       localStorage.removeItem(messagesKey);
       localStorage.removeItem(humanStatusKey);
+      localStorage.removeItem(getLocalStorageKey('gate', currentSessionId));
       console.log(`Session ${currentSessionId} cleared from local storage.`);
     } catch (e) {
       console.error("Error clearing session from local storage:", e);
+    }
+  }
+
+  function persistGateChoice(choice) {
+    if (typeof localStorage === 'undefined' || !persistentSession || isDemo) return;
+    try {
+      localStorage.setItem(getLocalStorageKey('gate', sessionId), JSON.stringify(choice));
+    } catch (e) {
+      console.error("Error saving gate choice to local storage:", e);
+    }
+  }
+
+  function loadGateChoiceFromLocalStorage(currentSessionId) {
+    if (typeof localStorage === 'undefined' || !persistentSession || isDemo) return null;
+    try {
+      const stored = localStorage.getItem(getLocalStorageKey('gate', currentSessionId));
+      return stored ? normalizeGateChoice(JSON.parse(stored)) : null;
+    } catch (e) {
+      console.error("Error reading gate choice from local storage:", e);
+      return null;
     }
   }
 
@@ -524,8 +553,9 @@
       wsConnected = true;
       chatState.update(s => ({ ...s, loadingState: null }));
 
-      if (context) {
-        socket.emit('context', context);
+      const contextToSend = getContextToSend();
+      if (contextToSend) {
+        socket.emit('context', contextToSend);
       }
 
       if (identity) {
@@ -744,6 +774,7 @@
           products: additionalData.products || [],
           url: additionalData.url || '',
           ctaText: additionalData.ctaText || displayCtaText,
+          ...(additionalData.kind ? { kind: additionalData.kind } : {}),
           date: new Date()
         }
       ]
@@ -848,8 +879,57 @@
     askQuestion(payload, { sendImmediately, focusInput });
   }
 
+  // The API replaces the whole context on every `context` event: send the widget
+  // context merged with the gate choice, or the plain context when there is no choice.
+  function getContextToSend() {
+    return gate && gateChoice ? mergeGateContext(context, gateChoice) : context;
+  }
+
+  function emitContext() {
+    if (!socket || !wsConnected) return;
+    const contextToSend = getContextToSend();
+    if (contextToSend) {
+      socket.emit('context', contextToSend);
+    }
+  }
+
+  // Keeps the question bubble in sync with the config: added right after the greeting
+  // while the gate is pending, dropped when the feature has been turned off.
+  function syncGateQuestionBubble() {
+    const messages = $chatState.messages;
+    const hasUserMessage = messages.some(m => m.sender === 'user');
+    const hasQuestion = messages.some(m => m.kind === 'gate_question');
+    if (gate && !gateChoice && !hasUserMessage) {
+      if (!hasQuestion && messages.some(m => m.sender === 'assistant')) {
+        addMessageToUI(gate.question, 'assistant', { kind: 'gate_question' });
+      }
+    } else if (!gate && hasQuestion && !hasUserMessage) {
+      chatState.update(s => ({ ...s, messages: s.messages.filter(m => m.kind !== 'gate_question') }));
+      persistSessionState($chatState.messages);
+    }
+  }
+
+  function selectGateOption(option) {
+    if (!gatePending) return;
+    const choice = { id: option.id, label: option.label, reply: option.reply, question: gate.question };
+    if (option.context) choice.context = option.context;
+    gateChoice = choice;
+    persistGateChoice(choice);
+
+    // Local only: the choice is never sent as a chat message, so the LLM is not called
+    addMessageToUI(option.label, 'user');
+    addMessageToUI(option.reply, 'assistant');
+    emitContext();
+
+    if (isDemo) {
+      appendDemoConversation();
+    } else if (!isMobileDevice()) {
+      tick().then(() => chatInputComponent?.focusInput());
+    }
+  }
+
   async function sendMessage() {
-    if (isDemo) return;
+    if (isDemo || gatePending) return;
     const message = $chatState.userInput.trim();
     if (!message || $chatState.loadingState) return;
 
@@ -897,8 +977,18 @@
   }
 
   function setupDemoMessages() {
+      gateChoice = null;
       chatState.update(s => ({ ...s, messages: [] }));
       addMessageToUI(initialMessage ?? demoInitialMessage, 'assistant');
+      if (gate) {
+          // The rest of the demo conversation follows once an option is picked
+          syncGateQuestionBubble();
+          return;
+      }
+      appendDemoConversation();
+  }
+
+  function appendDemoConversation() {
       addMessageToUI(demoUserMessage, 'user');
       addMessageToUI(demoAssistantReplyText, 'assistant', {
           url: demoCta.url,
@@ -933,11 +1023,13 @@
     sessionId = generateUUID();
     saveSessionIdToCookie(sessionId);
 
+    gateChoice = null;
     chatState.update(s => ({ ...s, messages: [] }));
     currentAssistantMessage = '';
     chatState.update(s => ({ ...s, loadingState: null }));
     // Add initial message to the new session (this will save it to local storage with the new ID)
     addMessageToUI(displayInitialMessage, 'assistant');
+    syncGateQuestionBubble();
 
     if (socket) {
       socket.disconnect();
@@ -1023,9 +1115,12 @@
 
         saveSessionIdToCookie(sessionId); // Save/update cookie, respecting persistentSession for Max-Age
 
+        gateChoice = loadGateChoiceFromLocalStorage(sessionId);
+
         if (!loadedMessagesFromStorage && $chatState.messages.length === 0) {
             addMessageToUI(displayInitialMessage, 'assistant'); // This will also save if persistentSession is true
         }
+        syncGateQuestionBubble();
 
         if (startOpen) {
             if (!wsConnected) {
@@ -1126,7 +1221,15 @@
         bind:this={messagesComponent}
       />
 
-      {#if predefinedQuestions && predefinedQuestions.length > 0}
+      {#if gatePending}
+        <GateQuestion
+          question={gate.question}
+          options={gate.options}
+          on:select={(e) => selectGateOption(e.detail)}
+        />
+      {/if}
+
+      {#if predefinedQuestions && predefinedQuestions.length > 0 && !gatePending}
         <QuickReplies
           on:sendQuickMessage={(e) => sendQuickMessage(e.detail)}
         />
@@ -1134,6 +1237,7 @@
 
       <ChatInput
         bind:this={chatInputComponent}
+        locked={gatePending}
         on:sendMessage={sendMessage}
       />
       <ChatFooter />

@@ -4,6 +4,8 @@
   import { chatState } from '../utils/stores.js';
 
   const widgetConfig = getContext('widgetConfig');
+  // True while a gate question is waiting for the user to pick an option
+  export let locked = false;
   let inputElement;
 
   const dispatch = createEventDispatcher();
@@ -33,13 +35,13 @@
     value={$chatState.userInput}
     on:keydown={(e) => e.key === 'Enter' && sendMessage()}
     on:input={handleInput}
-    placeholder={widgetConfig.isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
-    disabled={widgetConfig.isDemo}
+    placeholder={locked ? $_('widget.gatePlaceholder') : widgetConfig.isDemo ? $_('widget.placeholderDisabled') : $_('widget.placeholder')}
+    disabled={widgetConfig.isDemo || locked}
     aria-label={$_('widget.placeholder')}
   >
   <button
     id="send-button"
-    disabled={widgetConfig.isDemo || !!$chatState.loadingState || !$chatState.userInput.trim()}
+    disabled={widgetConfig.isDemo || locked || !!$chatState.loadingState || !$chatState.userInput.trim()}
     on:click={sendMessage}
   >{$_('widget.sendButton')}</button>
 </div>

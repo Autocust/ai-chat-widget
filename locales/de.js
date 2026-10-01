@@ -7,6 +7,7 @@ export default {
       "Generiert von KI. Bitte überprüfen Sie wichtige Informationen.",
     placeholder: "Schreiben Sie eine Nachricht...",
     placeholderDisabled: "Demo-Modus - Eingabe deaktiviert",
+    gatePlaceholder: "Wählen Sie eine Option, um fortzufahren",
     sendButton: "Senden",
     resetTitle: "Chat zurücksetzen",
     closeTitle: "Chat schließen", // Angenommen, '×' muss nicht übersetzt werden, aber der Titel könnte

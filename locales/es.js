@@ -7,6 +7,7 @@ export default {
       "Generado por AI. Por favor, verifica la información importante.",
     placeholder: "Escribe un mensaje...",
     placeholderDisabled: "Modo demo - Entrada deshabilitada",
+    gatePlaceholder: "Elige una opción para continuar",
     sendButton: "Enviar",
     resetTitle: "Reiniciar Chat",
     closeTitle: "Cerrar Chat", // Suponiendo que '×' no necesita traducción, pero el título sí

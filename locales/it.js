@@ -6,6 +6,7 @@ export default {
     footerText: 'Generato da AI. Verifica le informazioni importanti.',
     placeholder: 'Scrivi un messaggio...',
     placeholderDisabled: 'Modalità demo - Input disabilitato',
+    gatePlaceholder: 'Scegli un\'opzione per continuare',
     sendButton: 'Invia',
     resetTitle: 'Reimposta Chat',
     closeTitle: 'Chiudi Chat', // Supponendo che '×' non necessiti traduzione, ma il titolo potrebbe

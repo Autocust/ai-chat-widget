@@ -7,6 +7,7 @@ export default {
       "Généré par IA. Veuillez vérifier les informations importantes.",
     placeholder: "Écrivez un message...",
     placeholderDisabled: "Mode démo - Saisie désactivée",
+    gatePlaceholder: "Choisissez une option pour continuer",
     sendButton: "Envoyer",
     resetTitle: "Réinitialiser le chat",
     closeTitle: "Fermer le chat", // Assuming '×' doesn't need translation, but title might
