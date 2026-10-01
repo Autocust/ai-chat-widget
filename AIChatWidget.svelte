@@ -182,6 +182,7 @@
 
   let sessionId = getSessionIdFromCookie() || generateUUID();
   let lockedViewportHeight = null;
+  let lockedViewportWidth = null;
 
   function measureViewportHeight() {
     if (typeof window === 'undefined') return 0;
@@ -198,10 +199,35 @@
     if (typeof window === 'undefined' || !widgetElement) return;
     if (lockedViewportHeight === null) {
       lockedViewportHeight = measureViewportHeight();
+      lockedViewportWidth = window.innerWidth;
     }
     if (lockedViewportHeight) {
       widgetElement.style.setProperty('--chat-viewport-height', `${lockedViewportHeight}px`);
     }
+  }
+
+  // Soft keyboard (iOS): the layout viewport keeps its height and Safari scrolls it,
+  // so follow the visual viewport to keep header and messages on screen.
+  const KEYBOARD_MIN_SHRINK = 150;
+
+  function syncVisualViewport() {
+    if (typeof window === 'undefined' || !widgetElement || !fullScreen) return;
+    const vv = window.visualViewport;
+    if (!vv || !lockedViewportHeight) return;
+    // A width change is a rotation (not the keyboard): measure the height again
+    if (window.innerWidth !== lockedViewportWidth) {
+      lockedViewportHeight = measureViewportHeight();
+      lockedViewportWidth = window.innerWidth;
+    }
+    const keyboardOpen = lockedViewportHeight - vv.height > KEYBOARD_MIN_SHRINK;
+    widgetElement.style.setProperty(
+      '--chat-viewport-height',
+      `${keyboardOpen ? vv.height : lockedViewportHeight}px`
+    );
+    widgetElement.style.setProperty(
+      '--chat-viewport-offset-top',
+      `${keyboardOpen ? vv.offsetTop : 0}px`
+    );
   }
 
   $: transitionOrigin = position.replace('-', ' ');
@@ -955,6 +981,12 @@
 
     chatState.update(s => ({ ...s, isChatVisible: startOpen, showChatButton: !startOpen }));
 
+    const visualViewport = typeof window !== 'undefined' ? window.visualViewport : null;
+    if (visualViewport) {
+      visualViewport.addEventListener('resize', syncVisualViewport);
+      visualViewport.addEventListener('scroll', syncVisualViewport);
+    }
+
     if (isDemo) {
         setupDemoMessages();
     } else {
@@ -1017,6 +1049,10 @@
       }
       if (typeof window !== 'undefined') {
         window.removeEventListener('autocust:ask', externalAskListener);
+      }
+      if (visualViewport) {
+        visualViewport.removeEventListener('resize', syncVisualViewport);
+        visualViewport.removeEventListener('scroll', syncVisualViewport);
       }
       removeCustomStyles();
     };
@@ -1200,7 +1236,7 @@
 
 /* Fullscreen styles */
 #chat-widget.fullscreen {
-  top: 0; left: 0; right: 0;
+  top: var(--chat-viewport-offset-top, 0px); left: 0; right: 0;
   width: 100%;
   height: var(--chat-viewport-height, 100dvh);
   max-height: var(--chat-viewport-height, 100dvh);
@@ -1217,6 +1253,11 @@
   background-color: var(--container-bg);
   border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   overflow: hidden; display: flex; flex-direction: column;
+}
+
+/* Keep the header reachable in short windows (20px offset on each side) */
+#chat-widget:not(.fullscreen) #chat-container {
+  max-height: calc(100dvh - 40px);
 }
 
 @media (max-width: 480px) {
