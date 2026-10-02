@@ -19,7 +19,7 @@
 <style>
 .gate-options {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
   padding: 0 10px 10px;
   background-color: var(--messages-bg);
@@ -28,19 +28,25 @@
   overflow-y: auto;
 }
 
+/* Same look as the CTA buttons shown inside messages (see CtaButton.svelte) */
 .gate-option-btn {
-  padding: 6px 12px;
-  border-radius: 16px;
-  border: 1px solid var(--disclaimer-text);
-  background-color: transparent;
-  color: var(--primary-text-color);
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: none;
+  background-color: var(--cta-btn-bg);
+  color: var(--cta-btn-text);
   cursor: pointer;
+  font-family: inherit;
   font-size: 14px;
   text-align: center;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .gate-option-btn:hover {
-  background-color: var(--container-bg);
+  background-color: var(--cta-btn-hover-bg, var(--cta-hover-bg));
+  color: var(--cta-btn-hover-text, var(--cta-hover-text));
 }
 </style>
