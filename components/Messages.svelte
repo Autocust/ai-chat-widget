@@ -6,6 +6,8 @@
   import { chatState } from '../utils/stores.js';
 
   const widgetConfig = getContext('widgetConfig');
+  // Gate question options, forwarded to the question bubble while it is unanswered
+  export let gateOptions = null;
   let messagesContainer;
   let showScrollButton = false;
 
@@ -97,7 +99,7 @@
       {#if message.type === 'date'}
         <DateSeparator date={message.date} />
       {:else}
-        <Message {message} />
+        <Message {message} gateOptions={gateOptions} on:select />
       {/if}
     {/each}
     {#if !widgetConfig.isDemo && $chatState.loadingState?.message}

@@ -17,15 +17,12 @@
 </div>
 
 <style>
+/* Rendered right under the question bubble, like the CTA buttons of a message */
 .gate-options {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 10px 10px;
-  background-color: var(--messages-bg);
-  flex-shrink: 0;
-  max-height: 35%;
-  overflow-y: auto;
+  gap: 5px;
+  margin-top: 5px;
 }
 
 /* Same look as the CTA buttons shown inside messages (see CtaButton.svelte) */

@@ -1,13 +1,18 @@
 <script>
   import { getContext } from 'svelte';
+  import GateQuestion from './GateQuestion.svelte';
   import CtaButton from './CtaButton.svelte';
   import ProductCarousel from './ProductCarousel.svelte';
 
   const widgetConfig = getContext('widgetConfig');
   export let message;
+  // Options of the gate question, shown under its bubble while still unanswered
+  export let gateOptions = null;
+
+  $: showGateOptions = message.kind === 'gate_question' && !!gateOptions;
 </script>
 
-<div class="message-container {message.sender}-message {message.url || (message.links && message.links.length > 0) ? 'has-cta' : ''}">
+<div class="message-container {message.sender}-message {message.url || (message.links && message.links.length > 0) || showGateOptions ? 'has-cta' : ''}">
   <div class="message">
     {#if message.sender === 'user' && widgetConfig.userMessageIcon}
       <img src={widgetConfig.userMessageIcon} alt="User Icon" class="message-icon user-icon" />
@@ -22,6 +27,9 @@
       {@html message.content}
     </div>
   </div>
+  {#if showGateOptions}
+    <GateQuestion question={message.content} options={gateOptions} on:select />
+  {/if}
   {#if message.url}
     <CtaButton url={message.url} ctaText={message.ctaText} />
   {/if}

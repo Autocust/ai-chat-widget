@@ -11,7 +11,6 @@
   import ChatHeader from './components/ChatHeader.svelte';
   import Messages from './components/Messages.svelte';
   import QuickReplies from './components/QuickReplies.svelte';
-  import GateQuestion from './components/GateQuestion.svelte';
   import ChatInput from './components/ChatInput.svelte';
   import ChatFooter from './components/ChatFooter.svelte';
   import DateSeparator from './components/DateSeparator.svelte';
@@ -1219,15 +1218,9 @@
       />
       <Messages
         bind:this={messagesComponent}
+        gateOptions={gatePending ? gate.options : null}
+        on:select={(e) => selectGateOption(e.detail)}
       />
-
-      {#if gatePending}
-        <GateQuestion
-          question={gate.question}
-          options={gate.options}
-          on:select={(e) => selectGateOption(e.detail)}
-        />
-      {/if}
 
       {#if predefinedQuestions && predefinedQuestions.length > 0 && !gatePending}
         <QuickReplies
