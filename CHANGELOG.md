@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.4.1](https://github.com/Autocust/ai-chat-widget/compare/v3.4.0...v3.4.1) (2026-10-02)
+
+### Features
+
+* style gate question options as CTA buttons ([96b995d](https://github.com/Autocust/ai-chat-widget/commit/96b995d797221c21019d7e161d9746b1d3586c39))
+
 ## [3.4.0](https://github.com/Autocust/ai-chat-widget/compare/v3.3.0...v3.4.0) (2026-10-02)
 
 ### Features
