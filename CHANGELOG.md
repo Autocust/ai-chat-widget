@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.4.2](https://github.com/Autocust/ai-chat-widget/compare/v3.4.1...v3.4.2) (2026-10-02)
+
+### Features
+
+* show gate question options under the question bubble ([763ce39](https://github.com/Autocust/ai-chat-widget/commit/763ce39b17045fe247649319f9adee84ac4f60bf))
+
 ## [3.4.1](https://github.com/Autocust/ai-chat-widget/compare/v3.4.0...v3.4.1) (2026-10-02)
 
 ### Features
