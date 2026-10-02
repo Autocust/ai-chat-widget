@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.4.0](https://github.com/Autocust/ai-chat-widget/compare/v3.3.0...v3.4.0) (2026-10-02)
+
+### Features
+
+* add opt-in gate question before the chat input ([ae77766](https://github.com/Autocust/ai-chat-widget/commit/ae7776608993b039ded59300757b2b0706ffa5ba))
+
 ## [3.3.0](https://github.com/Autocust/ai-chat-widget/compare/v3.2.20...v3.3.0) (2026-10-01)
 
 ### Bug Fixes
