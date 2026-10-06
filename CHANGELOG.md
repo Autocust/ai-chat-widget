@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.4.3](https://github.com/Autocust/ai-chat-widget/compare/v3.4.2...v3.4.3) (2026-10-06)
+
+### Features
+
+* keep widget open on same-page chat links ([2b6c651](https://github.com/Autocust/ai-chat-widget/commit/2b6c651ab2508ced0f4c4589954e5e63f9e4e537)), closes [#anchor](https://github.com/Autocust/ai-chat-widget/issues/anchor)
+
 ## [3.4.2](https://github.com/Autocust/ai-chat-widget/compare/v3.4.1...v3.4.2) (2026-10-02)
 
 ### Features
