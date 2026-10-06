@@ -1,11 +1,13 @@
 <script>
   import { getContext } from 'svelte';
-  import { addUtmParams } from '../utils/url.js';
+  import { addUtmParams, toSamePageAnchor } from '../utils/url.js';
 
   const widgetConfig = getContext('widgetConfig');
 
   export let url;
   export let ctaText;
+
+  $: anchor = toSamePageAnchor(url);
 
   function handleClick() {
     // Emit event for GTM/attribution tracking
@@ -17,8 +19,8 @@
   }
 </script>
 
-<a href={addUtmParams(url, 'chat', 'chatbot', 'chatbot', widgetConfig.enableUTM)}
-   target={widgetConfig.openInNewTab ? '_blank' : '_self'}
+<a href={anchor || addUtmParams(url, 'chat', 'chatbot', 'chatbot', widgetConfig.enableUTM)}
+   target={anchor ? '_self' : (widgetConfig.openInNewTab ? '_blank' : '_self')}
    class="cta-button"
    on:click={handleClick}>{ctaText}</a>
 

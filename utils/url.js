@@ -11,3 +11,19 @@ export function addUtmParams(url, source, medium, campaign, enableUTM = true) {
       return url;
   }
 }
+
+// Returns "#anchor" (or "#" when there is no hash) when url points to the current page,
+// so clicking it scrolls in place instead of reloading the page (which would close the widget).
+export function toSamePageAnchor(url) {
+  if (!url || typeof window === 'undefined') return null;
+  try {
+    const target = new URL(url, window.location.href);
+    const current = window.location;
+    const samePage = target.origin === current.origin
+      && target.pathname.replace(/\/$/, '') === current.pathname.replace(/\/$/, '')
+      && target.search === current.search;
+    return samePage ? (target.hash || '#') : null;
+  } catch (e) {
+    return null;
+  }
+}

@@ -4,7 +4,7 @@
   import { marked } from 'marked';
   import { io } from 'socket.io-client';
   import { _ } from './i18n'; // Import the translation function
-  import { addUtmParams } from './utils/url.js';
+  import { addUtmParams, toSamePageAnchor } from './utils/url.js';
   import { chatState } from './utils/stores.js';
   import { normalizeGateQuestion, normalizeGateChoice, mergeGateContext } from './utils/gateQuestion.js';
   import ChatButton from './components/ChatButton.svelte';
@@ -257,6 +257,11 @@
 
   const renderer = new marked.Renderer();
   renderer.link = function(href, title, text) {
+    // marked >= 13 passes the link token as the first argument
+    const anchor = toSamePageAnchor(href?.href);
+    if (anchor) {
+      return marked.Renderer.prototype.link.call(this, { ...href, href: anchor }, title, text);
+    }
     const link = marked.Renderer.prototype.link.call(this, href, title, text);
     if (openInNewTab) {
       return link.replace('<a ', '<a target="_blank" ');
