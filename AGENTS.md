@@ -1,3 +1,9 @@
+# OpenWolf
+
+@.wolf/OPENWOLF.md
+
+This project uses OpenWolf for context management. Read and follow .wolf/OPENWOLF.md every session.
+
 # Repository Guidelines
 
 ## Project Structure & Module Organization
