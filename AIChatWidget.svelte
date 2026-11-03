@@ -24,6 +24,8 @@
   export let position = 'bottom-right';
   export let openInNewTab = true;
   export let enableUTM = true;
+  // Turn Markdown links in replies into CTA buttons under the bubble. Off by default: links stay inline only.
+  export let linkButtons = false;
   export let startOpen = false;
   export let fullScreen = false;
   export let isDemo = false;
@@ -694,7 +696,7 @@
   }
 
   function extractLinks(markdownText) {
-    if (!markdownText) return [];
+    if (!linkButtons || !markdownText) return [];
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const links = [];
     let match;
@@ -814,7 +816,7 @@
         }
         // Same rule as addMessageToUI: the initial greeting never carries CTA
         // buttons, including in sessions persisted before this rule existed.
-        processed.push(isInitialMessage ? { ...msg, links: [] } : { ...msg, links: dedupeLinksByUrl(msg.links) });
+        processed.push(isInitialMessage || !linkButtons ? { ...msg, links: [] } : { ...msg, links: dedupeLinksByUrl(msg.links) });
         isInitialMessage = false;
     });
     return processed;
