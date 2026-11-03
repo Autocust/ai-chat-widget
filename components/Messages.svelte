@@ -99,7 +99,7 @@
       {#if message.type === 'date'}
         <DateSeparator date={message.date} />
       {:else}
-        <Message {message} gateOptions={gateOptions} on:select />
+        <Message {message} gateOptions={gateOptions} on:select on:reply />
       {/if}
     {/each}
     {#if !widgetConfig.isDemo && $chatState.loadingState?.message}

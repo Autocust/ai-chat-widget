@@ -1,10 +1,12 @@
 <script>
-  import { getContext } from 'svelte';
+  import { getContext, createEventDispatcher } from 'svelte';
   import GateQuestion from './GateQuestion.svelte';
   import CtaButton from './CtaButton.svelte';
   import ProductCarousel from './ProductCarousel.svelte';
+  import StructuredMessage from './StructuredMessage.svelte';
 
   const widgetConfig = getContext('widgetConfig');
+  const dispatch = createEventDispatcher();
   export let message;
   // Options of the gate question, shown under its bubble while still unanswered
   export let gateOptions = null;
@@ -23,9 +25,15 @@
     {#if message.sender === 'human_agent' && widgetConfig.humanAgentMessageIcon}
       <img src={widgetConfig.humanAgentMessageIcon} alt="Human Agent Icon" class="message-icon human-agent-icon" />
     {/if}
-    <div class="message-content">
-      {@html message.content}
-    </div>
+    {#if message.structured}
+      <div class="structured-wrapper">
+        <StructuredMessage payload={message.structured} used={!!message.structuredUsed} on:reply={(e) => dispatch('reply', { message, title: e.detail.title })} />
+      </div>
+    {:else}
+      <div class="message-content">
+        {@html message.content}
+      </div>
+    {/if}
   </div>
   {#if showGateOptions}
     <GateQuestion question={message.content} options={gateOptions} on:select />
@@ -78,6 +86,11 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
+  }
+
+  .structured-wrapper {
+    flex-grow: 1;
+    min-width: 0;
   }
 
   .message-icon {
