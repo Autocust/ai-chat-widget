@@ -37,7 +37,7 @@
   color: var(--cta-btn-text);
   cursor: pointer;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 1em;
   text-align: center;
   transition: background-color 0.3s, color 0.3s;
 }

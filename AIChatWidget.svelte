@@ -639,8 +639,7 @@
             last.structured = payload;
             chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
             persistSessionState($chatState.messages);
-            await tick();
-            if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
+            await messagesComponent?.scrollToLastMessage();
             return;
           }
         }
@@ -649,8 +648,7 @@
         streamingSender = null;
         currentAssistantMessage = '';
         addMessageToUI('', 'assistant', { structured: payload });
-        await tick();
-        if (messagesComponent?.element) messagesComponent.element.scrollTop = messagesComponent.element.scrollHeight;
+        await messagesComponent?.scrollToLastMessage();
       } catch (err) {
         console.error('Error processing structured_message:', err);
       }
@@ -1003,6 +1001,7 @@
   function replyToStructuredMessage({ message, title }) {
     if (isDemo || !wsConnected || $chatState.loadingState || !message || message.structuredUsed) return;
     message.structuredUsed = true;
+    message.structuredChoice = title;
     chatState.update(s => ({ ...s, messages: [...s.messages] }));
     chatState.update(s => ({ ...s, userInput: title }));
     sendMessage();

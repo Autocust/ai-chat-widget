@@ -53,6 +53,22 @@
   }
 
   /**
+   * Brings the newest message into view. When it is taller than the viewport (a long list
+   * under a reply) its top is aligned instead, so the question stays visible with the options.
+   */
+  export async function scrollToLastMessage() {
+    await tick();
+    if (!messagesContainer) return;
+    const items = messagesContainer.querySelectorAll('.message-container');
+    const last = items[items.length - 1];
+    if (last && last.offsetHeight > messagesContainer.clientHeight) {
+      messagesContainer.scrollTo({ top: last.offsetTop - messagesContainer.offsetTop, behavior: 'smooth' });
+    } else {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  }
+
+  /**
    * Scrolls the messages container to the bottom.
    * @param {string} behavior - The scroll behavior ('smooth' or 'auto').
    */

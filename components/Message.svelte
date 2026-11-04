@@ -27,7 +27,7 @@
     {/if}
     {#if message.structured && !message.structured.attached}
       <div class="structured-wrapper">
-        <StructuredMessage payload={message.structured} used={!!message.structuredUsed} on:reply={(e) => dispatch('reply', { message, title: e.detail.title })} />
+        <StructuredMessage payload={message.structured} used={!!message.structuredUsed} chosen={message.structuredChoice} on:reply={(e) => dispatch('reply', { message, title: e.detail.title })} />
       </div>
     {:else}
       <div class="message-content">
@@ -37,7 +37,7 @@
   </div>
   {#if message.structured?.attached}
     <div class="attached-element">
-      <StructuredMessage payload={message.structured} used={!!message.structuredUsed} on:reply={(e) => dispatch('reply', { message, title: e.detail.title })} />
+      <StructuredMessage payload={message.structured} used={!!message.structuredUsed} chosen={message.structuredChoice} on:reply={(e) => dispatch('reply', { message, title: e.detail.title })} />
     </div>
   {/if}
   {#if showGateOptions}
