@@ -33,7 +33,7 @@
     border-radius: 20px;
     text-decoration: none;
     margin-top: 10px;
-    font-size: 14px;
+    font-size: 1em;
     text-align: center;
     width: 100%;
     box-sizing: border-box;

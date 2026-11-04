@@ -7,6 +7,7 @@
   import { addUtmParams, toSamePageAnchor } from './utils/url.js';
   import { chatState } from './utils/stores.js';
   import { normalizeGateQuestion, normalizeGateChoice, mergeGateContext } from './utils/gateQuestion.js';
+  import { normalizeStructuredPayload } from './utils/structuredMessage.js';
   import ChatButton from './components/ChatButton.svelte';
   import ChatHeader from './components/ChatHeader.svelte';
   import Messages from './components/Messages.svelte';
@@ -24,6 +25,8 @@
   export let position = 'bottom-right';
   export let openInNewTab = true;
   export let enableUTM = true;
+  // Turn Markdown links in replies into CTA buttons under the bubble. Off by default: links stay inline only.
+  export let linkButtons = false;
   export let startOpen = false;
   export let fullScreen = false;
   export let isDemo = false;
@@ -625,12 +628,38 @@
       }
     });
 
+    socket.on('structured_message', async (data) => {
+      try {
+        const payload = normalizeStructuredPayload(data?.content);
+        if (!payload) return;
+        // Attached to the reply of this turn: shown under its last assistant bubble
+        if (payload.attached && isStreamingMessage) {
+          const last = $chatState.messages.at(-1);
+          if (last && last.sender === streamingSender && !last.structured) {
+            last.structured = payload;
+            chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
+            persistSessionState($chatState.messages);
+            await messagesComponent?.scrollToLastMessage();
+            return;
+          }
+        }
+        // Its own bubble: tokens that follow must start a new one, not overwrite this
+        isStreamingMessage = false;
+        streamingSender = null;
+        currentAssistantMessage = '';
+        addMessageToUI('', 'assistant', { structured: payload });
+        await messagesComponent?.scrollToLastMessage();
+      } catch (err) {
+        console.error('Error processing structured_message:', err);
+      }
+    });
+
     socket.on('products_search', async () => {
       try {
         const products = await fetchProducts();
         if (products && products.length > 0) {
           const lastMessage = $chatState.messages[$chatState.messages.length - 1];
-          if (lastMessage && lastMessage.sender === 'assistant') {
+          if (lastMessage && lastMessage.sender === 'assistant' && !lastMessage.structured) {
             $chatState.messages[$chatState.messages.length - 1] = { ...lastMessage, products: products };
             chatState.update(s => ({ ...s, messages: [...$chatState.messages] }));
             // Persist after adding carousel
@@ -694,7 +723,7 @@
   }
 
   function extractLinks(markdownText) {
-    if (!markdownText) return [];
+    if (!linkButtons || !markdownText) return [];
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const links = [];
     let match;
@@ -779,6 +808,7 @@
           url: additionalData.url || '',
           ctaText: additionalData.ctaText || displayCtaText,
           ...(additionalData.kind ? { kind: additionalData.kind } : {}),
+          ...(additionalData.structured ? { structured: additionalData.structured } : {}),
           date: new Date()
         }
       ]
@@ -814,7 +844,7 @@
         }
         // Same rule as addMessageToUI: the initial greeting never carries CTA
         // buttons, including in sessions persisted before this rule existed.
-        processed.push(isInitialMessage ? { ...msg, links: [] } : { ...msg, links: dedupeLinksByUrl(msg.links) });
+        processed.push(isInitialMessage || !linkButtons ? { ...msg, links: [] } : { ...msg, links: dedupeLinksByUrl(msg.links) });
         isInitialMessage = false;
     });
     return processed;
@@ -965,6 +995,16 @@
       chatState.update(s => ({ ...s, loadingState: null }));
     }
     chatInputComponent?.focusInput();
+  }
+
+  // A reply button or list row was tapped: send its title as a normal user message
+  function replyToStructuredMessage({ message, title }) {
+    if (isDemo || !wsConnected || $chatState.loadingState || !message || message.structuredUsed) return;
+    message.structuredUsed = true;
+    message.structuredChoice = title;
+    chatState.update(s => ({ ...s, messages: [...s.messages] }));
+    chatState.update(s => ({ ...s, userInput: title }));
+    sendMessage();
   }
 
   function sendQuickMessage(message) {
@@ -1225,6 +1265,7 @@
         bind:this={messagesComponent}
         gateOptions={gatePending ? gate.options : null}
         on:select={(e) => selectGateOption(e.detail)}
+        on:reply={(e) => replyToStructuredMessage(e.detail)}
       />
 
       {#if predefinedQuestions && predefinedQuestions.length > 0 && !gatePending}

@@ -1,10 +1,12 @@
 <script>
-  import { getContext } from 'svelte';
+  import { getContext, createEventDispatcher } from 'svelte';
   import GateQuestion from './GateQuestion.svelte';
   import CtaButton from './CtaButton.svelte';
   import ProductCarousel from './ProductCarousel.svelte';
+  import StructuredMessage from './StructuredMessage.svelte';
 
   const widgetConfig = getContext('widgetConfig');
+  const dispatch = createEventDispatcher();
   export let message;
   // Options of the gate question, shown under its bubble while still unanswered
   export let gateOptions = null;
@@ -23,10 +25,21 @@
     {#if message.sender === 'human_agent' && widgetConfig.humanAgentMessageIcon}
       <img src={widgetConfig.humanAgentMessageIcon} alt="Human Agent Icon" class="message-icon human-agent-icon" />
     {/if}
-    <div class="message-content">
-      {@html message.content}
-    </div>
+    {#if message.structured && !message.structured.attached}
+      <div class="structured-wrapper">
+        <StructuredMessage payload={message.structured} used={!!message.structuredUsed} chosen={message.structuredChoice} on:reply={(e) => dispatch('reply', { message, title: e.detail.title })} />
+      </div>
+    {:else}
+      <div class="message-content">
+        {@html message.content}
+      </div>
+    {/if}
   </div>
+  {#if message.structured?.attached}
+    <div class="attached-element">
+      <StructuredMessage payload={message.structured} used={!!message.structuredUsed} chosen={message.structuredChoice} on:reply={(e) => dispatch('reply', { message, title: e.detail.title })} />
+    </div>
+  {/if}
   {#if showGateOptions}
     <GateQuestion question={message.content} options={gateOptions} on:select />
   {/if}
@@ -80,6 +93,11 @@
     gap: 8px;
   }
 
+  .structured-wrapper {
+    flex-grow: 1;
+    min-width: 0;
+  }
+
   .message-icon {
     width: 32px;
     height: 32px;
@@ -115,6 +133,10 @@
 
   :global(.message-content ul), :global(.message-content ol) {
     padding-inline-start: 20px;
+  }
+
+  .attached-element {
+    margin-top: 5px;
   }
 
   .message-links {
