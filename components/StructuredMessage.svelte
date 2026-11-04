@@ -23,12 +23,14 @@
       {#if payload.caption}<figcaption>{payload.caption}</figcaption>{/if}
     </figure>
   {:else}
-    {#if !payload.attached || payload.header || payload.footer}
+    {#if !payload.attached}
       <div class="bubble">
         {#if payload.header}<div class="header">{payload.header}</div>{/if}
         {#if payload.body}<div class="body">{payload.body}</div>{/if}
         {#if payload.footer}<div class="footer">{payload.footer}</div>{/if}
       </div>
+    {:else if payload.header}
+      <div class="mini-label">{payload.header}</div>
     {/if}
 
     {#if payload.type === 'cta_url'}
@@ -40,15 +42,18 @@
         {/each}
       </div>
     {:else if payload.type === 'list'}
-      <button type="button" class="action-btn" disabled={used} aria-expanded={listOpen} on:click={() => (listOpen = !listOpen)}>
-        {payload.button_text}
-      </button>
-      {#if listOpen && !used}
-        <div class="list">
+      <!-- Attached lists are shown open under the reply: the toggle is only needed on WhatsApp -->
+      {#if !payload.attached}
+        <button type="button" class="action-btn" disabled={used} aria-expanded={listOpen} on:click={() => (listOpen = !listOpen)}>
+          {payload.button_text}
+        </button>
+      {/if}
+      {#if payload.attached || (listOpen && !used)}
+        <div class="list" class:used>
           {#each payload.sections as section}
             {#if section.title}<div class="section-title">{section.title}</div>{/if}
             {#each section.rows as row}
-              <button type="button" class="row" on:click={() => reply(row.title)}>
+              <button type="button" class="row" disabled={used} on:click={() => reply(row.title)}>
                 <span class="row-title">{row.title}</span>
                 {#if row.description}<span class="row-description">{row.description}</span>{/if}
               </button>
@@ -56,6 +61,9 @@
           {/each}
         </div>
       {/if}
+    {/if}
+    {#if payload.attached && payload.footer}
+      <div class="mini-label">{payload.footer}</div>
     {/if}
   {/if}
 </div>
@@ -128,6 +136,9 @@
     text-align: left;
     cursor: pointer;
   }
-  .row:hover { background-color: rgba(128, 128, 128, 0.18); }
+  .mini-label { font-size: 12px; opacity: 0.65; padding: 0 4px; }
+  .list.used { opacity: 0.45; }
+  .row:disabled { cursor: default; }
+  .row:hover:not(:disabled) { background-color: rgba(128, 128, 128, 0.18); }
   .row-description { font-size: 12px; opacity: 0.65; }
 </style>
