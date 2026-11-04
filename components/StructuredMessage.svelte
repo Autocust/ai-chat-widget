@@ -135,7 +135,7 @@
     color: var(--cta-btn-hover-text, var(--cta-hover-text));
   }
   .action-btn:disabled { cursor: default; }
-  .action-btn.dimmed { opacity: 0.4; }
+  .action-btn.dimmed { opacity: 0.55; }
 
   .list {
     display: flex;
@@ -160,7 +160,7 @@
     padding: 0.5em 0.75em;
     border: 1px solid rgba(128, 128, 128, 0.35);
     border-radius: 0.5em;
-    background-color: rgba(255, 255, 255, 0.55);
+    background-color: color-mix(in srgb, var(--assistant-msg-text) 4%, transparent);
     color: inherit;
     font-family: inherit;
     font-size: 1em;
@@ -173,10 +173,10 @@
   .row-description { font-size: 0.85em; opacity: 0.7; }
   .row-mark { flex-shrink: 0; font-size: 1.3em; line-height: 1; opacity: 0.5; }
 
-  .row:hover:not(:disabled) { border-color: var(--cta-btn-bg); background-color: rgba(255, 255, 255, 0.9); }
+  .row:hover:not(:disabled) { border-color: var(--cta-btn-bg); background-color: color-mix(in srgb, var(--cta-btn-bg) 10%, transparent); }
   .row:focus-visible, .action-btn:focus-visible { outline: 2px solid var(--cta-btn-bg); outline-offset: 2px; }
   .row:disabled { cursor: default; }
-  .row.dimmed { opacity: 0.4; }
+  .row.dimmed { opacity: 0.55; }
   .row.chosen { border-color: var(--cta-btn-bg); border-width: 2px; opacity: 1; }
   .row.chosen .row-mark { opacity: 1; color: var(--cta-btn-bg); }
   .action-btn.chosen { opacity: 1; box-shadow: 0 0 0 2px var(--assistant-msg-bg), 0 0 0 4px var(--cta-btn-bg); }
