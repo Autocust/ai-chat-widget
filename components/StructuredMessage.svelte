@@ -23,11 +23,13 @@
       {#if payload.caption}<figcaption>{payload.caption}</figcaption>{/if}
     </figure>
   {:else}
-    <div class="bubble">
-      {#if payload.header}<div class="header">{payload.header}</div>{/if}
-      <div class="body">{payload.body}</div>
-      {#if payload.footer}<div class="footer">{payload.footer}</div>{/if}
-    </div>
+    {#if !payload.attached || payload.header || payload.footer}
+      <div class="bubble">
+        {#if payload.header}<div class="header">{payload.header}</div>{/if}
+        {#if payload.body}<div class="body">{payload.body}</div>{/if}
+        {#if payload.footer}<div class="footer">{payload.footer}</div>{/if}
+      </div>
+    {/if}
 
     {#if payload.type === 'cta_url'}
       <a class="action-btn" href={payload.url} target="_blank" rel="noopener noreferrer">{payload.display_text}</a>

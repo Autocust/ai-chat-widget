@@ -25,7 +25,7 @@
     {#if message.sender === 'human_agent' && widgetConfig.humanAgentMessageIcon}
       <img src={widgetConfig.humanAgentMessageIcon} alt="Human Agent Icon" class="message-icon human-agent-icon" />
     {/if}
-    {#if message.structured}
+    {#if message.structured && !message.structured.attached}
       <div class="structured-wrapper">
         <StructuredMessage payload={message.structured} used={!!message.structuredUsed} on:reply={(e) => dispatch('reply', { message, title: e.detail.title })} />
       </div>
@@ -35,6 +35,11 @@
       </div>
     {/if}
   </div>
+  {#if message.structured?.attached}
+    <div class="attached-element">
+      <StructuredMessage payload={message.structured} used={!!message.structuredUsed} on:reply={(e) => dispatch('reply', { message, title: e.detail.title })} />
+    </div>
+  {/if}
   {#if showGateOptions}
     <GateQuestion question={message.content} options={gateOptions} on:select />
   {/if}
@@ -128,6 +133,10 @@
 
   :global(.message-content ul), :global(.message-content ol) {
     padding-inline-start: 20px;
+  }
+
+  .attached-element {
+    margin-top: 5px;
   }
 
   .message-links {
